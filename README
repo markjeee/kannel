@@ -1,0 +1,290 @@
+README for Kannel: Open Source WAP and SMS Gateway
+
+
+Abstract
+
+	This README describes Kannel, the Open Source WAP and SMS gateway,
+	and how it can be used and installed.
+
+Introduction
+
+	The Kannel Open Source WAP and SMS gateway works as both an SMS
+	gateway, for implementing keyword based services via GSM text
+	messages, and a WAP gateway, via UDP. The SMS part is fairly
+	mature, the WAP part is early in its development. In this release,
+	the GET request for WML pages and WMLScript files via HTTP works,
+	including compilation for WML and WMLScript to binary forms. Only
+	the data call bearer (UDP) is supported, not SMS.
+	
+Requirements
+
+	You need a Unix-like operating system that supports POSIX threads
+	(pthreads.h). We use RedHat Linux and Debian GNU/Linux systems.
+
+	There is also support for the Cygwin 1.3 POSIX emulation layer
+	for the Win32 platforms.
+	
+	You need GNU make, other make's tend not to work. For example,
+	the FreeBSD and Solaris versions of make do not work. Check the
+	version of your make with "make --version"; if it does not reply
+	with "GNU Make version x.y.z", then it is not GNU make.
+	
+	On Solaris, you probably want to install gcc, GNU make and GNU
+	binutils from www.sunfreeware.com.
+	
+	On MacOS X, you may have problems in compiling the latest libxml
+	(2.4.23). There may be linking errors for those library. A work-
+	arround is either using an older version of libxml (2.3.9 for 
+	example) or to build it as static library without the dynamic one 
+	being built.
+
+Documentation
+
+	The user manual is in the doc/userguide directory and although it
+	is not complete, explain almost all parts of Kannel. Developer
+	documentation (currently very outdated) is in the doc/arch
+	directory.
+	
+	In order to convert the documentation from DocBook (a markup
+	language) to HTML and PostScript, you need some tools. 
+	
+    On a Debian GNU/Linux system, you need to install the following
+	packages via: 
+	
+	    $ sudo apt-get install docbook-stylesheets
+    
+    On a Red Hat Linux (RHEL) system, you need to install the following
+	packages, in order:
+	
+		sgml-common
+		psgml
+		docbook
+		stylesheets
+		jade
+		jadetex
+		transfig
+
+	See http://www.rpmfind.net to find the packages.
+    	
+    On a Fedora Core system, you need to install the following packages:
+    
+        $ sudo yum install openjade jadetex docbook-style-dsssl \
+        	texlive-dvips transfig ImageMagick
+
+    On a Gentoo system, the following should do:
+
+	    $ sudo emerge transfig jadetex docbook-dsssl-stylesheets
+
+    On a Mandrakelinux system, the following should do:
+		
+		$ urpmi transfig jadetex docbook-style-dsssl
+
+	Then apply this change to /usr/share/texmf/web2c/texmf.cnf:
+	
+		hash_extra.jadetex = 15000
+		hash_extra.pdfjadetex = 15000
+		pool_size.jadetex = 500000
+		pool_size.pdfjadetex = 500000
+		string_vacancies.jadetex = 45000
+		string_vacancies.pdfjadetex = 45000
+		max_strings.jadetex = 55000
+		max_strings.pdfjadetex = 55000
+		pool_free.jadetex = 47500
+		pool_free.pdfjadetex = 47500
+		nest_size.jadetex = 500
+		nest_size.pdfjadetex = 500
+		param_size.jadetex = 1500
+		param_size.pdfjadetex = 1500
+		save_size.jadetex = 5000
+		save_size.pdfjadetex = 5000
+		stack_size.jadetex = 1500
+		stack_size.pdfjadetex = 1500
+	
+	On other systems, you'll have to figure it out yourself.
+	
+Getting the gateway sources
+
+	You can download the sources from
+	http://www.kannel.org/download.shtml.
+	
+	Note that you also need the Gnome-xml library from
+	http://xmlsoft.org/xml.html. That one probably requires zlib,
+	depending on how it is configured. You need at least version
+	2.2.0
+
+Compiling and installing the gateway
+
+	See the file INSTALL for generic installation instructions.
+	The short form:
+	
+		./configure
+		touch .depend
+		make depend
+		make
+		make bindir=/somewhere/suitable install
+
+	See the User Guide (doc/userguide/ or
+	http://www.kannel.org/userguide.shtml) for Kannel specific
+	options to configure.
+
+For developers only: autoconf, configure, config.status, and Makefile
+
+	We use the GNU autoconf tool to make it easier to adapt Kannel to
+	each platform. The `autoconf' program reads the file configure.in,
+	and generates a corresponding shell script called configure,
+	which investigates the system it runs on to see what it supports
+	and what it does not. configure then reads Makefile.in and
+	config.h.in and writes out Makefile, config.h, and a shell
+	script config.status.
+	
+	If you modify configure.in, you need to run autoconf.
+	
+	If you modify Makefile.in or config.h.in, you need to run
+	config.status.
+	
+	If you modify any source files to add or change any header
+	includes, you need to run "make depend".
+	
+	You always need to run "make" (which is the same as "make all").
+	
+	If you have trouble building things and suspect that there is a
+	problem with the Makefile, run "make clean all". If that solves
+	it, report it as a bug (see the end of this README).
+
+For developers only: adding new SMS Center protocol support
+
+	As Kannel does not support all the SMSC protocols that exists,
+	it might become necessary to add new kind of protocols, 
+	including support to use mobile phones as SMSCes.
+
+	When doing this, read interface specification in gw/smscconn_p.h.
+	Drivers should stick to these rules as good as they can.
+
+For developers only: "make check"
+
+	The Kannel Makefile contains a target called "check", which
+	is used to run a series of automatic, non-interactive tests on
+	various subsystems. 
+	
+	Each test program MUST stored in the `checks' subdirectory. Each
+	test MUST be written either as a C program named `check_*.c'
+	or a Bourne shell script named `check_*.sh'. The C programs are
+	compiled by the Makefile, the shell scripts MUST be executable.
+
+	The test programs MUST output nothing to stdout, and MUST use a
+	zero exit code to indicate that the test was successful, and a
+	non-zero exit code to indicate a failure of the test. This way,
+	if one runs "make -s check", one can easily see which tests are
+	run and which tests work.
+	
+	The test programs MUST output error messages to stderr and they
+	MUST mention which test program and which subtest failed. In
+	case of failure, they may leave log files or other auxiliary
+	files, and these MUST be listed in the error messages to stderr,
+	so that the user has a reasonable way to diagnose the error.
+	The Makefile captures the stderr output to `check.log'.
+
+	The tests SHOULD take a reasonable time, preferably less than
+	fifteen seconds each. This way, one can run "make -s check"
+	before each commit. If there is a need to run longer tests,
+	then the tests need to be divided into fast and slow ones.
+	
+	These tests are meant to test whether subsystems mostly work,
+	stress testing needs to be done separately, and tends to require
+	testing against real applications.
+
+For developers only: Source tree organization
+
+	The source tree is organized as follows:
+	
+		gateway		root of source tree: some docs, no sources
+		|-- contrib	contributed extra material
+		|-- doc		documentation
+		|-- gw		the gateway itself
+		|-- gwlib	utility functions
+		|-- test	programs for testing the gateway
+		`-- utils	utility programs
+
+For developers only: WMLScript references
+
+	WMLScript Specification
+		      Wireless Application Protocol WMLScript Language
+		      Specification Version 1.1 http://www.wapforum.org/
+
+	WMLScript Standard Libraries Specification
+		      Wireless Aplication Protocol WMLScript
+		      Standard Libraries Specification Version 1.1
+		      http://www.wapforum.org/
+
+	RFC-2279	UTF-8, a transformation format of ISO 10646
+
+	rfc/iana/assignments/character-sets
+		      The official names for character sets that may
+		      be used in the Internet and may be referred to in
+		      Internet Documentation.
+
+	ANSI/IEEE Std 754-1985
+		      IEEE Standard for Binary Floating-Point Arithmetic.
+		      Institute of Electrical and Electronics Engineers,
+		      New York (1985).
+
+Configuring and running the gateway
+
+	See the user guide in doc/userguide or on the web at
+	http://www.kannel.org/doc.shtml.
+	
+	For test use, you can see sample configurations
+	gw/smskannel.conf (SMS gateway) and gw/wapkannel.conf (WAP gateway).
+
+Using the gateway with a Nokia 7110
+
+	To configure a Nokia 7110 to use the gateway, fill in the
+	following (note that you need to provide your own dialup
+	line):
+	
+		Home page: http://www.kannel.org/wap/hello.wml
+		(or any other WML page)
+		Connection type: continuous
+		Connection security: off
+		Bearer: data
+		Dial-up number: <your dialup line>
+		IP address: <IP number of the host running bearer box>
+		Authentication type: normal
+		Data call type: <analog or isdn, depending on your line>
+		Data call speed: 9600
+		User name: <username for your dialup line>
+		Password: <password for your dialup line>
+		
+	After you have modified the profile, activate it and load the
+	home page. If you use the sample page above, you should see
+	"hello, world" on the screen after a few moments.
+
+Modifications to old Kannel (0.8 and older)
+
+	After release 0.8 Kannel architecture has been modified
+	considerably, resulting changes in basic running of the standard
+	WAP or WAP gateway.
+
+	In new design, there is only one configuration file (to be more
+	exact, you can have several of them, one for each kind of box,
+	but that is advanced feature, which is not very usable) for
+	bearerbox, smsboxes and wapboxes. Details of that file is in
+	doc/userguide/newconf.txt.  As a quick reference, you just put
+	all your old configuration files into same file, remove some
+	rows and add 'group = xxx' variables into it.
+
+	Moreover, there is no internal smsbox in new Kannel. So, when
+	running SMS services you MUST run separate smsbox. This is most
+	easily done with Kannel as daemon, launched with init.d. See
+	utils/ directory for any supplied systems.
+
+Feedback and more information
+
+	You may want to subscribe the announce and devel lists at
+	www.kannel.org. If you need help or want to participate in the 
+        development of Kannel. Send e-mail to
+	
+		announce-subscribe@kannel.org
+		devel-subscribe@kannel.org
+
+	(You'll get further instructions via automatic reply mails.)

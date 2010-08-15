@@ -1,0 +1,30 @@
+KANNEL 1.x STATUS: 
+    Last modified at [$Id: STATUS,v 1.34 2003-07-18 22:12:34 davi Exp $]
+
+Release:
+
+    1.3.1: development version, released Feb 17, 2003.
+    1.3.0: development version, released Jan 06, 2003.
+    1.2.1: update to stable, released Nov 02, 2002.
+    1.2.0: update to stable, released Jul 04, 2002.
+    1.1.6: development version, released Mar 28, 2002.
+    1.1.5: development version, released May 31, 2001.
+    1.1.4: development version, released May 07, 2001.
+    1.0.3: update to stable, released Mar 27, 2001.
+    1.1.3: development version, released Mar 20, 2001.
+    1.0.2: received WAP 1.1 certification, Mar 07, 2001.
+    1.1.2: development version, released Feb 28, 2001.
+    1.0.2: update to stable, released Feb 26, 2001.
+    1.0.1: update to stable, released Feb 13, 2001.
+    1.1.1: development version, released Feb 01, 2001.
+    1.1: development version, released Jan 22, 2001.
+    1.0: update to stable, released Jan 08, 2001.
+    0.12.4: update to stable, released Dec 21, 2000.
+    0.13.1: development version, released Dec 13, 2000.
+    0.12.3: update to stable, released Dec 08, 2000.
+
+    (see ChangeLog for previous releases)
+
+Bugs:
+    (see http://bugs.kannel.org)
+

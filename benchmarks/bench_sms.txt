@@ -1,0 +1,48 @@
+<sect1>
+<title>SMS SMPP benchmark: #TIMES# messages</title>
+
+<para>This benchmark sends #TIMES# SMS requests using the SMPP protocol.
+Each SMS request results in one HTTP request, and one SMS response message.
+<xref linkend="fig.n-messages.per-second"> shows the number of completed
+requests during each second of the benchmark.
+<xref linkend="fig.n-messages.rtt"> shows the round trip time of each
+completed request, that is, the time from when the message was sent to
+the time the reply message was received.
+</para>
+
+<figure id="fig.n-messages.per-second">
+<title>Requests per second during benchmark</title>
+<graphic fileref="bench_sms_n_messages&figtype;"></graphic>
+</figure>
+
+<figure id="fig.n-messages.rtt">
+<title>SMPP request average round trip time</title>
+<graphic fileref="bench_sms_rtt_n_messages&figtype;"></graphic>
+</figure>
+
+</sect1>
+
+
+
+<!--
+
+<sect1>
+<title>SMS SMPP benchmark: sustained traffic level</title>
+
+<para>This benchmark attempts to measure the sustained traffic level
+Kannel can handle over SMPP. 
+</para>
+
+<figure>
+<title>SMPP requests per second during benchmark</title>
+<graphic fileref="bench_sms_sustained_level&figtype;"></graphic>
+</figure>
+
+<figure>
+<title>SMPP request average round trip time</title>
+<graphic fileref="bench_sms_rtt_sustained_level&figtype;"></graphic>
+</figure>
+
+</sect1>
+
+-->

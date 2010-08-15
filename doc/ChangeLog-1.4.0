@@ -1,0 +1,278 @@
+2004-11-18  Stipe Tolj  <stolj@wapme.de>
+    * gw/bb_smscconn.c: fixing bug #160, causing segfault on cygwin while
+      using uninited rwlock functions.
+
+2004-11-15 Alexander Malysh <amalysh at kannel.org>
+    * doc/examples/dlr-*.conf: fixed group name from e.g. dlr-mysql -> dlr-db.
+      Thanks to James Coleman jamesc_at_doolin.com for pointing to this.
+
+2004-11-05 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/utils.c: fixes daemon mode (make sure stdin/stdout/sdterr are
+      opened and do chdir("/")) and change user code (set supplementary group
+      id's and don't destroy passwd struct).
+    * doc/userguide/userguide.xml: documented the fact that daemon mode changes
+      CDW to `/'.
+
+2004-11-05 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/protected.c: fixed linux version of gw_gethostbyname when
+      gethostbyname_r failed. Also free buffer on error.
+      Bug: #157.
+
+2004-11-03 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/dbpool_pgsql.c: fixed double free (PGFinish will destroy
+      connection for us).
+
+2004-10-31 Alexander Malysh <amalysh at kannel.org>
+    * gw/msg.c: fixed double free in 'msg_unpack'.
+
+2004-10-28  Stipe Tolj  <stolj@wapme.de>
+    * gwlib/utils.[ch]: source code reformating of get_and_set_debugs().
+      No logic change. Added global arguments to header file.
+    * test/fakesmsc.c: switching from -p to -r for port, since utils.c uses
+      -p for pid-file creation. This broke current cvs to use an other port
+      then the default 10000 to connect to the smsc_fake module of bearerbox.
+    * doc/userguide/userguide.xml: fixing the command line arguments list
+      for fakesmsc to reflect the change from -p to -r for the port.
+
+2004-10-21 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_smpp.c: fixed bug #129 (Incorrect handling of
+      GSM_ADDR_TON_ALPHANUMERIC for destination address).
+
+2004-10-13  Kalle Marjola  <kmarjola@enpocket.com>
+    * test/test_ppg.c: Added support for X-WAP-Initiator-URI, use -I
+      option.
+    * doc/userguide/userguide.xml: updated accordingly
+    * utils/run-check: fixed check so that it works in bash	
+
+2004-10-06 Alexander Malysh <amalysh at kannel.org>
+    * configure.in, configure: added check for 'sem_init' in librt.
+      This needs on Solaris & HP-UX.
+
+2004-09-28  Stipe Tolj  <stolj@wapme.de>
+    * doc/userguide/userguide.xml: added section for account %o escape code
+      for the sms-service url translation.
+
+2004-09-28  Stipe Tolj  <stolj@wapme.de>
+    * gw/urltrans.c: fixed comment block for new account %o escape code. 
+      Thanks to the eagle'd eyes of Alex. :p
+    * gw/smsc/smsc_http.c: added credits to Alex for his improvements to the
+      code and fixes.
+
+2004-09-28  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc/smsc_http.c: fixing 3united (formerly Xidris) HTTP interface for
+      binary MT messages. We passed URL-encoced binary string, but server side 
+      expected HEX encoded (2 char per byte) version.
+
+2004-09-28  Stipe Tolj  <stolj@wapme.de>
+    * gw/urltrans.c: added a fix by Alex that prevents panic'ing while msg text
+      is NULL and adding '%o' as escape code for MO msgs representing the 
+      msg->sms.account field. Which is interpreted as the operator ID for 
+      aggregator specific MO messages. ie. Xidris HTTP SMSC module. Thanks
+      to Tobias for this.
+
+2004-09-27  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc/smsc_http.c: fixed a binary MT bug (when DC_8BIT ahs been set) and
+      various improvements for passing parameters to the HTTP request. Added
+      credits to Tobias Weber <weber@wapme.de> who did improvements on the code.
+
+2004-09-27 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_smpp.c: fixed stupid bug that dlr lookup was
+      made with source instead of destination address (in dlr
+      source and destination switched).
+
+2004-09-25 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/gw-rwlock.c, gw/smsc/smsc_at.h: fixed compiler warnings.
+
+2004-09-18 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_at.c: added new function 'at2_error_string' and teached
+      smsc_at to use it.
+      Thanks to almado.de for provided patch!
+
+2004-09-16 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/xmlrpc.c: fixed memory leak.
+
+2004-09-10 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/gwlib.h: added 'gw-prioqueue.h'. fixed compile error.
+
+2004-09-08 Alexander Malysh <amalysh at kannel.org>
+    * gw/sms.[ch], gw/smsc/smsc_at.[ch], gw/smsc/smsc_emi.c: applied patch
+      that adds usage of priority queue and priority flag in smsc_at & smsc_emi.
+      This patch makes it possible to prioritize messages and to ensure that older
+      messages will be sent first.
+      [Msg-ID: <ch9pko$r5u$2@sea.gmane.org>].
+
+2004-09-04  Stipe Tolj  <stolj@wapme.de>
+    * doc/userguide/userguide.xml: fixing jade compiler error of Alex's 
+      previous commit for priority flag.
+
+2004-09-03  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc/smsc_http.c: upgradding bruNET response parsing to comply with
+      more recent interface verions (v2.0+) where bruNET delivers 'MessageId'
+      in the HTTP response body.
+
+2004-09-03 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_smpp.c, gw/msg-decl.h, gw/smsbox.c: applied patch that allows
+      setting of sms priority flag in smsbox and smpp module. Also fixes wrong 
+      priority setting in smpp module.
+    * doc/userguide/userguide.xml: describe 'priority' flag and some missing params.
+
+2004-09-01  Stipe Tolj  <stolj@wapme.de>
+    * doc/userguide/userguide.xml: moved EMI/UCP specific 'throughput' to 
+      general section, since this is within the SMSCConn structure itself.
+      Added 'smasi' features to the check lists.
+
+2004-08-30 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/gw-rwlock.[ch]: fixed includes. we don't define HAVE_CONFIG_H so
+      gw-config.h should be always included.
+
+2004-08-30 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_smpp.c: added ESME dlr bit to DLR processing (some smsc's sent
+      us esm_class=0x08 and it's IMO ok). 
+
+2004-08-30 Alexander Malysh <amalysh at kannel.org>
+    * doc/userguide/userguide.xml: removed centrium references and changed email addr.
+
+2004-08-28 Alexander Malysh <amalysh at kannel.org>
+    * gw/bb_smscconn.c, gw/msg-decl.h, gw/msg.[ch], gw/sms.h, gw/smsbox.c,
+      gw/smscconn.c, gw/wapbox.c, gw/smsc/smsc_http.c, gw/smsc/smsc_soap.c,
+      utils/mtbatch.c: applied patch that implements concatenation of large
+      sms inside bearerbox and does care of a sending all message parts over
+      one smsc link. Now we have a problem with concatenated large sms that
+      bearerbox will try to load balance those over diff. smsc links and such
+      messages arrive as junk (all parts of concatenated large sms must go through
+      the same smsc).
+
+2004-08-28 Alexander Malysh <amalysh at kannel.org>
+    * gw-config.h.in, configure.in, configure: changed 'HAVE_PTHREAD_RWLOCK_T' to
+      more generic 'HAVE_PTHREAD_RWLOCK'.
+    * gwlib/gw-rwlock.[ch]: added "ugly" rwlock emulation code if no pthread_rwlock
+      support detected. This emulation code uses List and works in all cases where
+      rwlock used in kannel.
+
+2004-08-26  Stipe Tolj  <stolj@wapme.de>
+    * gw/wap-appl.c: fixing a memory leak while not destroying a created octstr
+      if wml_compile() fails. Thanks again to Slava for the patch.
+      [Msg-ID: <412B46C9.1030800@lmt.lv>]
+
+2004-08-26  Stipe Tolj  <stolj@wapme.de>
+    * gw/wml_compiler.c: fixed PANIC inside octstr_create in wml compiler with 
+      certain DOCTYPE definitions. Thanks to Slava for the patch.
+      [Msg-ID: <412B44E4.9080204@lmt.lv>]
+
+2004-08-26  Stipe Tolj  <stolj@wapme.de>
+    * wap/wsp_string.c: fixed a mis-interpretated datatype change from rev 1.3
+      to 1.4. Thanks to Slava for this hint and patch.
+      [Msg-ID: <412ADEEE.2030608@lmt.lv>]
+
+2004-08-25 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/semaphore.c: changed 'HAVE_SEMAPHORE_H' to 'HAVE_SEMAPHORE' and
+      removed workaround for DARWIN.
+    * configure, configure.in, gw-config.h.in: changed 'HAVE_SEMAPHORE_H'
+      to 'HAVE_SEMAPHORE' and added configure check for working sem_init and
+      friends.
+
+2004-08-24 Alexander Malysh <amalysh at kannel.org>
+    * Makefile.in: remove 'gwlib/gw_uuid_types.h' by distclean too.
+
+2004-08-23  Stipe Tolj  <stolj@wapme.de>
+    * configure[.in]: fixing pthread lib settings for FreeBSD 5.2.1. We
+      need to add -lc_r and -lkse to LIBS for the freebsd platform.
+
+2004-08-20  Stipe Tolj  <stolj@wapme.de>
+    * test/test_prioqueue.c: fixed compiler warning.
+
+2004-08-20  Stipe Tolj  <stolj@wapme.de>
+    * gwlib/gw-prioqueue.c: some source beautifying ;) no logic change.
+    * test/test_prioqueue.c: adding Alex's simple test program for testing
+      the generic priority queue he introduced to gwlib.
+
+2004-08-19 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_at.c: fixed segfault when modemtype is set to 'auto'
+      or 'autodetect'. Fixed '+CPIN', some modem needs '"'.
+
+2004-08-19 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/gw-prioqueue.[ch]: implemented very simple priority queue ala
+      Robert Sedgewick. Behavior like kannel's list.
+      Thanks to 'almado.de' for the idea.
+
+2004-08-18  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc/smsc_smpp.c: some typo fixes, no logic change.
+
+2004-08-17  Bruno Rodrigues  <bruno.rodrigues@litux.org>
+    * utils/mtbatch.1: added manpage for mtbatch
+    * all: re-"released" 1.4.0 - moved branch tag
+
+2004-08-17  Stipe Tolj  <stolj@wapme.de>
+    * gw/shared.c: fix compiler warning for tcc.
+    * wmlscript/ws.[ch]: fix const compiler warning for tcc.
+
+2004-08-16 Andreas Fink <afink@global.networks.ch>
+    * gwlib/semaphore.c: dont use native semaphores on MacOS X
+      to avoid a "not implemented" error
+
+2004-08-12 Alexander Malysh <olek2002 at hotmail.com>
+    * gwlib/utils.c: fixed warning about format attributes.
+
+2004-08-12 Alexander Malysh <olek2002 at hotmail.com>
+    * gwlib/gwthread-pthread.c: declared 'tsd_key' and 'threadtable_lock' static,
+      because those are local symbols and don't exported to the world.
+    * gwlib/gwthread.h: added 'gw-config.h' and 'sys/poll.h' to includes, so we can
+      include 'gwlib/gwthread.h' alone.
+
+2004-08-11  Stipe Tolj  <stolj@wapme.de>
+    * various files: a generic spellchecking patch to fix mis-spelling.
+      Mainly this fixes bad-english comments in source files.
+      Thanks a lot to Pedro for the provided patch. NO LOGIC CHANGE!
+      [Msg-ID: <411A3291.4090906@netcabo.pt>]
+
+2004-08-11  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc/smpp_pdu.c: fixing a warning statement, for nulterminated string
+      length checking of PDU elements. This should be not confusing users.
+      Thanks to Alan McNatty for pointing to this.
+
+2004-08-09 Alexander Malysh <olek2002 at hotmail.com>
+    * gwlib/gw-rwlock.c: catch 'pthread_rwlock_init' errors too.
+
+2004-08-08 Alexander Malysh <olek2002 at hotmail.com>
+    * gwlib/log.c: more fixes for compiler format warnings.
+
+2004-08-08 Alexander Malysh <olek2002 at hotmail.com>
+    * gw-config.h.in: define 'PRINTFLIKE' here, so we ca use this everywhere.
+    * gwlib/log.h: removed 'PRINTFLIKE' and 'PRINTFLIKE2' from here and fixed functions
+      declaration.
+    * gw/bb_alog.c, gwlib/accesslog.h, wap/wsp_headers.c, wmlscript/wserror.h: fixed 
+      compiler format warnings.
+
+2004-08-08 Alexander Malysh <olek2002 at hotmail.com>
+    * gwlib/gw-rwlock.[ch], gw/dlr_mem.c, gw/bb_smscconn.c: got
+      rid of PTHREAD_RWLOCK_INITIALIZER because it's not on opengroup
+      standard (PTHREAD_RWLOCK_INITIALIZER is deleted for alignment with
+      IEEE Std 1003.1j-2000).
+
+2004-08-08  Bruno Rodrigues  <bruno.rodrigues@litux.org>
+    * gw/smsbox.c: fix double encoding when transcoding from UCS2 to 
+      UTF-8 or ISO-8859-1
+
+2004-08-07  Stipe Tolj  <stolj@wapme.de>
+    * doc/userguide/userguide.xml: parsed the beast via aspell and got
+      rid of some grammer and spelling issues.
+
+2004-08-07 Alexander Malysh <olek2002 at hotmail.com>
+    * gw/sms.c: fixed whitespaces.
+
+2004-08-05 Alexander Malysh <olek2002 at hotmail.com>
+    * gw/gw/bb_smscconn.c: applied patch that makes it possible to
+      start/stop/restart of all smscconn's that have equal smsc-id's
+      instead of only one.
+      [Msg-Id: <cek0ss$5kp$1@sea.gmane.org>].
+
+2004-07-20 Alexander Malysh <olek2002 at hotmail.com>
+    * gwlib/date.c: fixed 'date_parse_iso' and 'date_create_iso'.
+      date_create_iso: 'Z' at the and means UTC time and not local time.
+      date_parse_iso: never works?!
+
+2004-07-18 Alexander Malysh <olek2002 at hotmail.com>
+    * gw/smsc/smsc_smpp.c: fixed bug #143.
+
+2004-07-14  Stipe Tolj  <stolj@wapme.de> 
+    * Making development release 1.3.2.

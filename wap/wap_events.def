@@ -1,0 +1,826 @@
+/* ==================================================================== 
+ * The Kannel Software License, Version 1.0 
+ * 
+ * Copyright (c) 2001-2009 Kannel Group  
+ * Copyright (c) 1998-2001 WapIT Ltd.   
+ * All rights reserved. 
+ * 
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions 
+ * are met: 
+ * 
+ * 1. Redistributions of source code must retain the above copyright 
+ *    notice, this list of conditions and the following disclaimer. 
+ * 
+ * 2. Redistributions in binary form must reproduce the above copyright 
+ *    notice, this list of conditions and the following disclaimer in 
+ *    the documentation and/or other materials provided with the 
+ *    distribution. 
+ * 
+ * 3. The end-user documentation included with the redistribution, 
+ *    if any, must include the following acknowledgment: 
+ *       "This product includes software developed by the 
+ *        Kannel Group (http://www.kannel.org/)." 
+ *    Alternately, this acknowledgment may appear in the software itself, 
+ *    if and wherever such third-party acknowledgments normally appear. 
+ * 
+ * 4. The names "Kannel" and "Kannel Group" must not be used to 
+ *    endorse or promote products derived from this software without 
+ *    prior written permission. For written permission, please  
+ *    contact org@kannel.org. 
+ * 
+ * 5. Products derived from this software may not be called "Kannel", 
+ *    nor may "Kannel" appear in their name, without prior written 
+ *    permission of the Kannel Group. 
+ * 
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED 
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES 
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+ * DISCLAIMED.  IN NO EVENT SHALL THE KANNEL GROUP OR ITS CONTRIBUTORS 
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,  
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT  
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR  
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,  
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE  
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,  
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * ==================================================================== 
+ * 
+ * This software consists of voluntary contributions made by many 
+ * individuals on behalf of the Kannel Group.  For more information on  
+ * the Kannel Group, please see <http://www.kannel.org/>. 
+ * 
+ * Portions of this software are based upon software originally written at  
+ * WapIT Ltd., Helsinki, Finland for the Kannel project.  
+ */ 
+
+/*
+ * wap_events.def - definitions for wapbox events
+ *
+ * This file uses a pre-processor trick to define the structure of
+ * structures. See the documentation.
+ *
+ * Fields of type HTTPHEADER, CAPABILITIES, and OPTIONAL_OCTSTR may
+ * be NULL.  All other fields must be filled in, unless they are
+ * otherwise marked.
+ *
+ * Fields described in the appropriate spec are listed first.  Fields
+ * specific to Kannel are introduced with an empty line.  In some events,
+ * we have combined fields to form an "address tuple" (see wap_addr.h).
+ *
+ * Aarno Syvänen
+ * Lars Wirzenius
+ */
+
+
+
+/* WTLS material - make sure the addr_tuple comes first! */
+
+WAPEVENT(T_Unitdata_Ind, "T-Unitdata.ind",
+         ADDRTUPLE(addr_tuple)
+         WTLSPDUS(pdu_list)
+        )
+
+WAPEVENT(SEC_Create_Ind, "SEC-Create.ind",
+         ADDRTUPLE(addr_tuple)
+        )
+
+WAPEVENT(SEC_Create_Request_Req, "SEC-Create.req",
+         ADDRTUPLE(addr_tuple)
+        )
+
+WAPEVENT(SEC_Terminate_Req, "SEC-Terminate.req",
+         ADDRTUPLE(addr_tuple)
+         INTEGER(alert_level)
+         INTEGER(alert_desc)
+        )
+
+WAPEVENT(SEC_Exception_Req, "SEC-Exception.req",
+         ADDRTUPLE(addr_tuple)
+         INTEGER(alert_level)
+         INTEGER(alert_desc)
+        )
+
+WAPEVENT(SEC_Create_Res, "SEC-Create.res",
+         ADDRTUPLE(addr_tuple)
+         INTEGER(client_key_id)
+         INTEGER(bulk_cipher_algo)
+         INTEGER(mac_algo)
+         INTEGER(snmode)
+         INTEGER(krefresh)
+        )
+
+WAPEVENT(SEC_Exchange_Req, "SEC-Exchange.req",
+         ADDRTUPLE(addr_tuple)
+        )
+
+WAPEVENT(SEC_Commit_Req, "SEC-Commit.req",
+         ADDRTUPLE(addr_tuple)
+        )
+
+WAPEVENT(SEC_Unitdata_Req, "SEC-Unidata.req",
+         ADDRTUPLE(addr_tuple)
+         OCTSTR(user_data)
+        )
+
+/*
+ * Transport layer (WDP)
+ */
+
+WAPEVENT(T_DUnitdata_Req, "T-DUnitdata.req",
+	ADDRTUPLE(addr_tuple)
+	OCTSTR(user_data)
+
+        INTEGER(address_type)
+        OPTIONAL_OCTSTR(smsc_id)
+        INTEGER(dlr_mask)
+        OPTIONAL_OCTSTR(dlr_url)
+        OPTIONAL_OCTSTR(smsbox_id)
+        OPTIONAL_OCTSTR(service_name)
+	)
+
+WAPEVENT(T_DUnitdata_Ind, "T-DUnitdata.ind",
+	ADDRTUPLE(addr_tuple)
+	OCTSTR(user_data)
+	)
+
+/* 
+ * Transaction layer (WTP)
+ */
+
+WAPEVENT(TR_Invoke_Req, "TR-Invoke.req",
+	ADDRTUPLE(addr_tuple)
+	INTEGER(up_flag)
+	OCTSTR(user_data)
+	INTEGER(tcl)
+	INTEGER(handle)
+	)
+
+WAPEVENT(TR_Invoke_Ind, "TR-Invoke.ind",
+        INTEGER(ack_type)
+        OCTSTR(user_data)
+        INTEGER(tcl)
+	ADDRTUPLE(addr_tuple)
+	INTEGER(handle)
+	)
+
+WAPEVENT(TR_Invoke_Res, "TR-Invoke.res",
+	INTEGER(handle)
+	)
+
+WAPEVENT(TR_Invoke_Cnf, "TR-Invoke.cnf",
+	INTEGER(handle)
+
+        ADDRTUPLE(addr_tuple)
+	)
+
+WAPEVENT(TR_Result_Req, "TR-Result.req",
+	OCTSTR(user_data)
+	INTEGER(handle)
+	)
+
+WAPEVENT(TR_Result_Cnf, "TR-Result.cnf",
+	INTEGER(handle)
+
+	ADDRTUPLE(addr_tuple)
+        )
+
+WAPEVENT(TR_Abort_Req, "TR-Abort.req",
+	INTEGER(abort_type)
+	INTEGER(abort_reason)
+	INTEGER(handle)
+	) 
+
+WAPEVENT(TR_Abort_Ind, "TR-Abort.ind",
+        INTEGER(abort_code)
+	INTEGER(handle)
+
+	ADDRTUPLE(addr_tuple)
+        INTEGER(ir_flag) /* Are we an initiator or a responder */
+        )
+
+/*
+ * Session layer (WSP), server side
+ * These events use the session id as a handle.
+ */
+
+WAPEVENT(S_Connect_Ind, "S-Connect.ind",
+	ADDRTUPLE(addr_tuple)
+	HTTPHEADER(client_headers)
+	CAPABILITIES(requested_capabilities)
+
+	INTEGER(session_id)
+	)
+
+WAPEVENT(S_Connect_Res, "S-Connect.res",
+	HTTPHEADER(server_headers)
+	CAPABILITIES(negotiated_capabilities)
+
+	INTEGER(session_id)
+	)
+
+WAPEVENT(S_Suspend_Ind, "S-Suspend.ind",
+	INTEGER(reason)
+
+	INTEGER(session_id)
+	)
+
+WAPEVENT(S_Resume_Ind, "S-Resume.ind",
+	ADDRTUPLE(addr_tuple)
+	HTTPHEADER(client_headers)
+
+	INTEGER(session_id)
+	)
+
+WAPEVENT(S_Resume_Res, "S-Resume.res",
+	HTTPHEADER(server_headers)
+
+	INTEGER(session_id)
+	)
+
+/*
+ * Session layer (WSP), client side
+ */
+
+WAPEVENT(S_Connect_Req, "S-Connect.req",
+	ADDRTUPLE(addr_tuple)
+	HTTPHEADER(client_headers)
+	CAPABILITIES(requested_capabilities)
+
+	INTEGER(session_handle)
+	)
+
+WAPEVENT(S_Suspend_Req, "S-Suspend.req",
+
+	INTEGER(session_handle)
+	)
+
+WAPEVENT(S_Resume_Req, "S-Resume.req",
+	ADDRTUPLE(addr_tuple)
+	HTTPHEADER(client_headers)
+
+	INTEGER(session_handle)
+	)
+
+WAPEVENT(S_Resume_Cnf, "S-Resume.cnf",
+	HTTPHEADER(server_headers)
+
+	INTEGER(session_handle)
+	)
+
+/*
+ * Session layer (WSP), events shared between server and client side
+ * On the server side, the "handle" field is always the session id.
+ */
+
+WAPEVENT(S_Disconnect_Req, "S-Disconnect.req",
+	INTEGER(reason_code)
+	INTEGER(redirect_security)	/* Only meaningful if redirecting */
+	INTEGER(redirect_addresses)	/* FIXME: Wrong type, not used */
+	OPTIONAL_OCTSTR(error_headers)
+	OPTIONAL_OCTSTR(error_body)
+
+	INTEGER(session_handle)
+	)
+
+WAPEVENT(S_Disconnect_Ind, "S-Disconnect.ind",
+	INTEGER(reason_code)
+	INTEGER(redirect_security)	/* Only meaningful if redirecting */
+	INTEGER(redirect_addresses)	/* FIXME: Wrong type, not used */
+	OPTIONAL_OCTSTR(error_headers)
+	OPTIONAL_OCTSTR(error_body)
+
+	INTEGER(session_handle)
+	)
+
+/*
+ * Pseudo-events used by session layer
+ */
+
+WAPEVENT(Disconnect_Event, "Disconnect",
+
+	INTEGER(session_handle)
+	)
+
+WAPEVENT(Suspend_Event, "Suspend",
+
+	INTEGER(session_handle)
+	)
+
+WAPEVENT(Release_Event, "Release",
+
+	INTEGER(dummy)
+	)
+
+WAPEVENT(Abort_Event, "Abort",
+	INTEGER(reason)
+	)
+
+/*
+ * Per-method events for session layer, server side
+ */
+
+WAPEVENT(S_MethodInvoke_Ind, "S-MethodInvoke.ind",
+	INTEGER(server_transaction_id)
+	OCTSTR(method)				/* All caps */
+	OCTSTR(request_uri)
+	HTTPHEADER(request_headers)
+	OPTIONAL_OCTSTR(request_body)
+
+	HTTPHEADER(session_headers)
+	ADDRTUPLE(addr_tuple)
+	INTEGER(client_SDU_size)
+	INTEGER(session_id)
+	)
+
+WAPEVENT(S_MethodInvoke_Res, "S-MethodInvoke.res",
+	INTEGER(server_transaction_id)
+
+	INTEGER(session_id)
+	)
+
+WAPEVENT(S_MethodResult_Req, "S-MethodResult.req",
+	INTEGER(server_transaction_id)
+	INTEGER(status)
+	HTTPHEADER(response_headers)
+	OPTIONAL_OCTSTR(response_body)
+
+	INTEGER(session_id)
+	)
+
+WAPEVENT(S_MethodResult_Cnf, "S-MethodResult.cnf",
+	INTEGER(server_transaction_id)
+
+	INTEGER(session_id)
+	)
+
+/*
+ * Per-method events for session layer, client side
+ */
+
+WAPEVENT(S_MethodInvoke_Req, "S-MethodInvoke.req",
+	INTEGER(client_transaction_id)
+	OCTSTR(method)
+	OCTSTR(request_uri)
+	HTTPHEADER(request_headers)
+	OPTIONAL_OCTSTR(request_body)
+
+	INTEGER(session_handle)
+	)
+
+WAPEVENT(S_MethodInvoke_Cnf, "S-MethodInvoke.cnf",
+	INTEGER(client_transaction_id)
+
+	INTEGER(session_handle)
+	)
+
+WAPEVENT(S_MethodResult_Ind, "S-MethodResult.ind",
+	INTEGER(client_transaction_id)
+	INTEGER(status)
+	HTTPHEADER(response_headers)
+	OPTIONAL_OCTSTR(response_body)
+
+	INTEGER(session_handle)
+	)
+
+WAPEVENT(S_MethodResult_Res, "S-MethodResult.res",
+	INTEGER(client_transaction_id)
+
+	INTEGER(session_handle)
+	)
+
+/*
+ * Per-method events used by the session layer
+ * These events are used by both client and server side.
+ */
+
+WAPEVENT(S_MethodAbort_Req, "S-MethodAbort.req",
+	INTEGER(transaction_id)
+
+	INTEGER(session_handle)
+	)
+
+WAPEVENT(S_MethodAbort_Ind, "S-MethodAbort.ind",
+	INTEGER(transaction_id)
+	INTEGER(reason)
+
+	INTEGER(session_handle)
+	)
+
+/*
+ * Per-push events used by the session layer
+ */
+
+WAPEVENT(S_Push_Req, "S-Push.req",
+	HTTPHEADER(push_headers)
+	OPTIONAL_OCTSTR(push_body)
+
+	INTEGER(session_id)
+	)
+
+WAPEVENT(S_Push_Ind, "S-Push.ind",
+	HTTPHEADER(push_headers)
+	OPTIONAL_OCTSTR(push_body)
+
+	INTEGER(session_handle)
+	HTTPHEADER(session_headers)
+	)
+
+WAPEVENT(S_ConfirmedPush_Req, "S-ConfirmedPush.req",
+        INTEGER(server_push_id)
+        HTTPHEADER(push_headers)
+        OPTIONAL_OCTSTR(push_body)
+
+        INTEGER(session_id)
+        )
+
+WAPEVENT(S_ConfirmedPush_Ind, "S-ConfirmedPush.ind",
+	INTEGER(client_push_id)
+	HTTPHEADER(push_headers)
+        OPTIONAL_OCTSTR(push_body)
+
+	INTEGER(session_handle)
+	)
+
+WAPEVENT(S_ConfirmedPush_Res, "S-ConfirmedPush.res",
+	INTEGER(client_push_id)
+
+	INTEGER(session_handle)
+	)
+
+WAPEVENT(S_ConfirmedPush_Cnf, "S-ConfirmedPush.cnf",
+        INTEGER(server_push_id)
+
+	INTEGER(session_id)
+        )
+
+WAPEVENT(S_PushAbort_Ind, "S-PushAbort.ind",
+        INTEGER(push_id)
+        INTEGER(reason)
+
+        INTEGER(session_id)
+        )
+
+/*
+ * The specification of S-PushAbort seems to assume that only the
+ * client can issue an S-PushAbort.req, and only the server can get
+ * an S-PushAbort.ind.  This is contradicted by the state tables.
+ * That's why the definitions here use just "push_id" instead of
+ * server_push_id and client_push_id.
+ */
+
+WAPEVENT(S_PushAbort_Req, "S-PushAbort.req",
+	INTEGER(push_id)
+        INTEGER(reason)
+
+	INTEGER(session_handle)
+	)
+
+WAPEVENT(Push_Abort, "Internal abort",
+         INTEGER(reason)
+        )
+
+/*
+ * Events created by unpacking T-DUnitdata.ind events.
+ * Used by WTP layer.
+ */
+
+WAPEVENT(RcvInvoke, "RcvInvoke",
+	OCTSTR(user_data)
+	INTEGER(tcl)
+	INTEGER(tid)
+	INTEGER(tid_new)
+	INTEGER(rid)
+	INTEGER(up_flag)
+	INTEGER(no_cache_supported)
+	INTEGER(version)
+	INTEGER(gtr)
+	INTEGER(ttr)
+	ADDRTUPLE(addr_tuple)
+	)
+
+WAPEVENT(RcvSegInvoke, "RcvSegInvoke",
+    OCTSTR(user_data)
+    INTEGER(tid)
+    INTEGER(rid)
+    INTEGER(no_cache_supported)
+    INTEGER(gtr)
+    INTEGER(ttr)
+    INTEGER(psn)
+    ADDRTUPLE(addr_tuple)
+    )
+
+WAPEVENT(RcvResult, "RcvResult",
+    OCTSTR(user_data)
+    INTEGER(tid)
+    INTEGER(rid)
+    INTEGER(gtr)
+    INTEGER(ttr)
+    ADDRTUPLE(addr_tuple)
+    )
+
+WAPEVENT(RcvAbort, "RcvAbort",
+    INTEGER(tid)
+    INTEGER(abort_type)
+    INTEGER(abort_reason)
+    ADDRTUPLE(addr_tuple)
+    )
+
+WAPEVENT(RcvAck, "RcvAck",
+    INTEGER(tid)
+    INTEGER(tid_ok)
+    INTEGER(rid)
+    INTEGER(psn)
+    ADDRTUPLE(addr_tuple)
+    )
+
+WAPEVENT(RcvNegativeAck, "RcvNack",
+    INTEGER(tid)
+    INTEGER(rid)
+    INTEGER(nmissing)
+    OPTIONAL_OCTSTR(missing)
+    ADDRTUPLE(addr_tuple)
+    )
+
+/*
+ * Other events used by WTP layer.
+ */
+
+WAPEVENT(TimerTO_A, "Timeout-A",
+    INTEGER(handle)
+    )
+
+WAPEVENT(TimerTO_R, "Timeout-R",
+    INTEGER(handle)
+    )
+
+WAPEVENT(TimerTO_W, "Timeout-W",
+    INTEGER(handle)
+    )
+
+WAPEVENT(RcvErrorPDU, "RcvErrorPDU",
+    INTEGER(tid)
+    ADDRTUPLE(addr_tuple)
+    )
+
+/*
+ * Events used by connectionless session protocol (WSP)
+ */
+
+WAPEVENT(S_Unit_MethodInvoke_Req, "S-Unit-MethodInvoke.req",
+    ADDRTUPLE(addr_tuple)
+    INTEGER(transaction_id)
+    OCTSTR(method)
+    OCTSTR(request_uri)
+    HTTPHEADER(request_headers)
+    OPTIONAL_OCTSTR(request_body)
+    )
+
+WAPEVENT(S_Unit_MethodInvoke_Ind, "S-Unit_MethodInvoke.ind",
+    ADDRTUPLE(addr_tuple)
+    INTEGER(transaction_id)
+    OCTSTR(method)				/* All caps */
+    OCTSTR(request_uri)
+    HTTPHEADER(request_headers)
+    OPTIONAL_OCTSTR(request_body)
+    )
+
+WAPEVENT(S_Unit_MethodResult_Req, "S-Unit-MethodResult.req",
+    ADDRTUPLE(addr_tuple)
+    INTEGER(transaction_id)
+    INTEGER(status)
+    HTTPHEADER(response_headers)
+    OPTIONAL_OCTSTR(response_body)
+    )
+
+WAPEVENT(S_Unit_MethodResult_Ind, "S-Unit-MethodResult.ind",
+    ADDRTUPLE(addr_tuple)
+    INTEGER(transaction_id)
+    INTEGER(status)
+    HTTPHEADER(response_headers)
+    OPTIONAL_OCTSTR(response_body)
+    )
+
+WAPEVENT(S_Unit_Push_Req, "S-Unit-Push.req",
+    ADDRTUPLE(addr_tuple)
+    INTEGER(push_id)
+    HTTPHEADER(push_headers)
+    OPTIONAL_OCTSTR(push_body)
+
+    INTEGER(address_type)
+    OPTIONAL_OCTSTR(smsc_id)
+    INTEGER(dlr_mask)
+    OPTIONAL_OCTSTR(dlr_url)
+    OPTIONAL_OCTSTR(smsbox_id)
+    OPTIONAL_OCTSTR(service_name)
+    )
+
+WAPEVENT(S_Unit_Push_Ind, "S-Unit-Push.ind",
+    ADDRTUPLE(addr_tuple)
+    INTEGER(push_id)
+    HTTPHEADER(push_headers)
+    OPTIONAL_OCTSTR(push_body)
+    )
+
+/*
+ * Events used by push OTA protocol, server side
+ */
+
+WAPEVENT(Pom_SessionRequest_Req, "Pom-SessionRequest.req",
+    ADDRTUPLE(addr_tuple)
+    HTTPHEADER(push_headers)
+        
+    INTEGER(push_id)
+    INTEGER(address_type)
+    OPTIONAL_OCTSTR(smsc_id)
+    INTEGER(dlr_mask)
+    OPTIONAL_OCTSTR(dlr_url)
+    OPTIONAL_OCTSTR(smsbox_id)
+    OPTIONAL_OCTSTR(service_name)
+    )
+
+WAPEVENT(Pom_Connect_Ind, "Pom-Connect.ind",
+    ADDRTUPLE(addr_tuple)
+    HTTPHEADER(push_headers)
+    CAPABILITIES(requested_capabilities)
+    HTTPHEADER(accept_application)
+    HTTPHEADER(bearer_indication)
+
+    INTEGER(session_id)
+    INTEGER(push_id)
+    )
+
+WAPEVENT(Pom_Connect_Res, "Pom-Connect.res",
+    CAPABILITIES(negotiated_capabilities)
+
+    INTEGER(session_id)
+    )
+
+WAPEVENT(Pom_Disconnect_Ind, "Pom-Disconnect.ind",
+    INTEGER(reason_code)
+    INTEGER(redirect_security)	/* Only meaningful if redirecting*/ 
+    INTEGER(redirect_addresses)	/* FIXME: Wrong type, not used */
+    OPTIONAL_OCTSTR(error_headers)
+    OPTIONAL_OCTSTR(error_body)
+
+    INTEGER(session_handle)
+    )
+
+WAPEVENT(Pom_Suspend_Ind, "Pom-Suspend.ind",
+    INTEGER(reason)
+
+    INTEGER(session_id) 
+    )
+
+WAPEVENT(Pom_Resume_Ind, "Pom-Resume.ind",
+    ADDRTUPLE(addr_tuple)
+    HTTPHEADER(client_headers)
+    HTTPHEADER(bearer_indication)
+
+    INTEGER(session_id)
+    )
+
+WAPEVENT(Po_Push_Req, "Po-Push.req",
+    HTTPHEADER(push_headers)
+    INTEGER(authenticated)
+    INTEGER(trusted)
+    INTEGER(last)
+    OPTIONAL_OCTSTR(push_body)
+
+    INTEGER(session_handle)
+    )
+
+WAPEVENT(Po_ConfirmedPush_Req, "Po-ConfirmedPush.req",
+    INTEGER(server_push_id)
+    HTTPHEADER(push_headers)
+    INTEGER(authenticated)
+    INTEGER(trusted)
+    INTEGER(last)
+    OPTIONAL_OCTSTR(push_body)
+
+    INTEGER(session_handle)
+    )
+
+WAPEVENT(Po_ConfirmedPush_Cnf, "Po-ConfirmedPush.Cnf",
+    INTEGER(server_push_id)
+
+    INTEGER(session_handle)
+    )
+
+WAPEVENT(Po_Unit_Push_Req, "Po-Unit-Push.req",
+    ADDRTUPLE(addr_tuple)
+    INTEGER(push_id)
+    HTTPHEADER(push_headers)
+    INTEGER(authenticated)
+    INTEGER(trusted)
+    INTEGER(last)
+    OPTIONAL_OCTSTR(push_body)
+
+    INTEGER(address_type)
+    OPTIONAL_OCTSTR(smsc_id)
+    INTEGER(dlr_mask)
+    OPTIONAL_OCTSTR(dlr_url)
+    OPTIONAL_OCTSTR(smsbox_id)
+    OPTIONAL_OCTSTR(service_name)
+    )
+
+WAPEVENT(Po_PushAbort_Req, "Po-PushAbort.req",
+    INTEGER(push_id)
+    INTEGER(reason)
+
+    INTEGER(session_id)
+    )
+
+WAPEVENT(Po_PushAbort_Ind, "Po-PushAbort.ind",
+    INTEGER(push_id)
+    INTEGER(reason)
+
+    INTEGER(session_handle)
+    )
+
+/*
+ * Following events are used communicating between PPG main module (implement-
+ * ing main logic of PPG) and PAP module. These are defined in Push Access 
+ * Protocol, chapter 9.
+ * Note here is one address, one group of push headers, one push body and one
+ * group of capabilities. We should use list of address_values  for multiple 
+ * addresses (optional) and Lists of push headers, push data and capabilities 
+ * for multipart (non-nested mandatory). 
+ * Note, too, that we do not yet support multiple addresses.
+ * Optional fields, if PAP control message originally does not contain one, 
+ * should be set NULL, and mandatory fields non-NULL.
+ */
+
+WAPEVENT(Push_Message, "push-message",
+    OCTSTR(pi_push_id)
+    OPTIONAL_OCTSTR(deliver_before_timestamp)   /* using PAP format */
+    OPTIONAL_OCTSTR(deliver_after_timestamp)    /* ditto */
+    OPTIONAL_OCTSTR(source_reference)
+    OPTIONAL_OCTSTR(ppg_notify_requested_to)
+    INTEGER(progress_notes_requested)
+    OCTSTR(address_value)                       /* as parsed PAP */
+    INTEGER(address_type)
+    INTEGER(priority)
+    INTEGER(delivery_method)
+    OPTIONAL_OCTSTR(network)
+    INTEGER(network_required)
+    OPTIONAL_OCTSTR(bearer)
+    INTEGER(bearer_required)
+    HTTPHEADER(push_headers)
+    OPTIONAL_OCTSTR(push_data)
+    CAPABILITIES(pi_capabilities)
+    OPTIONAL_OCTSTR(smsc_id)
+    INTEGER(dlr_mask)
+    OPTIONAL_OCTSTR(dlr_url)
+    OPTIONAL_OCTSTR(smsbox_id)
+    OPTIONAL_OCTSTR(service_name)
+    OPTIONAL_OCTSTR(product_name)
+)
+
+/*
+ * Push response element indicates that there will be no more progress notes,
+ * see Push Access Protocol, 9.3.2.
+ */
+WAPEVENT(Push_Response, "push-response",
+    OCTSTR(pi_push_id)
+    OPTIONAL_OCTSTR(sender_name)
+    OPTIONAL_OCTSTR(reply_time)
+    OPTIONAL_OCTSTR(sender_address)
+    INTEGER(code)
+    OPTIONAL_OCTSTR(desc)
+    OPTIONAL_OCTSTR(product_name)
+    )
+
+/*
+ * This is for debugging PIs. One note per stage. See Push Access Protocol,
+ * 9.3.1.PPG main module sends these separately to PAP. 
+ */
+WAPEVENT(Progress_Note, "progress-note",
+    INTEGER(stage)
+    OPTIONAL_OCTSTR(note)
+    OPTIONAL_OCTSTR(time)
+)
+
+/*
+ * Element bad-message-response is defined in PAP, Implementation Note, 
+ * chapter 5. 
+ */
+WAPEVENT(Bad_Message_Response, "badmessage-response",
+    INTEGER(code)
+    OPTIONAL_OCTSTR(desc)
+    OPTIONAL_OCTSTR(bad_message_fragment)
+)
+
+#undef WAPEVENT
+#undef OCTSTR
+#undef OPTIONAL_OCTSTR
+#undef INTEGER
+#undef WTLSPDUS
+#undef HTTPHEADER
+#undef ADDRTUPLE
+#undef CAPABILITIES
+
+
+
+
+

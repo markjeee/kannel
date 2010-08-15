@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook V3.1//EN"
+     [
+<!ENTITY figtype "#FIGTYPE#">
+<!ENTITY timestamp "#DATE#">
+<!ENTITY version "#VERSION#">
+]>
+
+<article>
+
+<artheader>
+	<title>Benchmark results for Kannel &version;</title>
+	<corpauthor>Kannel Project</corpauthor>
+</artheader>
+
+<sect1>
+<title>Automated Kannel benchmarks</title>
+
+<para>The goal of the automated Kannel benchmarks (known as <command>make
+bench</command>) is to make it easy to regularly measure the speed at
+which Kannel performs. This is important so that the developers have a way
+to check that the changes they make don't make Kannel slower without the
+developers knowing it. Also, when optimizing Kannel (i.e., when trying
+to make it run faster), they can see that their changes really do have
+that effect. The benchmarks will also produce numbers that will make
+marketing people make funny sounds.</para>
+
+</sect1>
+
+<sect1>
+<title>System information</title>
+
+<para>This benchmark was run on &timestamp; a system identified as
+<literal>#UNAME#</literal>.</para>
+
+</sect1>

@@ -1,0 +1,31 @@
+#!/bin/sh
+#
+# Simple program to calculate source code statistics for Kannel.
+#
+# Run with current working directory being the Kannel source root.
+#
+# Output:
+#
+#	- number of source files
+#	- number of lines total
+#	- number of non-empty files
+#	- number of lines with semicolons
+
+DIRS="gw gwlib wmlscript wap"
+
+find $DIRS -type f ! -name .cvsignore ! -name control.html \
+	! -name '*kannel.conf' ! -name 'wsgram.[ch]' ! -name '*.txt' \
+	! -name '*.[ao]' ! -name '*box' ! -name wmlsc ! -name wmlsdasm |
+grep -v /CVS/ > files.txt
+
+cat <<EOF
+<table>
+<caption>Source line statistics `date +%Y-%m-%d`</caption>
+<tr> <td>Number of files<td>       <td>`wc -l < files.txt`</td></tr>
+<tr> <td>Lines total</td>          <td>`xargs cat < files.txt | wc -l`</td></tr>
+<tr> <td>Non-empty lines</td>      <td>`xargs grep -v '^[ 	]*$' < files.txt | wc -l`</td></tr>
+<tr> <td>Lines with semicolons</td><td>`xargs grep ';' < files.txt | wc -l`</td></tr>
+</table>
+EOF
+
+rm -f files.txt

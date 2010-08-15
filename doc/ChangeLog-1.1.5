@@ -1,0 +1,165 @@
+2001-05-31  Richard Braakman  <dark@wapit.com>
+
+	* Making release 1.1.5.
+
+2001-05-28  Uoti Urpala  <uau@wapit.com>
+
+	* gw/urltrans.c: Fixed handling of unrecognized %-escapes in
+	sms-service URLs (for example, "%x" was supposed to stay
+	unchanged, became "%%" instead).
+
+2001-05-27  Richard Braakman  <dark@wapit.com>
+
+	* doc/userguide/userguide.xml: Added big table of smsc_* features,
+	to get an overview of which smsc driver supports what.  It's still
+	mostly empty.
+
+2001-05-26  Richard Braakman  <dark@wapit.com>
+
+	* gw/urltrans.c: Fixed bug in find_default_translation() that would
+	make the smsbox panic if there was no default.
+
+2001-05-24  Paul Keogh <paul.keogh@anam.com>
+
+	* gw/bb_http.c, gw/bb_boxc.c, gw/bb_smscconn.c, bearerbox.c: Added
+	support for the cgi-bin/status.xml HTTP status command. Status is
+	returned as a well-formed XML document.
+
+2001-05-22  Uoti Urpala  <uau@wapit.com>
+
+	* gwlib/http.c: Fixed two bugs with redirects. One happened when
+	the redirect URL was recognized as unsupported/invalid
+	(f0o://bar), the other when Kannel didn't get a proper HTTP reply
+	from the server it was redirected to.
+
+2001-05-18  Lars Wirzenius  <liw@iki.fi>
+
+	* gw/smsc_at.c: Initialize some local variables to shut off compiler
+	warnings and (possibly) fix bugs.
+
+2001-05-17  Uoti Urpala  <uau@wapit.com>
+
+	* gw/urltrans.c: Added a new sms-service escape, %i, that adds the
+	smsc-id of the message.
+
+	* doc/userguide/userguide.xml: Documented above change.
+
+2001-05-17  Richard Braakman  <dark@wapit.com>
+
+	* gwlib/thread.h: Wrap gw_claim_area() around mutex_create(),
+	so that the user of the mutex shows up in the report of leaked
+	or damaged memory areas.
+
+	* checks/check_fakewap.sh, checks/check_http.sh: Use port 8040
+	instead of 8080, it's more likely to be free.
+
+2001-06-17  Jarkko Kovala  <jarkko.kovala@iki.fi>
+
+	* doc/userguide/userguide.xml: Documentation for the
+	ssl-certkey-file variable.
+
+2001-05-16  Richard Braakman  <dark@wapit.com>
+
+	* gw/smsc.c, gw/smsc_p.h, gw/smsc_cimd2.c, gwlib/cfg.def:
+        Added configuration variable "sender-prefix" for CIMD2.
+
+        * doc/userguide/userguide.xml: Documented new variable.
+
+2001-05-16  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/bb_smscconn.c, gw/bb_boxc.c: now that we have octstr_format, 
+	fixed buffer overflow problems pointed out by Alexei Pashkovsky
+
+2001-05-16  Uoti Urpala  <uau@wapit.com>
+
+	* gw/bb_boxc.c: In boxc_sender(), flush outgoing data before
+	doing list_consume()s than can block indefinitely.
+
+2001-05-14  Lars Wirzenius  <liw@iki.fi>
+
+	* gw/smsc_smpp.c: Made system-id variable obsolete (i.e., if used,
+	the user is warned and told to use smsc-username instead). Things
+	should still work, and this allows us to remove the variable in a
+	future version.
+	
+	* */*.conf: Renamed system-id to smsc-username in sample config
+	files.
+	
+	* doc/userguide/userguide.xml: Updated to correspond to this.
+
+2001-05-14  Lars Wirzenius  <liw@iki.fi>
+
+	* test/fakewap.c: Applied (after two months of waiting!) Neil
+	Hunter's patch for making fakewap more suitable for benchmarking
+	WAP gateways.
+
+2001-05-14  Lars Wirzenius  <liw@iki.fi>
+
+	* benchmarks/bench_sms.conf: Add smsc-username, which is now
+	used instead of system-id.
+	
+	* checks/check_list.c: #undef strcmp so that stupid glibc bug
+	won't cause half a dozen of warnings for a single call.
+
+2001-05-14  Derry Hamilton <rasilon@tardis.ed.ac.uk>
+
+	* gw/smsbox.c: Wrapped the ssl_certkey_file declaration in 
+	ifdefs, like the code that uses it so that we don't have gcc
+	complaining about unused variables.
+
+2001-05-14  Nick Clarey  <nclarey@3glab.com>
+
+	* gw/smsc_at.c: 7-bit messages plus UDH now encoded correctly. 
+	Thanks to Paul Keogh for the patch, as well as Richard Braakman for
+	supervising the change to the UDL calculation code.
+
+2001-05-11  Uoti Urpala  <uau@wapit.com>
+
+	* gw/urltrans.c: accept-x-kannel-headers and assume-plain-text
+	were set incorrectly.
+
+2001-05-09  Uoti Urpala  <uau@wapit.com>
+
+	* gw/smsc_emi2.c: Fixed formatting of a message field (%04d vs
+	%4d). Spotted by Andreas Fink.
+
+	* gw/smsbox.c: Fixed a nasty typo in the previous change.
+
+2001-05-09  Uoti Urpala  <uau@wapit.com>
+
+	* gw/smsbox.c: Return meaningful HTTP status codes when replying
+	to requests to sendsms-port.
+
+2001-05-08  Uoti Urpala  <uau@wapit.com>
+
+	* gwlib/conn.c: Added missing unlock_out(conn) to conn_flush().
+	Found by Michael Mulcahy. Since conn_flush() is currently unused
+	this didn't cause any Kannel bugs.
+
+2001-05-07  Jarkko Kovala <jarkko.kovala@iki.fi>
+ 
+	* config.in, config.h.in: Added autoconfiguration for
+	libssl and a --disable-ssl option. Checks for libssl
+	libraries and compiles it in if found and not disabled.
+	Also checks if the OpenSSL libraries are multithread-
+	enabled.
+ 
+	* gw/smsbox.c, gw/smskannel.conf, gwlib/cfg.def: Added 
+	configuration of a global SSL certificate and key file 
+	with variable 'ssl-certkey-file'.
+ 
+	* gwlib/conn.[ch]: Added support for client-side thread-safe
+	use of SSL; new interface conn_open_ssl() similar to 
+	conn_open_tcp(). Also initialization functions for some
+	stuff needed for SSL and interfaces to use global certificates
+	and to get certificates from remote hosts.
+
+	* gwlib/http.[ch]: Changed the http_start_request interface
+	to accept variable certkeyfile for call-specific certificate &
+	private key files. Changed to initialize the SSL stuff from
+	conn.c at startup.
+ 
+	* gw/smsbox.c gw/smsc_http.c, gw/wap-appl.c, test/test_http.c,
+	gwlib/xmlrpc.c: Changed calls to http_start_request to use the
+	new interface.
+

@@ -1,0 +1,313 @@
+2001-03-20  Richard Braakman  <dark@wapit.com>
+
+	* Making release 1.1.3.
+
+2001-03-19  Tuomas Luttinen  <tuo@wapit.com>
+
+	* gw/wml_compiler.c: Fixed a warning.
+
+	* checks/check_compiler.sh: A simple script added that takes a WML 
+	source, runs it through the WML compiler and the decompiler and 
+	diffes the original file to the output and reports an error if 
+	they do differ.
+
+	* test/testcase.wml: A testcase for the check_compiler added.
+
+2001-03-19  Uoti Urpala  <uau@wapit.com>
+
+	* gw/smsc_http.c: Shutdown state was not initialized. Fixed.
+
+2001-03-19  Richard Braakman  <dark@wapit.com>
+
+	* gwlib/http.c: Made parse_http_version() thread-safe.  (There is
+	no guarantee that assignment of pointers or longs is atomic.)
+
+2001-03-19  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/bearerbox.c: commented gwthread_join_all() away and now all
+	checks pass. Have to investigate this more...
+
+2001-03-19  Richard Braakman  <dark@wapit.com>
+
+	* wap/wsp_session.c: Fix TR_Invoke_Cnf case in find_session_machine(),
+	spotted by zig cats.
+
+2001-03-19  Kalle Marjola  <rpr@wapit.com>
+
+	* doc/userguide/userguide.xml: added HTTP SMSC chapter
+
+	* gw/smskannel.conf: added sms-service and send-sms for relay use
+
+	* gw/other_smskannel.conf: Added. For client Kannel in Kannel
+	relay tests
+
+	* gw/smsc_http.c: little bugfizes/updates
+
+	* checks/check_httpsmsc_kannel.sh. Added. Note that currently
+	there is a BUG in gwlib/http.c and/or gw/smsc_http.c and this
+	tests always FAILS as client bearerbox (using other_smskannel.conf)
+	never exits (HTTP client side thread does not die?)
+	
+2001-03-19  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/http.c: Bugfix. Make shutdown work for multiple servers
+
+2001-03-19  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/smsc_http.c: Added. New module to handle HTTP based SMS
+	Center connections or other gateways (relay gateways). Currently
+	only supports 'kannel' as relay gateway
+
+	* gw/smscconn.c, gw/smscconn_p.h: modified to understand new
+	SMSCConn type
+
+	* gwlib/cfg.def: accept new configuration variable 'send-url' used
+	with smsc_http
+
+2001-03-19  Kalle Marjola  <rpr@wapit.com>
+
+	* gwlib/utils.c|h: added new function connect_denied(..), which is
+	like the old is_allowed_ip(..) except that deny-ip is no longer
+	used as it is expected to be "*.*.*.*" and no allow-ip means
+	localhost. This function will hopefully eventually replace all old
+	ip-checkings, to tighten basic security
+
+2001-03-19  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/bb_smscconn.c (sms_router): Bugfix. Now hopefully router does
+	not get stuck again if the list is successfully emptied
+
+2001-03-16  Kalle Marjola  <rpr@wapit.com>
+
+	* gwlib/http.c: Bugfix: wakeup server when new port added, so that
+	it is added to select
+
+2001-03-16  Tuomas Luttinen  <tuo@wapit.com>
+
+	* test/decompile.c (DTDTypeList): Added the URLs for those DTDs whose 
+	URL was easily located.
+
+	* test/decompile.c (Read_termstr_rtn): Bug fix: double the dollar 
+	signs, since dollar is escaped as $$ in WML.
+
+2001-03-16 Nick Clarey  <nclarey@3glab.com>
+
+	* gw/smsc_at.c: Repaired a bug in at_reopen which would cause 
+	failed smsc_at connections to be reopened continuously, and
+	repaired a bug in at_close which could possibly cause memory 
+	leakage. Also fixed bugs in both which didn't reset the smsc's
+	file descriptor correctly in case of failed closes.
+
+2001-03-16  Tuomas Luttinen  <tuo@wapit.com>
+
+	* gw/wml_definitions.h: The WBXML_CHILD_BIT was changed into 
+	WBXML_CONTENT_BIT for clarity.
+	
+	* gw/wml_compiler.c (only_blanks): A patch provided by Bernard Valton
+	that prevents white space counted as element content.
+	Also changed the WBXML_CHILD_BIT into WBXML_CONTENT_BIT for clarity.
+
+2001-03-16  Richard Braakman  <dark@wapit.com>
+
+	* gw/wap-appl.c: Fixed memory leak of request_headers in request_data.
+	Made return_result not destroy the WAP event passed to it (caller
+	should do that).  Memory management in this file is still icky.
+
+	* gw/wapbox.c: Always destroy a msg after processing it, this fixes
+	a memory leak handling admin messages.
+
+2001-03-16  Kalle Marjola  <rpr@wapit.com>
+
+	* gwlib/octstr.h|c: added %E to octstr_format, which takes an
+	Octstr and URL-encodes it into string
+
+	* test/test_octstr_format.c: added test for that format
+
+2001-03-16  Richard Braakman  <dark@wapit.com>
+
+	* When logging errors, do not report errno if it's not relevant.
+	Fixed 25 counts of this, leaving 81 valid uses.
+
+	* Updated NEWS file to prepare for 1.1.3.
+
+	* test/test_http_server.c: Run client_thread in a separate thread.
+	This makes check_http.sh not fail.  (sigterm was calling
+	http_close_all_ports while the main thread itself was in
+	port_get_request).
+
+2001-03-15  Uoti Urpala  <uau@wapit.com>
+
+	* test/test_smsc.c: Fixed a memory allocation bug.
+
+2001-03-15  Tuomas Luttinen  <tuo@wapit.com>
+
+	* test/wml_tester.c: I refined the command line arguments a bit. Now 
+	the output is either a normal dump, the dump with source or the binary 
+	only. The output can be directed into a file that can then contain the
+	binary only if that was the selected output.
+
+	* test/decompile.c: Now decompiler accepts input from stdin. Added for 
+	piping to make writing tests easier.
+
+2001-03-15  Lars Wirzenius  <liw@iki.fi>
+
+	* Changed the HTTP server side code so that it allows easily
+	processing requests to different ports in different ways.
+	
+	* gwlib/http.[ch]: Renamed http_open_server to http_open_port,
+	and http_close_all_servers to http_close_all_ports, since the
+	concept of "server" is a bit confusing when used this way. Port
+	is clearer.
+	
+	* gwlib/http.[ch]: Added port argument to http_accept_request
+	so that the caller can specify which port she's interested in.
+	This then required some changes in the internals of http.c
+	because the clients_with_requests list had to be replaced
+	with port specific lists, and this required some inter-thread
+	communication, which was a bit tricky to get working (and it
+	therefore likely to be buggy in non-obvious ways). Also added new
+	function, http_close_port, to allow closing only a specific port.
+
+	* gw/bb_http.c, gw/smsbox.c, test/drive_wapbox.c,
+	test/test_http_server.c, test/test_smsc.c: Changed calls to http
+	code based on interface code.
+
+2001-03-15  Uoti Urpala  <uau@wapit.com>
+
+	* gwlib/http.c, gwlib/http.h: Changed http_start_request and
+	http_receive_result to identify the request with a void pointer
+	from the caller.
+
+	* gw/smsbox.c, gw/wap-appl.c, test/test_http.c: Related changes.
+
+2001-03-13  Lars Wirzenius  <liw@iki.fi>
+
+	* benchmarks/bench_sms.sh: Only plot the "submit" events; in long
+	runs, the different graphs were on top of each other anyway.
+
+2001-03-13  Lars Wirzenius  <liw@iki.fi>
+
+    	* Various improvements to "make bench".
+
+	* benchmarks/bench_http.sh, benchmarks/bench_sms.sh,
+	benchmarks/run-benchmarks: Implemented --fast option.
+	
+	* benchmarks/functions.inc: Isolated common script stuff into
+	a single file to make maintenance easier and scripts clearer.
+	
+	* test/test_smsc.c: Measure round trip times for requests and
+	replies. Started coding "sustained level" benchmark; not useable
+	yet, though.
+
+	* gwlib/http.c: Commented out unused static functions.
+
+2001-03-12  Uoti Urpala  <uau@wapit.com>
+
+	* gw/smsc_fake.c: Added test for errno == EINTR after
+	gwthread_pollfd().
+
+2001-03-07  Derry Hamilton <rasilon@tardis.ed.ac.uk>
+
+	* mk-solaris-package.sh, prototype.tmpl, prototype: modified
+	mk-solaris to create packages with the actual version rather
+	than just assume that it is cvs.  Modified prototype to be
+	prototype.tmpl and mk-solaris now uses it to generate the
+	correct prototype.
+
+2001-03-05  Lars Wirzenius  <liw@iki.fi>
+
+	* benchmarks/bench_http.sh: Removed unnecessary cruft. Set number
+	of HTTP requests made to 100 000 instead of 1000.
+	
+	* benchmarks/bench_http.txt, benchmarks/bench_sms.txt,
+	benchmarks/report-begin.txt: Added missing </para>.
+	
+	* benchmarks/bench_sms.sh: Set number of requests to 100 000
+	instead of 1000.
+	
+	* gwlib/http.c: Disabled re-use of TCP connections for HTTP
+	transactions. There is a bug somewhere that makes this crash.
+	
+	* test/test_http.c: Allow client to queue multiple requests into
+	a queue (up to MAX_IN_QUEUE #define in test_http.c), instead of
+	doing the next one only after the response to the previous one
+	has finished.
+	
+2001-03-01  Uoti Urpala  <uau@wapit.com>
+
+	* gw/smsbox.c: Added a temporary half-fix for a bug that could
+	cause NULL references with sms-service HTTP requests. Has to be
+	fixed properly later.
+
+2001-03-01  Lars Wirzenius  <liw@iki.fi>
+
+	* test/test_http.c: Reformatted to follow current coding style.
+
+2001-03-01  Lars Wirzenius  <liw@iki.fi>
+
+	* Implemented the beginnings of a framework for automated
+	benchmarks.
+	
+	* Makefile.in: "make bench" now runs the automated benchmark.
+    	"make clean" removes the cruft.
+	
+	* benchmarks/.cvsignore, benchmarks/bench_http.sh,
+	benchmarks/bench_http.txt, benchmarks/bench_sms.sh,
+	benchmarks/bench_sms.conf, benchmarks/bench_sms.txt,
+	benchmarks/report-begin.txt, benchmarks/report-end.txt,
+	benchmarks/run-benchmarks: Wrote.
+	
+    	* test/test_smsc.c, test/timestamp.c: Wrote.
+
+	* test/test_http_server.c: Added option -l for setting logfile
+	name.
+
+2001-03-01  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/bb_boxc.c, gw/shared.c: Fix, modified so that error in read
+	causes connection to be broken, instead of possible trap in
+	infinite loop. Pointed out by Paul Keogh. 
+
+2001-03-01  Uoti Urpala  <uau@wapit.com>
+
+	* gwlib/http.c: Don't panic or crash if request contains spaces.
+
+2001-02-28  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/bb_udp.c: 'bugfix': modified so that all errors just make
+	receiver to continue, instead of exiting loop
+
+2001-02-28  Richard Braakman <dark@wapit.com>
+
+	* gw/smsc_at.c: Made pdu_extract deal with the SMSC address field
+	possibly being bad or too short.  Also made hexchar() take an
+	int as argument, instead of char (which might be signed).
+	toupper() is defined as taking an int, anyway.
+
+2001-02-27  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/drive_smpp.c: modified to accept Msg 'admin', too
+
+	* gw/bb_boxc.c: unused variable removed
+
+2001-02-27  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/bb_boxc.c: Modified to use Conn instead of raw TCP/IP with
+	sms|wapbox connections
+
+	* gw/msg[-decl].h: added new message type 'admin' for
+	shutdown/suspend use.
+
+	* gw/smsbox.c: modified to die when shutdown command
+	received. Needs to implement suspend/shutdown, still
+
+	* gw/wapbox.c: modified to die when shutdown command received and
+	to ignore non-wdp messages
+
+	* gwlib/octstr.h|c: removed now non-used octstr_send and
+	octstr_recv
+
+2001-02-27  Richard Braakman <dark@wapit.com>
+
+	* Ran spelling check over userguide.xml.
+

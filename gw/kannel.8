@@ -1,0 +1,43 @@
+.\" Hey, Emacs!  This is an -*- nroff -*- source file.
+.TH KANNEL 8 "3rd October 2000" "Kannel Project" "Kannel Project"
+.SH NAME
+bearerbox,
+wapbox,
+smsbox \- Parts of Kannel, the WAP and SMS gateway
+.SH SYNOPSIS
+.B bearerbox
+.IR "" [ options ... "] [" conffile ]
+.PP
+.B wapbox
+.IR "" [ options ... "] [" conffile ]
+.PP
+.B smsbox
+.IR "" [ options ... "] [" conffile ]
+.SH DESCRIPTION
+.I Kannel
+is an WAP and SMS gateway.
+WAP is short for Wireless Application Protocol,
+and is used to implement hypertext based services on mobile phones.
+SMS is short for Short Message Service,
+and is used to send and recive short (up to 160 characters) text messages
+with mobile phones.
+SMS can also be used to implement simple text based services on mobile
+phones.
+.PP
+Kannel consists of three programs, usually run as daemons:
+.BR bearerbox ,
+.BR wapbox ,
+and
+.BR smsbox .
+They implement the connection to the phone (SMS or UDP),
+the WAP protocol stack,
+and the SMS based services, respectively.
+.PP
+For more information,
+see 
+.B http://www.kannel.org
+or
+.BR file://usr/doc/kannel/ .
+.SH "SEE ALSO"
+.BR run_kannel_box (8),
+.BR seewbmp (1).

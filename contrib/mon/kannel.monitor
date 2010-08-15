@@ -1,0 +1,366 @@
+#!/usr/bin/perl
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of the
+# License, or (at your option) any later version.
+
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307
+# USA #
+#
+# Revision $Id: kannel.monitor,v 1.4 2003-05-24 16:31:18 davi Exp $
+#
+# Ingo Brombach <brombach@wapme-systems.de>
+
+#use warnings;
+use LWP::UserAgent; 
+use XML::Parser;
+use Sys::Hostname;
+use Getopt::Std;
+getopts('P:s:p:f:n:ivhS',\%opts);
+
+my $p = new XML::Parser(ErrorContext  => 2,
+                        Namespaces    => 1,
+                        ParseParamEnt => 1,
+                        Handlers      => {Start => \&sthndl,
+                                          Char  => \&chrhndl
+                                         }
+                        );
+
+local $scount=0; # SMS-Level - Counter
+local $bcount=0; # Box-Level - Counter 
+local $kannel_status;
+local $status_file='/tmp/kannel_monitor.status';
+local $qlimit=1; # Maximum Number of queued messages per minute
+
+local $port = ($opts{p}) ? $opts{p} : "13000";
+local $statussheet = ($opts{s}) ? $opts{s} : "status.xml";
+local $password = ($opts{P}) ? $opts{P} : "";
+local $http = ($opts{S}) ? "https" : "http";
+
+local @failures;
+
+&usage if ($opts{h}|| !($opts{f} || @ARGV));
+
+if ($opts{f}){
+    my $file=$opts{f};
+    die "Can´t find '$file' : $!\n" unless -f $file;
+    $p->parsefile ($file);
+    &show if $opts{i};
+    @failures=@{&analyze()};
+}
+else{
+    foreach $host (@ARGV){
+	$url=$http."://".$host.":".$port."/".$statussheet."?password=".$password;
+         &info("# GET URL $url ... \n");
+        my $ua = LWP::UserAgent->new(env_proxy => 1,
+                                  keep_alive => 1,
+                                  timeout => 10,
+                                  );
+
+        my $response=$ua->get($url)||
+        do { &err($host);&info("GET request to $host failed \n");next};
+        &info("OK\n");
+        if ((${$response}{'_content'})){
+            my $doc=${$response}{'_content'};
+            $p->parse($doc);
+        } # end if
+        else{do { &err($host);&info("GET request to $host failed \n");next}}
+
+        &show if $opts{i};
+
+        push @failures, @{&analyze()};
+    }
+        
+} # end else
+
+if (@failures == 0) {
+    exit 0;
+}
+
+print "@failures\n" unless $opts{v};
+
+exit 1;
+
+
+################
+## End main
+################
+
+sub usage{
+    $0 =~ s,.*/,,g;
+    my $program=$0;
+    printf("\n");
+
+print <<"EOU";
+
+
+$program  --  Kannel monitoring module for 'mon'
+
+  This Perl script is a custom monitoring module for mon, the system monitoring
+  tool, see http://www.kernel.org/pub/software/admin/mon/. The module watchs for
+  availibility of the Kannel SMS gateway, basicaly it checks the state of the 
+  connected SMSC links. In case of an error it will returns the affected SMSC IDs
+  of the links.
+
+  2002-07-31 Ingo Brombach, <brombach\@wapme-systems.de>
+
+
+USAGE:  $program [options] hosts...
+    
+  where options can be any of:
+
+  -h                this help message
+  -n "smsc-ids..."  a list of smsc-ids that should be ignored by the test
+  -s URI            the URI on the hosts containing the status-document (default: $statussheet)
+  -p port           the port to connect to (default: $port)
+  -S                use https:// scheme to access the URI (via SSLv3) (default: http://)
+  -P password       the status-password (default: $password)
+  -f file           local XML file to read (mainly for testing)
+  -v                verbose output
+  -i                info mode, displays the whole information to stdout
+
+  Examples: 
+
+    $program -i -v -n "smpp_foo smpp_bar" kannel.foobar.com
+
+    Checks out the status page status.xml (default) on kannel.foobar.com, 
+    port 13000 (default) without password. It lookes for the general 
+    status as well as for the status of the smsc-connections but ignores 
+    error on the smsc-ids smpp_foo and smpp_bar. The whole status is displayed. 
+    The failure messages are verbose.
+
+    $program -i -v -f status.xml -n "smpp_foo smpp_bar"
+
+    The same as above, but reading from a local status.xml file
+
+    $program -p 13001 -P secret kannel.foobar.com
+          
+    Looking for status on port 13001 with password "secret". Only failing 
+    smsc-ids are displayed.
+         
+    
+EOU
+
+    exit 1;
+
+}
+
+sub info { print STDERR @_ if $opts{v}; }     # Output Verbose-Modus
+
+sub err {
+    my $host=$_[0];
+    push @failures, $host;
+}
+
+sub pushall{
+    my @failures;
+    for ($count=1;$count>=0;$count++){
+        last unless (exists ${"smsc".$count}{id});
+        push @failures, ${"smsc".$count}{id};
+    } # end for
+    return \@failures;
+}
+
+sub analyze{
+    my @failures;
+
+    # Bearerbox does not run:
+    #==============================
+    if (! $kannel_status || (split /,/,$kannel_status)[0] ne 'running'){
+        info "bearerbox is not running\n";
+        return &pushall; 
+    } # end if (Bearerbox)
+
+    # SMS-or WAPBox does not run:
+    #==============================
+    for ($count=1;$count>=0;$count++){
+
+	if ($count==1 && ! ${"box".$count}{'status'}){
+    	    info "No SMS- or WAP-Box is running!!\n";
+	    push @failures, "No SMS- or WAP-Box is running!!\n";
+	} #end if
+
+	elsif ((${"box".$count}{'status'}
+	       &&(split /\s+/,${"box".$count}{'status'})[0] ne 'on-line')){
+	    info ${"box".$count}{'type'}." is not running!!\n";
+	    push @failures, hostname().": ".${"box".$count}{'type'}." is not running!!\n";
+	} # end elsif
+
+    	last unless (${"box".$count}{'type'}
+		     &&((${"box".$count}{'type'} eq 'smsbox')
+		     || (${"box".$count}{'type'} eq 'wapbox')));
+    } # end for count (SMS-Box)
+    
+    # SMSC does not run:
+    #==============================    
+    for ($count=1;$count>=0;$count++){
+        last unless (exists ${"smsc".$count}{id});
+        if (${"smsc".$count}{id}){          
+            $exists{${"smsc".$count}{id}}=1;
+            if ((split /\s+/,${"smsc".$count}{status})[0] ne 'online'){
+            local $smsc_not;
+                if ($opts{n}){
+                    foreach $smsc (split /\s+/, $opts{n}){
+                        $smsc_not=1 if $smsc eq ${"smsc".$count}{id};
+                    } # end foreach smsc
+                } # end if $opts{n}
+                unless ($smsc_not){
+                    info "SMSC  ".${"smsc".$count}{id}.
+                        " is in status \"".
+                        (split /\s+/,${"smsc".$count}{status})[0]."\"\n";
+                    push @failures, ${"smsc".$count}{id};
+                } #end unless $smsc_not
+            } # end if split
+        } # end if smsc
+    } # end for count
+
+    # SMSC does not exist:
+    #==============================
+    if ($opts{n}){
+        foreach $arg (split /\s+/, $opts{n}){
+            unless (exists $exists{$arg}){
+                info "$arg does not exist\n";
+                push @failures, $arg;
+            } #end unless
+        } # end foreaceh
+    } # end of $opts{n} 
+            
+    # Kannel is queueing:
+    #==============================
+    open (STATUSFILE,"<$status_file") or
+        push @failures, hostname().": Could not open $status_file: $!";
+
+    local $warncount=0;
+    while (<STATUSFILE>){
+        my ($field,$value,$time,$diffmin);
+        ($field,$value,$time)=split /\|/, $_,3;
+        $diffmin=(time - $time)/60;
+        
+        if ((${"sms"}{$field} - $value)/$diffmin >= $qlimit){
+            $warncount+=1;
+        } # end if
+    } # end while STATUSFILE
+    
+    if ($warncount){
+        info "Kannel is queueing - please take a look\n";
+        return &pushall;
+    }
+    close(STATUSFILE);
+    
+    open (STATUSFILE,">$status_file") or
+    push @failures, hostname().": Could not open $status_file: $!";    
+     foreach $field (keys %{"sms"}){
+         if ((split /_/,$field)[1]
+             &&(split /_/,$field)[1] eq 'queued'){
+             printf(STATUSFILE "%s|%s|%d\n", 
+                    $field,${"sms"}{$field},time);
+         } # end if
+     } # end foreach
+
+    close(STATUSFILE);
+    return \@failures;
+}
+
+sub show{
+     my $count=1;
+     my $bcount=1;
+
+    if ($kannel_status){
+        printf("============== Status ===================\n");
+        printf("%s\n", $kannel_status);
+        printf("=========================================\n");
+    } # end elsif
+
+     printf("============SMS Overall==================\n");
+     foreach $field (keys %{"sms"}){
+         printf("%s -> %s\n", $field,${"sms"}{$field});
+     }
+     printf("=========================================\n");
+
+     printf("=================BOXES===================\n") 
+         if (exists ${"box".$bcount}{type});
+    while (exists ${"box".$bcount}{type}){
+        foreach $field (keys %{"box".$bcount}){
+            printf("%s -> %s\n", $field,${"box".$bcount}{$field});
+        } # end foreach
+        ++$bcount;
+        printf("=========================================\n");
+    } # end while
+
+    if (exists ${"smsc".$count}{id}){
+         printf("\n================SMSC´s===================\n");
+         printf("=========================================\n") ;
+    }
+    while (exists ${"smsc".$count}{id}){
+        foreach $field (keys %{"smsc".$count}){
+            printf("%s -> %s\n", $field,${"smsc".$count}{$field});
+        } # end foreach
+        printf("=========================================\n");
+        ++$count;
+    } # end while
+
+} # End show
+
+sub sthndl {
+  my $xp = shift;
+  my $el = shift;
+  my $nm = $xp->namespace($el) ? "n1:$el" : $el;
+  $parent{$nm}=$xp->current_element;
+}  # End sthndl
+
+sub chrhndl {
+  my ($xp, $data) = @_;
+  my (@level);
+  my $value= sprintf("%s\n",$xp->xml_escape($data, '>', "\xD"));
+  my $level = $xp->current_element;
+  chomp $value;
+
+  if ($value!~/^\s+$/){
+
+        while($level=$parent{$level}){
+            unshift @level, $level;
+        }
+           
+        push @level, $xp->current_element;              
+
+       if (($level[0] eq 'gateway') && ($level[1] eq 'smscs') 
+           && ($level[2] eq 'smsc')&& ($level[3])){
+              ++$scount if $level[3] eq 'name';
+              ${"smsc".$scount}{$level[3]}=$value;
+
+          } # end if
+    
+        elsif (($level[0] eq 'gateway') && ($level[1] eq 'status')){
+            $kannel_status=$value;
+        } # end elsif
+
+        elsif (($level[0] eq 'gateway') && ($level[1] eq 'boxes')
+               && ($level[2] eq 'box')&& ($level[3])){
+              ++$bcount if $level[3] eq 'type';
+              ${"box".$bcount}{$level[3]}=$value;           
+        } # end elsif   
+
+        elsif (($level[0] eq 'gateway') && ($level[1] eq 'sms')){
+            if (($level[2] eq 'sent'||$level[2] eq 'received') && $level[3]){
+                ${'sms'}{$level[2].'_'.$level[3]}=$value;
+            } # end if 
+            else{
+                ${'sms'}{$level[2]}=$value;
+            } # end else
+        } # end elsif   
+    }
+
+}  # End chrhndl
+
+# Tell emacs that this is really a perl script
+#Local Variables:
+#Mode: perl
+#End:

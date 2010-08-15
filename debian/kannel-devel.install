@@ -1,0 +1,4 @@
+debian/tmp/usr/bin usr
+debian/tmp/usr/sbin usr
+debian/tmp/usr/share/man usr/share
+debian/kannel.conf /etc/kannel/

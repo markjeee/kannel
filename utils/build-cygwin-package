@@ -1,0 +1,42 @@
+#!/bin/bash
+
+if [ ! -d "gw" ] ; then 
+        echo "Must be ran in gateway dir"
+        exit 1
+fi
+
+BUILDDIR=/tmp/kannel
+
+if [ -d "$BUILDDIR" ] ; then
+        rm -fr "$BUILDDIR"
+fi
+
+mkdir "$BUILDDIR"
+
+mkdir "$BUILDDIR/bin"
+cp gw/*.exe "$BUILDDIR/bin" -v
+
+mkdir "$BUILDDIR/conf"
+for i in doc/examples/*.conf ; do 
+        cp $i "$BUILDDIR/conf" -v
+done
+
+mkdir "$BUILDDIR/tools"
+for i in test utils wmlscript ; do 
+        mkdir "$BUILDDIR/tools/$i"
+        cp $i/*.exe "$BUILDDIR/tools/$i" -v
+done
+
+if [ -e doc/userguide/userguide.pdf ] ; then
+        mkdir "$BUILDDIR/docs"
+        for i in userguide alligata arch wtls ; do
+                mkdir "$BUILDDIR/docs/$i"
+                cp doc/$i/*.pdf \
+                   doc/$i/*.rtf \
+                   doc/$i/*.png \
+                   "$BUILDDIR/docs/$i"
+        done
+fi
+
+(cd "$BUILDDIR" ; zip -r kannel.zip *)
+echo "kannel.zip is on $BUILDDIR"

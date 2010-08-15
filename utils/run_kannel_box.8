@@ -1,0 +1,31 @@
+.\" Hey, Emacs!  This is an -*- nroff -*- source file.
+.TH RUN_KANNEL_BOX 8 "3rd October 2000" "Kannel Project" "Kannel Project"
+.SH NAME
+run_kannel_box \- Run a Kannel box
+.SH SYNOPSIS
+.B run_kannel_box
+.BR "" [ --pidfile 
+.IR PIDFILE ]
+.BR "" [ --min-delay 
+.IR SECONDS ]
+.I BOXPATH
+.IR "" [ boxoptions ...]
+.SH DESCRIPTION
+.B run_kannel_box
+runs a 
+.BR kannel (8)
+box, i.e., one of the daemon programs of Kannel.
+is an WAP and SMS gateway.
+WAP is short for Wireless Application Protocol,
+and is used to implement hypertext based services on mobile phones.
+SMS is short for Short Message Service,
+and is used to send and recive short (up to 160 characters) text messages
+with mobile phones.
+SMS can also be used to implement simple text based services on mobile
+phones.
+.PP
+For more information,
+see 
+.B http://www.kannel.org
+or
+.BR file://usr/doc/kannel/ .

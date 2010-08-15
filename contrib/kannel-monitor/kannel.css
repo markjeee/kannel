@@ -1,0 +1,156 @@
+body {
+    background-color: #ffffff;
+    color: #000000;
+    font-size: 8pt;
+    font-family: Verdana,Arial,sans-serif;
+}
+
+#desc {
+    color: black;
+    font: 11px;
+    z-index: 10;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 220px;
+    visibility: hidden;
+    border: 1px solid #a0a0a0;
+    background: #fafafa;
+    padding: 4px;
+    text-align: left;
+}
+
+.bold  {
+    font-weight: bold
+}
+
+.text {
+    color: #000033;
+    font-family: Verdana,Arial,sans-serif;
+    font-size: 8pt;
+    font-weight: normal;
+}
+
+.green {
+    color: green;
+    font-family: Verdana,Arial,sans-serif;
+    font-size: 8pt;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.red {
+    color: red;
+    font-family: Verdana,Arial,sans-serif;
+    font-size: 8pt;
+    font-weight: bold;
+}
+
+.sum td {
+    background-color: #FFFF99;
+    font-weight: bold;
+}
+
+.sep {
+    border-top: 3px solid #000088;
+}
+
+a.link:link {
+    font-family: Verdana,Arial,sans-serif;
+    color: #a0a0a0;
+    font-size: 8pt;
+    font-weight: normal;
+    text-decoration: none;
+}
+
+a.link:visited  {
+    font-family: Verdana,Arial,sans-serif;
+    color: #000033;
+    font-size: 9pt;
+    font-weight: normal;
+    text-decoration: underline;
+}
+
+a.link:active {
+    font-family: Verdana,Arial,sans-serif;
+    color: #000033;
+    font-size: 9pt;
+    font-weight: normal;
+    text-decoration: underline;
+}
+
+a.link:hover {
+    font-family: Verdana,Arial,sans-serif;
+    color: #FF6600;
+    font-size: 8pt;
+    font-weight: normal;
+    text-decoration: underline;
+}
+
+a.href:link {
+    font-family: Verdana,Arial,sans-serif;
+    color: #000033;
+    font-size: 8pt;
+    font-weight: normal;
+    text-decoration: none;
+}
+
+a.href:visited  {
+    font-family: Verdana,Arial,sans-serif;
+    color: #000033;
+    font-size: 8pt;
+    font-weight: normal;
+    text-decoration: none;
+}
+
+a.href:active {
+    font-family: Verdana,Arial,sans-serif;
+    color: #000033;
+    font-size: 8pt;
+    font-weight: normal;
+    text-decoration: none;
+}
+
+a.href:hover {
+    font-family: Verdana,Arial,sans-serif;
+    color:green;
+    font-size: 8pt;
+    font-weight: normal;
+    text-decoration: underline;
+}
+
+#bord {
+    border-width: 1px;
+    border-style: solid;
+    border-color: back;
+    padding: 2px;
+    background-color: #f0f0f0;
+}
+
+#overall table {
+    border: 1px solid black;
+}
+
+#overall td, th {
+    padding: 4px;
+    border: 1px solid black;
+    text-align: center;
+}
+
+#overall th {
+    background-color: #000088;
+    color: white;
+    border-right: 1px solid #CCC;
+}
+
+table {
+    border-collapse: collapse;
+}
+
+#overall tr:nth-child(even) {
+    background: #EEE
+}
+
+#overall tr:nth-child(odd) {
+    background: #FFF
+}

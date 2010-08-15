@@ -1,0 +1,33 @@
+#!/bin/sh
+#
+# changelog-report - Report changes to ChangeLog
+#
+# DO NOT RUN THIS SCRIPT unless you make damn sure the e-mail address points
+# at somewhere who wants to receive it.
+# 
+# This script reports changes to the ChangeLog file in the Kannel CVS
+# repository.
+#
+# Lars Wirzenius <liw@wapit.com>
+#
+
+set -e
+
+addr=""
+workdir="$HOME/gateway"
+
+tmp=ChangeLog.temp
+
+cd $workdir
+cvs -Q update ChangeLog
+diff -w -b -B -t ChangeLog.old ChangeLog | sed -n '/^> /s///p' >> $tmp || true
+if test -s $tmp
+then
+	(
+		echo 'Changes to gateway ChangeLog.'
+		echo ''
+		cat $tmp
+	) | mail -s 'ChangeLog update' $addr
+fi
+cp ChangeLog ChangeLog.old
+rm -f $tmp

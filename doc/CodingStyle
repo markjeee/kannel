@@ -1,0 +1,362 @@
+Coding Style for Kannel
+
+
+Code formatting
+
+	Don't make lines that are longer than 78 characters.
+	
+    	Follow the coding style defined by the astyle program:
+	
+	    	astyle --style=linux --pad=oper -m0 -s4
+
+	Tabs are 8 characters. Indents are 4.
+	
+    	Example:
+
+/*
+ * This function doesn't do anything sensible. It just uses uses various
+ * C constructs to show their layout.
+ */
+int foo(int bar)
+{
+    static int tab[2][12] = {
+        { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 },
+        { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 },
+    };
+    struct yow {
+        int plim;
+    } barbar;
+    int i;
+
+    assert(bar != 0);
+    if (bar < 0) {
+        for (i = 0; i > bar; --i) {
+            while (global_variable < 0) {
+                global_variable += i;
+                printf("%d\n", i);
+            }
+        }
+    } else {
+        do {
+            --bar;
+            switch (bar % 3) {
+            case 0:
+                printf("0\n");
+                break;
+            case 1:
+                printf("1\n");
+                /*FALLTHROUGH*/
+            case 2:
+                printf("2\n");
+                break;
+            default:
+                assert(0);        /* eeek! */
+                abort();          /* die, stupid program, die */
+            }
+        } while (bar < 0
+                 || global_variable == 42);
+    }
+    return bar;
+}
+
+	It is OK to deviate from this style, if it makes the code clearer.
+
+
+Commenting
+
+	Each source code file shall begin with a comment of the following
+	format:
+	
+		/*
+		 * filename - one-line summary
+		 *
+		 * A summary of the purpose of the file and a summary
+		 * of the functions it exports. If the file is the main
+		 * program, a short usage summary or a reference to the
+		 * manual should be included.
+		 */
+	
+	Each function should
+	be preceded by a comment like the following:
+	
+		/*
+		 * One-sentence summary of what the function does. More 
+		 * detailed description of what the function does, including
+		 * return value, purpose of each function, and a summary of
+		 * who takes care of allocating and freeing memory of the
+		 * arguments and return values.
+		 */
+
+	Similar comments for global variables, constants, and data types.
+
+Error handling
+
+	Typically, functions should have a return type of int and return
+	-1 for errors, 0 for OK (or 0 for no input, positive for indicating
+	number of input items read, or similar values). When returning a
+	pointer, errors should be indicated with NULL.
+	
+	When a problem is noticed, the lowest level that notices it
+	should log it using one of the log functions in log.h,
+	and then return an indication of failure (unless it can handle
+	the problem itself) to its caller. If the problem is associated
+	with a system error, i.e., the global variable `errno' details
+	the problem, it is the lowest level that should pass `errno'
+	to the log message function. The callers should just report
+	which operation failed, but not report a system error (i.e.,
+	they should pass `0' to the log message functions). This way,
+	an error causes several lines of output to the logs, and it
+	essentially produces a stack dump. This helps diagnose the
+	problem, since it becomes more clear which parts of the system
+	were involved in the operation that failed.
+	
+	If you want to incorporate the name of the function in the
+	output, use __func__, not __FUNCTION__. The former is part of
+	the language starting with the 1999 version, and config.h takes
+	care of defining it somehow for older compilers.
+	
+Memory allocation
+
+	Never use malloc, calloc, realloc, or free. Use gw_malloc,
+	gw_realloc, and gw_free instead.
+
+	Do not allocate large arrays on the stack, because there
+	are systems where the stack space per thread is quite limited.
+	
+	If you call a function and give it a pointer, and the function
+	stores it somewhere for later use, and the caller still uses the
+	pointed area for something, the called function should make sure
+	it makes a copy of whatever the pointer points at.  This makes
+	it easier for the caller to know when it can free the area.
+
+Log messages
+
+	The logging functions in log.h shall be used, not printf.
+
+	Note that panic must never be used after the gateway has been
+	started, except when an error really, really, REALLY cannot
+	be handled and recovered from. For example, if memory allocations
+	fail, there is little or nothing useful the gateway can do and
+	therefore _for_the_gateway_ it is OK to panic. (This is not a
+	general rule of software engineering, but it does apply to us.)
+	You almost certainly want to discuss things on the devel list
+	before adding a call to panic.
+	
+	Log messages shall consist of complete sentences: start with
+	an upper case letter and end in a period (or other suitable
+	punctuation character).
+
+	Error messages (functions warning, error, panic) should indicate
+	the operation that was being performed, and the (presumed)
+	cause of the problem. For example:
+	
+		Reading configuration file smsgateway.conf: out of memory.
+		System error 42: Not enough space.
+
+		Couldn't read configuration file `smsgateway.conf'.
+		System error 42: Not enough space.
+
+	Informational messages (function info) probably shouldn't report
+	system errors.
+
+	Filenames should be given `quoted' so that it is clear what is
+	and what is not part of the name. Similarly for other data that
+	may need it.
+	
+	Open question: The name of the function or source code module
+	isn't very informational for people just using the gateway,
+	although they can be useful for debugging the gateway. People
+	debugging the gateway would probably like the source file, line
+	number, and possibly function name be reported systematically.
+	What to do?
+
+Log message at the `debug' level: naming convention for `place'
+
+	The debug() function's first argument is called `place'. It tells
+	the logical place where call is made from. This is not the same
+	as the source file and line; those change too often for them to
+	be useful. Instead, it is meant to identify the subsystem and
+	subsubsystem (and, if necessary, subsubsubsystem). The following
+	subsystems should be used:
+	
+		wap		WAP Box
+		wap.wsp		WSP implementation
+		wap.wsp.http	WSP implementation
+		wap.wtp		WTP implementation
+		wap.wtp.timer	WTP timers
+                wap.wtp.tid     WTP tid validation
+		wap.wml		WML encoder
+
+		bb		Bearer box: misc stuff
+		bb.udp		BB UDP sender/receiver
+		bb.boxc		BB box connections
+		bb.http		HTTP admin things
+		bb.thread	Thread handling
+		bb.sms		SMS related stuff
+		bb.sms.cimd	CIMD implementation
+		bb.sms.cimd2	CIMD 2 implementation
+		bb.sms.emi	EMI/UCP implementation
+		bb.sms.smpp	SMPP implementation
+		bb.sms.sema	SEMA/SMS2000 implementation
+		
+		sms		SMS box
+		
+		gw		Misc stuff used by all boxes
+		gw.msg		Inter-box messages
+
+		gwlib		Library functions
+		gwlib.http	HTTP implementation
+		gwlib.octstr	Octet strings
+
+		test		Test programs
+		test.fakewap	
+		test.udp_send
+
+		util		Utility programs
+
+	If you need more subsystems, please add them here as well.
+
+	Debugging places can be set via '-D' (or --debug) command line
+	option, with format like "wap.* bb.csdr" (see gwlib/log.h). Any 
+	places need to be excluded from the set are marked with
+	preceding '-', like "wap.* -wap.wsp.*"
+
+Using integer types
+
+	Avoid the uint32_t type, and similar types with other names, and
+	try to live with:
+
+		int (-32000 to 32000)
+		long (-2 000 000 000 to 2 000 000 000)
+		unsigned long (0 to 4 000 000 000)
+		unsigned char (0 to 255)
+	
+	The ranges given are _minimum_ ranges. Do not assume that there
+	ever exists an integer type of a specific size. If you think you
+	need one of a specific size, think again. If that doesn't help,
+	discuss things on devel@kannel.org.
+	
+	The exception to this is that it is probably safe to assume char
+	is 8 bits. Do not assume a plain `char' type is signed or unsigned
+	- always use unsigned chars. However, remember that it is almost
+	always smarter to use an `int' for a char (and store non-negative
+	values) instead of an unsigned char, because of the complicated
+	type promotion rules in C, when dealing with a single character.
+	When using an array ("string"), use unsigned char as the element
+	type. However, remember to use Octstr whenever possible.
+	
+	Some library functions require the use of a specific integer type.
+	In that case, use that.
+
+#include directives
+
+	When referring to header files that are not part of Kannel,
+	use the <foo.h> syntax. When referring to header files that
+	are part of Kannel, use the "foo.h" syntax. Since Kannel source
+	code is spread over several directories, use the following
+	rules to construct the actual filename:
+	
+		if foo.c includes foo.h and they are both in the
+		same directory, use "foo.h"
+		
+		if foo.c includes, for example, gwlib.h, and foo.c is not
+		in the same directory as gwlib.h, the path relative to
+		the root of the Kannel source tree should be given, thus
+		"gwlib/gwlib.h".
+
+Header files
+
+	When writing header files for Kannel, write them so that they
+	include whatever other header files they need, rather than
+	relying on the caller to do that. An exception can be made for
+	header files that are not normally included directly by a
+	source file, but bundled by another header file (such as gwlib.h).
+
+	This will result in some header files being included multiple
+	times by a source file. Deal with that by using this construct,
+	where HEADERNAME is the filename of the header file:
+
+		#ifndef HEADERNAME_H
+		#define HEADERNAME_H
+
+		... the body of the header file
+
+		#endif
+
+	If your code is not in gwlib, #include "gwlib/gwlib.h", but
+	nothing else from gwlib.
+
+Use of #if, #ifdef, etc
+
+	Try to avoid using the various forms of #if for portability
+	purposes. It's preferable to write the code so that it works
+	everywhere, instead of having umpteen versions for different
+	platforms. Only having a single version makes it easier to
+	test and debug things, for example.
+	
+	Don't comment things out with #if (or any other way either).
+	We use CVS, it is always possible to go back.
+	
+	Don't add new features and make them conditionally compiled.
+	Either add them completely, or don't add them at all.
+
+Typecasts
+
+	Don't use them, unless you're really certain it's needed. Almost
+	always when you think you need one, you are doing things that
+	are too tricky and may become a portability problem in the future.
+	
+	A common exception are the braindead BSD socket functions: they
+	have been designed so that typecasts are necessary. We try to
+	make wrappers around such functions in gwlib, so that we have the
+	cast only in one place.
+
+Abstract data types, constructors and destructors
+
+	Use abstract data types whenever it makes sense. Avoid defining
+	structures that are used directly in several modules - this is
+	a maintenance headache. Instead, define an abstract data type,
+	Foo, and functions to manipulate that data type, e.g., to access
+	various fields of Foo.
+	
+	This is sort of a castrated version of object oriented
+	programming. It's a good thing.
+
+    	Use the following naming convention:
+	
+    	    typedef struct Foo Foo; 	/* The abstract data type */
+
+	    Foo *foo_create(void);  	/* Create a new Foo */
+	    void foo_destroy(Foo *);	/* Destroy a Foo */
+	    void foo_destroy_item(void *);
+	    	    	    	    	/* Wrapper, for list_destroy use */
+
+ChangeLog
+
+	We use the file called `ChangeLog' to log changes, not CVS
+	commit entries. CVS entries are not usable by people who don't
+	have CVS access (e.g., they are off-line at the moment, which
+	happens often for laptop users), and are also harder to browse
+	than a single file.
+
+	When writing an entry, please try to make sure the entry is at
+	least somewhat understandable without referring to the actual
+	patch it reflects. This helps immensely those who want to follow
+	Kannel development without having to wade through millions of
+	lines of patches per year.
+
+CVS and tags
+
+	We use CVS tags for releases. If the version number is X.Y.Z,
+	then the corresponding tag is version_X_Y_Z. Stable branches
+	are called stable_X_Y, where X.Y is the stable version that
+	started the branch.  If you want to use tags for other things,
+	use some other naming scheme. For private use, prefix tags with
+	your CVS login name.
+
+Initialization of automatic variables
+
+	Try to avoid embedding initialization of automatic variables in
+	their definitions, since they are easy to miss and this can lead
+	to trouble. Also, it's too easy to mistakenly use an argument
+	value before it has been checked with gw_assert.

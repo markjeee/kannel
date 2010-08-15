@@ -1,0 +1,158 @@
+/* ==================================================================== 
+ * The Kannel Software License, Version 1.0 
+ * 
+ * Copyright (c) 2001-2009 Kannel Group  
+ * Copyright (c) 1998-2001 WapIT Ltd.   
+ * All rights reserved. 
+ * 
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions 
+ * are met: 
+ * 
+ * 1. Redistributions of source code must retain the above copyright 
+ *    notice, this list of conditions and the following disclaimer. 
+ * 
+ * 2. Redistributions in binary form must reproduce the above copyright 
+ *    notice, this list of conditions and the following disclaimer in 
+ *    the documentation and/or other materials provided with the 
+ *    distribution. 
+ * 
+ * 3. The end-user documentation included with the redistribution, 
+ *    if any, must include the following acknowledgment: 
+ *       "This product includes software developed by the 
+ *        Kannel Group (http://www.kannel.org/)." 
+ *    Alternately, this acknowledgment may appear in the software itself, 
+ *    if and wherever such third-party acknowledgments normally appear. 
+ * 
+ * 4. The names "Kannel" and "Kannel Group" must not be used to 
+ *    endorse or promote products derived from this software without 
+ *    prior written permission. For written permission, please  
+ *    contact org@kannel.org. 
+ * 
+ * 5. Products derived from this software may not be called "Kannel", 
+ *    nor may "Kannel" appear in their name, without prior written 
+ *    permission of the Kannel Group. 
+ * 
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED 
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES 
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+ * DISCLAIMED.  IN NO EVENT SHALL THE KANNEL GROUP OR ITS CONTRIBUTORS 
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,  
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT  
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR  
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,  
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE  
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,  
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * ==================================================================== 
+ * 
+ * This software consists of voluntary contributions made by many 
+ * individuals on behalf of the Kannel Group.  For more information on  
+ * the Kannel Group, please see <http://www.kannel.org/>. 
+ * 
+ * Portions of this software are based upon software originally written at  
+ * WapIT Ltd., Helsinki, Finland for the Kannel project.  
+ */ 
+
+/*
+ * RADIUS Attributes as defined by RFC2865, page 23 and RFC2866
+ */
+
+#ifndef ATTRIBUTES
+#error Macro ATTRIBUTES not defined.
+#endif
+
+#ifndef ATTR
+#error Macro ATTR not defined.
+#endif
+
+#ifndef UNASSIGNED
+#error Macro UNASSIGNED not defined.
+#endif
+
+/* define the length of the undistinguised octets length */
+#define UMAX   128
+
+/* define type mappings for attribute types */
+
+#define ATTR_INT(attr, string) \
+    ATTR(attr, t_int, string, 4, 4)
+#define ATTR_IPADDR(attr, string) \
+    ATTR(attr, t_ipaddr, string, 4, 4)
+#define ATTR_STR(attr, string, min, max) \
+    ATTR(attr, t_string, string, min, max)
+
+/* 
+ * defines the Attribute type, (see RFC2865, page 25 and on) 
+ * syntax: ATTR(<attribute>, <value-type>, <description string>, <min len>, <max len>)
+ */
+
+ATTRIBUTES(
+ATTR_STR(1, "User-Name", 1, 64)
+ATTR_STR(2, "User-Password", 16, UMAX)
+ATTR_STR(3, "CHAP-Password", 16, 16)
+ATTR_IPADDR(4, "NAS-IP-Address")
+ATTR_INT(5, "NAS-Port")
+ATTR_INT(6, "Service-Type")
+ATTR_INT(7, "Framed-Protocol")
+ATTR_IPADDR(8, "Framed-IP-Address")
+ATTR_IPADDR(9, "Framed-IP-Netmask")
+ATTR_INT(10, "Framed-Routing")
+ATTR_STR(11, "Filter-Id", 1, UMAX)
+ATTR_INT(12, "Framed-MTU")
+ATTR_INT(13, "Framed-Compression")
+ATTR_IPADDR(14, "Login-IP-Host")
+ATTR_INT(15, "Login-Service")
+ATTR_INT(16, "Login-TCP-Port")
+UNASSIGNED(17)
+ATTR_STR(18, "Reply-Message", 1, UMAX)
+ATTR_STR(19, "Callback-Number", 1, UMAX)
+ATTR_STR(20, "Callback-Id", 1, UMAX)
+UNASSIGNED(21)
+ATTR_STR(22, "Framed-Route", 1, UMAX)
+ATTR_IPADDR(23, "Framed-IPX-Network")
+ATTR_STR(24, "State", 1, UMAX)
+ATTR_STR(25, "Class", 1, UMAX)
+ATTR_STR(26, "Vendor-Specific", 5, 256)
+ATTR_INT(27, "Session-Timeout")
+ATTR_INT(28, "Idle-Timeout")
+ATTR_INT(29, "Termination-Action")
+ATTR_STR(30, "Called-Station-Id", 1, UMAX)
+ATTR_STR(31, "Calling-Station-Id", 1, UMAX)
+ATTR_STR(32, "NAS-Identifier", 1, UMAX)
+ATTR_STR(33, "Proxy-State", 1, UMAX)
+ATTR_STR(34, "Login-LAT-Service", 1, UMAX)
+ATTR_STR(35, "Login-LAT-Node", 1, UMAX)
+ATTR_STR(36, "Login-LAT-Group", 32, 32)
+ATTR_INT(37, "Framed-AppleTalk-Link")
+ATTR_INT(38, "Framed-AppleTalk-Network")
+ATTR_STR(39, "Framed-AppleTalk-Zone", 1, UMAX)
+
+/* accounting types (RFC2866, page 10) */
+ATTR_INT(40, "Acct-Status-Type")
+ATTR_INT(41, "Acct-Delay-Time")
+ATTR_INT(42, "Acct-Input-Octets")
+ATTR_INT(43, "Acct-Output-Octets")
+ATTR_STR(44, "Acct-Session-Id", 1, UMAX)
+ATTR_INT(45, "Acct-Authentic")
+ATTR_INT(46, "Acct-Session-Time")
+ATTR_INT(47, "Acct-Input-Packets")
+ATTR_INT(48, "Acct-Output-Packets")
+ATTR_INT(49, "Acct-Terminate-Cause")
+ATTR_STR(50, "Acct-Multi-Session-Id", 1, UMAX)
+ATTR_INT(51, "Acct-Link-Count")
+
+ATTR_STR(60, "CHAP-Challenge", 5, UMAX)
+ATTR_INT(61, "NAS-Port-Type")
+ATTR_INT(62, "Port-Limit")
+ATTR_STR(63, "Login-LAT-Port", 1, UMAX)
+)
+
+#undef UMAX
+#undef ATTR_INT
+#undef ATTR_IPADDR
+#undef ATTR_STR
+#undef ATTR
+#undef UNASSIGNED
+#undef ATTRIBUTES
+

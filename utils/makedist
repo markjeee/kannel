@@ -1,0 +1,52 @@
+#!/bin/sh
+#
+# Create distribution files.
+#
+# Lars Wirzenius <liw@wapit.com>
+
+set -e
+
+version="$1"
+tag=version_`echo $version | tr .- __`
+base=gateway-$version
+
+rm -rf $base
+cvs -Q export -r $tag -d $base gateway
+if [ "`head -1 $base/VERSION`" != "$version" ]
+then
+	echo "Oops, VERSION does not match."
+	exit 1
+fi
+
+tar -c -z -f $base.tar.gz $base
+md5sum $base.tar.gz > $base.tar.gz.md5
+sha1sum $base.tar.gz > $base.tar.gz.sha1
+tar -c -j -f $base.tar.bz2 $base
+md5sum $base.tar.bz2 > $base.tar.bz2.md5
+sha1sum $base.tar.bz2 > $base.tar.bz2.sha1
+zip -9qr $base.zip $base/*
+md5sum $base.zip > $base.zip.md5
+sha1sum $base.zip > $base.zip.sha1
+
+(
+ set -e
+ cd $base
+ ./configure --enable-docs >/dev/null
+ touch .depend
+ make -s depend
+ make -s docs
+)
+
+cp -a $base/doc/arch arch-$version
+cp $base/doc/arch/arch.ps arch-$version.ps
+tar -c -z -f arch-$version.tar.gz arch-$version/*
+zip -9qr arch-$version.zip arch-$version/*
+
+cp -a $base/doc/userguide userguide-$version
+cp $base/doc/userguide/userguide.ps userguide-$version.ps
+tar -c -z -f userguide-$version.tar.gz userguide-$version/*
+zip -9qr userguide-$version.zip userguide-$version/*
+
+cp $base/NEWS NEWS-$version
+cp $base/README README-$version
+cp $base/ChangeLog ChangeLog-$version

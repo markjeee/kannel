@@ -1,0 +1,960 @@
+2009-01-12  Stipe Tolj  <stolj at kannel.org>
+    * */*: update LICENSE preamble block to 2009.
+
+2009-01-11  Stipe Tolj  <stolj at kannel.org>
+    * doc/examples/modems.conf: added modems group for the Sony Ericsson P1i.
+      Thanks to Christoffer Elenius <celenius at cc.hut.fi> for providing it.
+
+2009-01-09 Alejandro Guerrieri <aguerrieri at kannel.org>
+    * gwlib/dbpool.h gwlib/dbpool_sqlite.c gwlib/dbpool_sqlite3.c gwlib/cfg.def:
+      Fixed missing section on sqlite 2 section on cfg.def. Added a "lock-timeout"
+      parameter to Sqlite2 and Sqlite3.
+
+2009-01-09 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_smpp.c: fixed #460.
+
+2009-01-09 Alexander Malysh <amalysh at kannel.org>
+    * gw/wap_push_ppg.c: applied patch from #473.
+
+2009-01-09 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_at.c: Fixed length calculation for concatenated 7Bit
+      MO messages.This fixes #456.
+      Thanks to Paolo Losi <paoloa at enuan.com> and Matti Ärmänen
+      <matti.armanen at sci.fi> for bug report.
+      [Msg-ID: <496720A1.5010705@sci.fi>]
+
+2009-01-08 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_at.c: applied patch that fixes 7bit encoding.
+      Thanks to Riku Palomäki <riku at hyperkuutio.fi> for this patch.
+      [Msg-ID: <20080711031340.25df040e@karvalakki.kyla.fi>]
+
+2009-01-06 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_http.c: applied patch which will allow to send concat,
+      8bit and unicode messages over HTTP via Clickatell.
+      Thanks to Donald Jackson <donaldjster at gmail.com> for this patch.
+      [Msg-ID: <290be5f30901042256r416032ecu1a909f23ee46baa7@mail.gmail.com>]
+
+2008-12-10 Alexander Malysh <amalysh at kannel.org>
+(CB)* doc/userguide/userguide.xml, gw/bb_alog.c, gw/dlr.[ch], gw/msg-decl.h, gw/urltrans.c:
+      applied patch that adds foreign (SMSC) ID to message. This patch breaks access log
+      format and extends Msg struct.
+      Thanks to Alejandro Guerrieri <aguerrieri at kannel.org> for this patch.
+
+2008-12-10 Alexander Malysh <amalysh at kannel.org>
+    * gw/wap_push_ppg.c, gw/wapbox.c: fixed memory leaks.
+
+2008-12-10 Alexander Malysh <amalysh at kannel.org>
+    * gw/bb_alog.c: fixed memory leak. Thanks to Nikos Balkanas for test case.
+
+2008-11-25 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsbox.c: escape string values in the XML document for MO messages.
+      Thanks to Michael Zervakis <michael at zervakis.com> for pointing to this issue.
+
+2008-11-19 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/log.c: fixed double close/free in log_close_all().
+      Thanks to Werner Coetzee <werner.coetzee at clickatell.com> for pointing
+      to the issue.
+
+2008-11-19 Alexander Malysh <amalysh at kannel.org>
+    * debian/kannel.init: apllied patch that replace usage of run_kannel_box
+      with kannel oprions --daemonize.
+      Thanks to Alan McNatty <alan at catalyst.net.nz> for this patch.
+      [Msg-ID: <4922140B.3000803@catalyst.net.nz>]
+
+2008-11-17 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_at.c: wait OK after issuing AT+CNMA-command.
+      Thanks to matti.armanen at sci.fi for the patch.
+      [Msg-ID: 491E905E.908@sci.fi]
+
+2008-10-22  Stipe Tolj  <stolj at kannel.org>
+    * test/test_ota.c: write the binary ota_compile() output block to a file
+      cleanly.
+       
+2008-10-22  Stipe Tolj  <stolj at kannel.org>
+    * gw/ota_compiler.c: re-order INLINE attributs in oma_ota_attributes struct
+      to fit the order in the spec tables. NLC.
+
+2008-10-21  Stipe Tolj  <stolj at kannel.org>
+    * gw/smsc/smsc_smpp.c: fix possible segfaults in handle_pdu(), where we 
+      don't access the resp PDU structure correctly in the case of shutdown
+      phase.
+
+2008-10-10  Stipe Tolj  <stolj at kannel.org>
+    * doc/userguide/userguide.xml: add HTTP admin 'reload-lists' section.
+    * gw/bb_[http|smssconn].c, gw/bearerbox.h: implement HTTP admin command 
+      'reload-lists' to allow re-loading of the '[white|black]-list' on the fly 
+      while runtime. This helps a lot while the remote lists change over time 
+      and we want to keep bearerbox running and don't have to restart in order 
+      to re-load the lists.
+      
+2008-10-09  Stipe Tolj  <stolj at kannel.org>
+    * doc/userguide/userguide.xml: some typo fixes, using 'aspell check -H'.
+
+2008-10-07 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsbox.c: commited patch that allow longer account parameter and
+      clarify error message.
+      Thanks to Vincent CHAVANIS <v.chavanis_at_telemaque.fr> for this patch.
+      [Msg-ID: <48E35531.90603@telemaque.fr>]
+
+2008-09-30 Alexander Malysh <amalysh at kannel.org>
+    * contrib/kannel-monitor/index.php: applied patch that adds inbound/
+      outbound load and version info.
+      Thanks to Vincent CHAVANIS <v.chavanis_at_telemaque.fr> for this patch.
+      [Msg-ID: <48DA51D6.9010209@telemaque.fr>]
+
+2008-09-21 Alexander Malysh <amalysh at kannel.org>
+    * gw/bb_smscconn.c, gw/bearerbox.c, gw/load.c, gw/load.h:
+      added simple bandwidth meter with heuristic and needed changes to 
+      bearerbox status. Bearerbox status show now 3 speeds: 1 minute sample, 
+      5 minute sample, and over livetime. Example:
+      SMS: inbound (0.00,0.00,0.00) msg/sec, outbound (0.00,0.00,0.00) msg/sec
+
+2008-09-16  Stipe Tolj  <stolj at kannel.org>
+    * doc/userguide/userguide.xml: add reference to the below binfo support
+      of SMPP DLRs.
+    * gw/smsc/smsc_smpp.c: add 'binfo' support for SMPP DLRs, in order to proxy
+      the DLR message 'err' component via our msg struct value. This allows
+      users to specify the '%B' escape code in 'dlr-url' too, beside the
+      normal DLR value '%d' to provision the DLR error code to the backend
+      application.
+          
+2008-09-12 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_smpp.c: switched internal queue to gw_prioqueue instead of 
+      List.
+
+2008-08-24  Stipe Tolj  <stolj at kannel.org>
+    * gw/smsc/smsc_smpp.c: switch if condition statement to ensure we don't 
+      run into an assertion panic within octstr_get_char() for a NULL'ed
+      source_addr.
+      
+2008-08-13  Stipe Tolj  <stolj at kannel.org>
+    * gwlib/http.h: add complete list of HTTP/1.1 return codes. NLC.
+    
+2008-08-08  Stipe Tolj  <stolj at kannel.org>
+    * doc/doxygen/kannel.conf: change to 'CREATE_SUBDIRS = YES' for the sake
+      of filesystem IO performance during creation and read.
+
+2008-08-06 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/http.[ch]: added 2 new functions (http_set_client_timeout, 
+      http_cgivar_dump_into). Fixes:
+          1) use conn_open_ssl_nb in conn_pool_get
+          2) reinject redirect requests into the front of the queue
+          3) don't panic if we try to put slow client into port queue but
+             listen port was already closed
+          4) don't return already dead client in http_accept_request
+
+2008-08-06 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/fdset.[ch]: added new function fdset_set_timeout.
+
+2008-08-06 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/conn.[ch]: added new function conn_open_ssl_nb.
+
+2008-08-06 Alexander Malysh <amalysh at kannel.org>
+    * configure.in, configure: added MacOSX10.5.sdk
+
+2008-08-02 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/charset.c, radius/radius_acct.c, wap/wtp_resp.c: fixed compiler
+      warnings.
+
+2008-07-29 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_soap.c: fixed compilation on AIX in 64bit mode (converted
+      int64 into long long.
+      Thanks to "Bostock James" <james.bostock at comverse.com> for notice.
+
+2008-07-28 Alexander Malysh <amalysh at kannel.org>
+    * configure.in, configure: require C99 compiler because we use some of
+      features of this standart.
+      Thanks to "Bostock James" <james.bostock at comverse.com> for the patch.
+      Msg-ID: <84E219D8B81E5F4688C4A8992426CD83013D79D8@fr-par-mail01.comverse.com>
+
+2008-07-28 Alexander Malysh <amalysh at kannel.org>
+    * doc/userguide/userguide.xml: applied patch that clarify that float can
+      be used for throughput.
+      Thanks to Vincent CHAVANIS.
+
+2008-07-28 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_emi_x25.c: fixed X25 speed (AIX does not define B115200).
+      Thanks to "Bostock James" <james.bostock at comverse.com> for the patch
+      and to Vincent CHAVANIS for pushing it into CVS.
+      Msg-ID: <84E219D8B81E5F4688C4A8992426CD8301318309@fr-par-mail01.comverse.com>
+
+2008-07-27  Stipe Tolj  <stolj at kannel.org>
+    * gwlib/dbpool[_sqlite3].c: fix minor compiler warnings. NLC.
+
+2008-07-26 Alexander Malysh <amalysh at kannel.org>
+    * doc/userguide/userguide.xml, gw/smsc/smsc_http.c, gwlib/cfg.def: added new
+      config option 'use-ssl' that allow to use SSL for listen port.
+
+2008-07-24 Alexander Malysh <amalysh at kannel.org>
+    * configure.in, configure: fixed hardcoded library detection for oracle. Not
+      all OSs have .so.
+
+2008-07-24 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/dbpool.c: Fixed deadlock in dbpool_conn_consume if we don't have any
+      database connections available anymore and database is temporarely not
+      available.
+
+2008-07-24  Stipe Tolj  <stolj at kannel.org>
+    * gwlib/cfg.c: add more semantical error statement if we detect an unknown
+      group identifier. This shall help the users to find their config typos.
+      [Msg-Id: <48877F65.8060605@tolj.org>]
+
+2008-07-19  Stipe Tolj  <stolj at kannel.org>
+    * gwlib/mime.c: memory leak fix while duplicating headers.
+      Thanks to Paul Bagyenda for providing the patch.
+      [Msg-Id: <93C3937B-F5F7-4873-ABF4-391308F9ED09@dsmagic.com>]
+
+2008-07-15  Stipe Tolj  <stolj at kannel.org>
+    * gw/smsc/smsc_http.c: memory leak fix for Clickatell and Brunet HTTP API.
+      Thanks to Donald Jackson <donaldjster at gmail.com> for the patch.
+      [Msg-Id: <290be5f30807140151j5cf784u3b5fdcf3191b890d@mail.gmail.com>]
+
+2008-07-14  Stipe Tolj  <stolj at kannel.org>
+    * gw/smsc/smsc_http.c: add 'cliMsgId' support for the Clickatell HTTP API
+      to allow defining client side message IDs via our UUID string morphed
+      into a MD5 compliant string, added also support for 'alt-charset' config
+      directive support in smsc group for setting a different charset encoding
+      for the Clickatell HTTP API.
+
+2008-07-04  Stipe Tolj  <stolj at kannel.org>
+    * gw/shared.c: ensure we handle OCI_[MINOR|MAJOR]_VERSION only if they 
+      are defined in the oci.h header. Pre Oracle 10 versions seem to lack this.
+      Thanks to James Bostock <james.bostock at comverse.com> for the patch.
+      [Msg-Id: <84E219D8B81E5F4688C4A8992426CD83012A4AFE@fr-par-mail01.comverse.com>] 
+
+2008-07-03  Andreas Fink <andreas at fink.org>
+    * gw/smsc_at.c: size_t is unsigned so if -1 is returned, we never catch it.
+
+2008-07-03  Stipe Tolj  <stolj at kannel.org>
+    * gwlib/gwthread[-pthread].[ch]: add function gwthread_sleep_micro() which
+      allows sleep of microseconds. Thanks to Werner Coetzee 
+      <werner.coetzee at clickatell.com> for providing this contribution.
+      [Msg-Id: <86E9DA9FF04EBD468B3574F22A0B0DB648811780C4@comms01-cpt.internal.clickatell.com>]
+
+2008-07-02  Stipe Tolj  <stolj at kannel.org>
+    * configure[.in]: add support for AIX 64bit builds via setting the ar
+      archiever call in $AR env variable.
+      Thanks to James Bostock <james.bostock at comverse.com> for his AIX 
+      contributions.
+      [Msg-Id: <84E219D8B81E5F4688C4A8992426CD83012A44E9@fr-par-mail01.comverse.com>] 
+
+2008-07-02  Stipe Tolj  <stolj at kannel.org>
+    * gwlib/mime.c: fix and relax function mime_entity_to_octstr() for end of
+      line chars. Thanks to Paul Bagyenda for providing the patch.
+      [Msg-Id: <841FABF4-5733-4610-B097-19120DF0CD4A@dsmagic.com>]
+    * test/mime-multipart.txt: demo MIME multipart input file for test/
+      test_mime_multipart.c.  
+
+2008-06-30  Stipe Tolj  <stolj at kannel.org>
+    * test/test_urltrans.c: fix compiler warning. NLC.
+
+2008-06-24  Stipe Tolj  <stolj at kannel.org>
+    * Makefile.in: add 'datarootdir' reference which is required for
+      autoconf 2.60 (and higher) output files.
+      
+2008-06-24  Stipe Tolj  <stolj at kannel.org>
+    * configure[.in]: fix shell unary expression error. NLC.
+    
+2008-06-24  Stipe Tolj  <stolj at kannel.org>
+    * configure[.in]: fix [] bracked output, and change --with-sqlite to
+      --with-sqlite2 to make the difference to more recent sqlite3 version
+      clear.
+      
+2008-06-24  Stipe Tolj  <stolj at kannel.org>
+    * gw/smsc/smsc_at.c: fix compiler warnings. NLC.
+    
+2008-06-24 Alexander Malysh <amalysh at kannel.org>
+    * doc/userguide/userguide.xml, gw/smsbox.c, gw/urltrans.[ch], 
+      test/test_urltrans.c: convert keyword handling to use regex and allow 
+      keyword-regex to match the whole msg body instead of only the first 
+      word. This patch doesn't change behaviour of keyword handling except 
+      keyword-regex now match whole message body. Additionaly, this patch 
+      adds escape code '%O' for DCS because it make sense to have DCS as 
+      whole instead of splitted into fields.
+
+2008-06-24  Andreas Fink  <andreas at fink.org>
+    * gw/smsc/smsc_at.c: support for protocol type = telnet
+      compared to rawtcp it does interpret telnet escape sequences.
+      Also supports specifying smsc-username / smsc-password to log in
+      on the access server. New params are login-prompt and password-prompt
+
+2008-06-13  Stipe Tolj  <stolj at kannel.org>
+    * gw/smsc/smsc_smpp.c: fix possible assertion check panic while calling
+      octstr_get_char() on the source_addr field, which may be NULL according
+      to SMPP v3.4 specs.
+
+2008-06-09 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_emi.c: fixed name issue when we use alternate host/port.
+      Thanks to Vincent CHAVANIS <v.chavanis at telemaque.fr> for spotting this
+      and provided patch.
+
+2008-05-31  Stipe Tolj  <stolj at kannel.org>
+    * wap/wsp_headers.[ch]: fix encoding of 'Content-Id' WSP header.
+      Thanks to Paul Bagyenda from Mbuni for the patch.
+      [Msg-Id: <96EDF863-5963-48C4-964D-8A8E375544CC@dsmagic.com>]
+
+2008-04-24  Stipe Tolj  <stolj at kannel.org>
+    * gw/bb_store_[file|spool].c: use internal function pointer while
+      packing/unpacking the Msg struct.
+    * gw/bb_store.[ch]: add store_msg_pack and store_msg_unpack function
+      pointers, allowing a box to pass their own msg_[un]pack() functions
+      to the storage subsystem, in case they use a different serialization.
+    * gw/bearerbox.c, test/test_store_dump.c: add the function pointers
+      for packing/unpack to store_init() call.
+    * gw/msg.[ch]: we need a wrapper for msg_unpack(), for passing it as
+      function pointer argument, since it's a preprocessor macro.
+
+2008-04-21  Stipe Tolj  <stolj at kannel.org>
+    * gwlib/socket.[ch]: add host_port() function in accordance to host_ip()
+      to get the port number of a TCP connection in use.
+
+2008-04-17  Andreas Fink <andreas at fink.org>
+    * gw/smsc/smsc_ois.c: fixed compiler warning.
+    
+2008-04-16  Andreas Fink <andreas at fink.org>
+    * wap/wsp_[strings|unit|init|pdu].c: fixed compiler warnings due to 
+      signed/unsigned char mismatch.
+
+2008-04-09  Stipe Tolj  <stolj at kannel.org>
+    * Makefile.in: fix 'make clean' target, by fixing find expression.
+
+2008-04-09	Stipe Tolj  <stolj at kannel.org>
+    * doc/userguide/userguide.xml: add missing documentation block for 
+      'alt-dcs' in smsc group.
+
+2008-03-23	Stipe Tolj  <stolj at kannel.org>
+    * gw/smsc/smsc_at.c: fix at2_wait_modem_command() to ignore specific OK
+      responses for AT+CNMA acknowledges.
+      Thanks to Marius Huysamen <mhuysamen at mhg.co.za> for providing patch.
+      [Msg-Id: <47C93579.8000409@mhg.co.za>]
+
+2008-03-15 Alexander Malysh <amalysh at kannel.org>
+    * doc/userguide/userguide.xml, gw/smscconn.c, gw/smscconn_p.h,
+      gwlib/cfg.def: Implemented max-sms-octets config option that
+      allows to set maximum length of SMS for SMSC.
+
+2008-03-10  Andreas Fink <andreas at fink.org>
+    * gw/smsc/*: fixed a lot of warning due to pointer type mismatch
+    ( (char *) versus unsinge char * and the like)
+
+2008-03-06  Andreas Fink <andreas at fink.org>
+    * gw/smsc/smsc_at.c: fixed an infinite loop for receiving delivery
+      reports with SMSC string being empty.
+
+2008-02-21	Stipe Tolj  <stolj at kannel.org>
+    * gwlib/fdset.h: remove trailing ';' in a macro. 
+      Thanks to Paul Bagyenda from Mbuni for spotting it.
+      [Msg-Id: <5B21C330-DA5A-4E6D-B431-9AB31479A446@dsmagic.com>]
+      
+2008-02-19	Stipe Tolj  <stolj at kannel.org>
+    * gw/dlr.c: adding more debug output for the warning() in case the DLR 
+      could not be resolved. NLC.
+    * gw/wap_push_pap_compiler.c: typo fix in comment. NLC.
+      [Msg-Id: <0a5a01c872e6$4c682f80$9600a8c0@VINCE>]
+
+2008-02-07	Stipe Tolj  <stolj at kannel.org>
+    * gw/wbxml_tokens.def, wap/wsp_strings.def: updates from OMNA page.
+    
+2008-02-02	Stipe Tolj  <stolj at kannel.org>
+    * gw/ota_compiler.c: fix bug #405, where we forget to switch codepage
+      when no inline value is processed for WBXML compilation. Thanks go to
+      Maxim Sobolev <sobomax at sippysoft.com> for reporting and proving patch.
+      [Msg-Id: <47A3C8E6.4090008@sippysoft.com>]
+    
+2008-02-01	Stipe Tolj  <stolj at kannel.org>
+    * Makefile.in: we need first and second level directories to care of.
+    
+2008-02-01	Stipe Tolj  <stolj at kannel.org>
+    * utils/start-stop-daemon.c: add Cygwin platform support to allow clean
+      runs for the preprocessing make target.
+    
+2008-02-01	Stipe Tolj  <stolj at kannel.org>
+    * doc/doxygen/kannel.conf: doxygen config file for generating source
+      code documentation.
+    
+2008-02-01	Stipe Tolj  <stolj at kannel.org>
+    * Makefile.in: ensure we get second directory level too for the 
+      preprocessing target.
+    
+2008-01-31	Stipe Tolj  <stolj at kannel.org>
+    * Makefile.in: add build target 'pp' to allow building preprocessed 
+      outputs of source files via $(CC) -E. This can be used to verify
+      how our massive usage of preprocessing macros are resolved. NLC.
+       
+2008-01-29 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/gw-prioqueue.c: Implemented extra sequence in the gw-prioqueue
+      that will guarantee the order of the equal messages. It should fix #436.
+
+2008-01-24 Alexander Malysh <amalysh at kannel.org>
+    * gw/sms.c: fixed truncating of the message if split-chars defined in the
+      config. Thanks to Giulio Harding for bug report.
+
+2008-01-22 Alexander Malysh <amalysh at kannel.org>
+    * gw/html.c: fixed #425: SMSBox goes into infinite loop when it encounter
+      hex escape sequence in html response.
+
+2008-01-09  Stipe Tolj  <stolj at kannel.org>
+    * */*: update LICENSE preamble block to 2008.
+    
+2008-01-09  Stipe Tolj  <stolj at kannel.org>
+   * gw/[sms|wap]box.c: incorporate 'http-proxy-ssl' directive handling.
+   * gwlib/cfg.def: add 'http-proxy-ssl' config directive to core group.
+   * gwlib/http.[ch]: fix a critical bug when proxy'ing https:// schema URLs.
+     We interpreted the SSL scheme for the HTTP proxy call too, even while
+     this should be a plain http:// call, and the proxy itself would then
+     use https:// to poll the resource. Now we do things right, which means
+     per default plain HTTP is send to proxy. If we want SSL-encryption
+     towards the HTTP proxy itself, then 'http-proxy-ssl' boolean config
+     directive can be set.
+   * test/test_[http|xmlrpc].c: make use of the 'http-proxy-ssl' feature.
+     Thanks to Carlos Perez <Carlos.Perez at acecomm.com> for this report.
+     [Msg-Id: <OF2A430D1A.E83BE0A3-ON852573CA.005A2F94-852573CA.005A58F0@acec>]
+
+2007-12-21  Stipe Tolj  <stolj at kannel.org>
+   * gw/wap_push_ppg_pushuser.c: remove HTTP Authorization header which is
+     encoded in the bytestream. Thanks to Mathieu Bruneau 
+     <Mathieu.Bruneau at gameloft.com> for reporting and providing patch.
+     [Msg-Id: <48797AC0E8188A408AC4D3C3A091450D022B2D7C@MAIL01.gameloft.org>]
+
+2007-10-18 Alexander Malysh <amalysh at kannel.org>
+   * gw/bb_smscconn.c: fixed segfault when concat handler disabled.
+     Thanks to Vincent CHAVANIS for patch.
+
+2007-10-08 Alexander Malysh <amalysh at kannel.org>
+   * gw/smsc/smsc_at.c: fixed memory leak when we receive DLR.
+
+2007-10-05 Alexander Malysh <amalysh at kannel.org>
+   * gw/smsc/smsc_at.c: reset reconnecting.
+
+2007-10-05 Alexander Malysh <amalysh at kannel.org>
+   * gw/smsc/smsc_at.c: fixed memleak.
+
+2007-10-03  Stipe Tolj  <stolj at kannel.org>
+   * gw/smsc/smsc_at.c: removed compiler warning. NLC.
+
+2007-10-01 Alexander Malysh <amalysh at kannel.org>
+   * gw/smsc/smsc_at.[ch]: applied patch that has the main goal to follow a
+     simple rule: "If the modem reports an error during SMS sending, don't
+     retry the sending, but ask it what it's got to say". This patch should
+     fix errors like this:
+     CMS ERROR: Unknown error. -> maybe Sim storage is full? I'll have a look
+     at it. (500)
+     Thanks to Andrija Petrovic <andrija.petrovic at software888.com> for this
+     patch.
+     [Msg-Id: <47010443.7000104@software888.com>
+
+2007-10-01 Alexander Malysh <amalysh at kannel.org>
+   * test/decode_emimsg.c: new version
+     - Fixes a segfault when we are decoding 52 operation response (eg 
+       ./decode_emimsg 03/00020/R/52/A///98)
+     - Operation 31 Ack/Nack is now supported
+     - Operation 5x Ack/Nack is now supported
+     - Fixes segfault when decoding 52 when xMSG is NULL
+     Thanks to Vincent CHAVANIS <vincent at telemaque.fr> for the patch.
+     [Msg-Id: <0d3f01c801bd$07a8f860$9600a8c0@vince>
+
+2007-09-27 Alexander Malysh <amalysh at kannel.org>
+   * gw/dlr.c: changed info to debug for the info that we still waiting for
+     dlr. Thanks to Vincent CHAVANIS for patch.
+
+2007-09-03  Stipe Tolj  <stolj at kannel.org>
+   * gwlbib/cfg.c: fixing memleak reported by valgrind when we use directory
+     inclusions.
+
+2007-08-29  Stipe Tolj  <stolj at kannel.org>
+   * gwlib/cfg.c: remove empty lines. NLC.
+   * gwlib/http.c: add 'Date' HTTP header to any HTTP response we pass out.
+   
+2007-08-25  Stipe Tolj  <stolj at kannel.org>
+   * gwlib/gwthread-pthread.c: fix valgrind conditional jump error report
+     in gwthread_pool() for .revents value.
+
+2007-08-03 Alexander Malysh <amalysh at kannel.org>
+   * gw/smsc/smpp_pdu.c: whitespaces fixes and various PDU parsing fixes and
+     enhancements. This should not break anything.
+
+2007-08-03 Alexander Malysh <amalysh at kannel.org>
+   * doc/userguide/userguide.xml, gw/smsbox.c: fixed userguide for XML post.
+     Also fixed XML Post parsing of smsc-id to match userguide. It's possible
+     that this will break existing applications.
+
+2007-07-22 Alexander Malysh <amalysh at kannel.org>
+   * gw/ota_compiler.c: added new WLAN-related tokens in order to get new
+     Nokia WiFi/VoIP OTA provisioning working. See OMA-DM-CP-2005-001R02-CR_CP-WLAN-.doc.
+     This fixed #406.
+     Thanks to sobomax for patch.
+
+2007-07-22 Alexander Malysh <amalysh at kannel.org>
+   * gw/smsc/smsc_at.c: added CLOCAL to c_cflag. This fixed #404.
+     Thanks to sobomax for reporting and patch.
+
+2007-07-22 Alexander Malysh <amalysh at kannel.org>
+   * gw/smsc/smsc_at.c: set reconnecting = 1 if we have issues opening
+     device. So we will sleep reconnect time instead of hammering on
+     maybe not existing device. This should fix #412.
+
+2007-07-22 Alexander Malysh <amalysh at kannel.org>
+   * gwlib/mime.c: don't add an extra CRLF to the end of a message part.
+     Thanks to Paul Bagyenda <bagyenda at dsmagic.com>.
+     [Msg-Id: <F83BC280-AF9A-4347-A255-6FF1A314C525@dsmagic.com>]
+
+2007-06-14  Stipe Tolj  <stolj at kannel.org>
+   * gw/dlr.h: fix bitmask for DLR_IS_NOT_FINAL macro, since DLR_SMSC_FAIL is
+     a final state, we need to ommit it here to be semantically correct.
+
+2007-06-12 Alexander Malysh <amalysh at kannel.org>
+   * gw/bb_smscconn.c: fixed segfault and simplified handling of timeouted
+     concatenated MOs.
+
+2007-06-12 Alexander Malysh <amalysh at kannel.org>
+   * gwlib/list.c: fixed gwlist_timed_consume.
+
+2007-06-01 Alexander Malysh <amalysh at kannel.org>
+   * doc/userguide/userguide.xml, gw/bb_smscconn.c, gw/sms.c,
+     gwlib/cfg.def: applied MO concatenation patch. This patch was
+     originally written by Paul Bagyenda and then extended by me.
+     Thanks Paul!
+
+2007-06-01 Alexander Malysh <amalysh at kannel.org>
+   * gw/smsc/smsc_smpp.c: removed GSM-03.38 kludge because it's not
+     necessary anymore.
+
+2007-05-20  Stipe Tolj  <stolj at kannel.org>
+   * gw/smsc/smsc_at.c: fix a possible segfault while read()ing on the device
+     file descriptor. Thanks to Ben Suffolk <ben@vanilla.net> for the patch.
+     [Msg-Id: <C7D0A46D-FD3B-4C28-8E25-22BF3EA38DAE@vanilla.net>]
+   
+2007-05-18 Alexander Malysh <amalysh at kannel.org>
+   * gwlib/list.c: use macro instead of direct access.
+
+2007-05-18  Stipe Tolj  <stolj at kannel.org>
+   * gwlib/charset.c: imunize charset_[gsm|utf8]_to_[utf8|gsm]() functions 
+     for NULL argument. Currently these would panic due to octstr_append() 
+     called at the end with a NULL argument. NLC.
+   
+2007-05-15 Alexander Malysh <amalysh at kannel.org>
+   * gwlib/list.[ch]: added new function gwlist_timed_consume that works
+     as gwlist_consume except that we are able to specify timeout.
+
+2007-04-24  Andreas Fink <andreas at fink.org>
+   * gwlib/gwlib.c: call log_init before http_init and socket_init so error
+     messages from those init calls actually are able to appear on the screen
+     instead of crashing bearerbox at start. Reported under MacOS X by
+     Alejandro Guerrieri. Only happened if hostname was not set.
+     ERROR: Can't find out official hostname for this host, using `xyz' instead.
+     was being sent to a logfile not open... -> crash
+
+2007-04-20  Stipe Tolj  <stolj at kannel.org>
+   * aclocal.m4: fixed typo and updated email references. NLC.
+   * Makefile.in: adding creation of symlink for 'gw-config' if we have used
+     '--with-suffix' while configure, otherwise gw-config is also appended
+     with suffix string and it does not comply with external components
+     depending to find a 'gw-config' in the PATH and use the cflags and libs
+     information for their own builds against Kannel libs. This is safe now
+     for both, w/o suffix.
+
+2007-04-18 Alexander Malysh <amalysh at kannel.org>
+   * doc/userguide/userguide.xml, gw/bb_boxc.c, gw/bb_smscconn.c, gw/bb_smscconn_cb.h,
+     gw/bearerbox.c, gw/bearerbox.h, gwlib/cfg.def: applied patch that implements
+     outgoing queue (MT) limit.
+
+2007-04-18 Alexander Malysh <amalysh at kannel.org>
+   * gwlib/mime.c: applied patch should help take care of issues where the
+     Content-ID for the start element is enclosed in '<' '>'.
+     Thanks to Paul Bagyenda <bagyenda at dsmagic.com> for the patch.
+     [Msg-Id: <D4225F55-C681-4B36-B383-67B8B9C7DE46@dsmagic.com>]
+
+2007-04-16  Stipe Tolj  <stolj at kannel.org>
+   * gw/smsc/smsc_http.c: fixing default charset encoding policy in chaining
+     Kannel instances via 'system-type = kannel'. As we use now UTF-8 as
+     internal encoding, but still WINDOWS-1252 as default encoding for 
+     smsbox's sendsms HTTP interace, we need to forward explicetly the CGI
+     variable charset to the next instance here to let the smsbox know that
+     we pass the message in UFT-8 format for normal text messages.
+     This is a temporary issue, as long as smsbox's sendsms HTTP interface
+     isn't switched to UTF-8, which we should do in next major revision.
+
+2007-04-14  Stipe Tolj  <stolj at kannel.org>
+   * gwlib/octstr.c: imunize octstr_truncate() for NULL argument. Currently
+     this would cause a panic when charset_utf8_to_gsm(NULL) is called. Now
+     same safety bail-out behaviour as octstr_insert().
+
+2007-04-11 Alexander Malysh <amalysh at kannel.org>
+   * gw/sms.c: fixed #397 that smsbox blocked HTTP requests.
+
+2007-04-04  Stipe Tolj  <stolj at kannel.org>
+   * configure[.in]: modified the docbook.dsl search path to be more generic
+     since some distros have more recent version paths (ie. 1.79 for FC5 on 
+     x86_86 architectures), and we don't want to sum up every single version.
+     We relly on any match we get in the for shell loop and continue.
+
+2007-04-03  Stipe Tolj  <stolj at kannel.org>
+   * doc/userguide/userguide.xml: documented change of 'smsbox-route' group
+     logic from the commit on 2007-02-27.
+
+2007-04-03 Alexander Malysh <amalysh at kannel.org>
+   * gw/dlr.h: changed DLR_SMSC_FAIL back to 0x10.
+     Thanks to Ben Suffolk <ben at vanilla.net> for patch.
+
+2007-04-02 Alexander Malysh <amalysh at kannel.org>
+   * gwlib/octstr.c: prevent possible heap smashing
+
+2007-03-30 Alexander Malysh <amalysh at kannel.org>
+   * wap/wsp_caps.c: fixed possible heap smashing.
+
+2007-02-27  Stipe Tolj  <stolj at kannel.org>
+(CB) * gwlib/cfg.def, gw/bb_boxc.c: re-defining logic for the 'smsbox-route' group
+     that is used for MO routing to different (identified) smsbox connections.
+     We know support the splitting of shortcodes depending on various source
+     smsc-ids to various smsbox connections. So this behaviour is more generic
+     then the one before. The naming convention changed, this needs to be noted
+     in the NEWS file for upcoming relase.
+     [Msg-Id: <45C25496.4020003@tolj.org>]
+     
+2007-02-27  Stipe Tolj  <stolj at kannel.org>
+   * gw/smsc/emimsg.[ch]: adding function emimsg_duplicate() to allow
+     duplication of the struct. This is usefull in various ways and places.
+
+2007-02-27 Alexander Malysh <amalysh at kannel.org>
+   * gwlib/octstr.h: fixed octstr_dump that dumped Octstr with GW_INFO loglevel.
+
+2007-02-26 Alexander Malysh <amalysh at kannel.org>
+   * gw/smsc/smsc_at.c: fixed bug that AT SMSC put UDH without UDH len.
+     Thanks to Paul Bagyenda <bagyenda at dsmagic.com> for the patch.
+
+2007-02-26 Alexander Malysh <amalysh at kannel.org>
+   * gw/sms.c: fixed two issues (1) max_part_len calculation;
+     (2) we dropped last utf-8 multibyte sequence.
+     [Msg-ID: <op.tnch9hnmran2ed@ppc.local>]
+
+2007-01-31 Alexander Malysh <amalysh at kannel.org>
+   * gw/bb_smscconn.c: use enum in return from bb_smscconn_receive.
+
+2007-01-29 Andreas Fink <andreas at fink.org>
+   * gwlib/octstr.c: fixed octstr_split for cases where first occurence of 
+     separator is at position 0
+
+2007-01-26 Alexander Malysh <amalysh at kannel.org>
+   * gwlib/log.c: fixed deadlock from my last commit.
+
+2007-01-26 Alexander Malysh <amalysh at kannel.org>
+   * gwlib/cfg.c, gwlib/gwlib.c: fixed Stipe's last commit.
+
+2007-01-26  Stipe Tolj  <stolj at kannel.org>
+   * gwlib/cfg.[ch]: fix memleak and revert Alex's commit on destroying the 
+     hook lists in cfg_destroy(). We need to do this in a global module scope,
+     so we introduce cfg_[init|shudown]().
+   * gwlib/gwlib.c: call cfg_init() and cfg_shutdown() while gwlib usage.
+     Thanks to Florian Bruch for pointing to this inconsistancy.
+
+2007-01-26 Alexander Malysh <amalysh at kannel.org>
+   * gwlib/log.c: converted usage of List as rwlock to real RWLock and fixed
+     some deadlocks. Additionaly we now have clean memleak stack when compiled
+     with memcheck.
+
+2007-01-23  Stipe Tolj  <stolj at kannel.org>
+   * gw/smsc/smsc_smpp.c, gw/ota_compiler.c, gw/wap-appl.c, gwlib/octstr.c,
+     test/fakesmsc.c, test/test_[conn|list].c: fixing compiler warnings due to
+     unused or uninitialized variables. NLC.
+
+2007-01-22 Alexander Malysh <amalysh at kannel.org>
+   *  doc/userguide/userguide.xml, gw/bb_store.c, gw/bb_store.h, gw/bb_store_file.c,
+      gw/bb_store_spool.c, gw/bearerbox.c, gw/bearerbox.h, gwlib/cfg.def,
+      test/test_store_dump.c: apllied patch that adds additinaly support for store
+      spool directory.
+      [Msg-ID: <op.thkqb6jxran2ed@ppc.local>]
+
+2007-01-22 Alexander Malysh <amalysh at kannel.org>
+   * gw/bb_boxc.c: implemented resend of MO/DLR messages if some box sent nack
+     with ack_failed_tmp status.
+
+2007-01-22 Alexander Malysh <amalysh at kannel.org>
+   * gwlib/gwmem-native.c: reverted last Stipe's commit. It doesn do anything usefull.
+
+2007-01-22  Stipe Tolj  <stolj at kannel.org>
+   * gwlib/gwmem-native.c: segfault prevention by setting all free()ed 
+     pointers to NULL. This follows the secure coding principles of CERT-CC.
+     A non NULLed pointer may be containing bogus after free() and a redo
+     of gw_free() and hence free() will lead to segfault eventually.
+     
+2007-01-22  Stipe Tolj  <stolj at kannel.org>
+   * gwlib/dbpool_sqlite.c: remove gw_free() in sqlite_close_conn(), since
+     sqlite's sqlite_close() will give a bogus pointer and we segfault.
+   * gwlib/dbpool_sqlite3.c: same as above, also fix a deadlock while closing
+     connection due to typo in while break condition.
+   * test/test_dbpool.c: add sqlite3 sections to the test
+   
+2007-01-22  Stipe Tolj  <stolj at kannel.org>
+    * test/test_charset.c: simple test checking GSM->UTF-8->GSM conversion.
+
+2007-01-14 Alexander Malysh <amalysh at kannel.org>
+    * gw/bb_smscconn.c: set smsc_running = 0 in smsc2_cleanup instead in
+      router thread because so we never call smsc2_cleanup.
+    * gwlib/cfg.c: fixed memleak. we should consider moving hooks to Cfg struct.
+
+2007-01-11  Stipe Tolj  <stolj at kannel.org>
+    * gwlib/cfg.def: adds config directive 'dlr-url' to smsc group to allow
+      DLR bridging via HTTP SMSC type 'kannel' connections.
+    * gw/smsc/smsc_http.c: adding generic DLR handling for type 'kannel',
+      which allows point-to-point DLR forwarding though the whole kannel 
+      instance chain. Uses 'dlr-url' to identify the DLR inbound port to the
+      next kannel instance in chain.
+      
+2007-01-09  Stipe Tolj  <stolj at kannel.org>
+    * test/decode_emimsg.c: adding a simple tool that decodes a EMI/UCP stream
+      PDU and prints more readable informations about it. Thanks to Vincent.
+      [Msg-Id: <1ad701c6e08d$88bee420$9600a8c0@vince>]
+    
+2007-01-08  Stipe Tolj  <stolj at kannel.org>
+    * gwlib/mime.c: fixing segfault in MIME multipart parsing. Thanks to Paul
+      for providing the patch, and Vincent and Martin for review.
+      [Msg-Id: <D19E3735-BE32-4934-987A-B9D6A3BA31CB@dsmagic.com>]
+      
+2007-01-08  Stipe Tolj  <stolj at kannel.org>
+    * */*: update LICENSE preamble block to 2007.
+
+2007-01-08  Stipe Tolj  <stolj at kannel.org>
+    * gwlib/charset.c: removing Alex's debugging octstr_dump() calls from 
+      charset_utf8_to_gsm(). NLC.
+    
+2007-01-08  Stipe Tolj  <stolj at kannel.org>
+    * gw/smsc/smsc_fake.c: enhancing the faked DLR support. Now we pass the ACK
+      of the MT first to abstraction layer, in order to obtain SMSC success DLR,
+      then care about the final DLR indicating success.
+
+2007-01-08  Stipe Tolj  <stolj at kannel.org>
+	* gw/dlr.h: fixing typo for DLR_SMSC_FAIL macro, obviously this is 0x16.
+
+2007-01-07  Stipe Tolj  <stolj at kannel.org>
+    * gwlib/charset.[ch]: re-add prototypes and function charset_latin1_to_gsm()
+      and charset_gsm_to_latin1() for the sake of backward compatibility of 
+      external boxes using Kannel core libs. This should be reviewed and merged
+      into single array for latin1 and utf-8 transcoding values.
+
+2007-01-07  Stipe Tolj  <stolj at kannel.org>
+    * gw/dlr.h: adding macro DLR_IS_NOT_FINAL() for non-final DLR status mask.
+
+2006-12-19 Alexander Malysh <amalysh at kannel.org>
+    * gw/sms.c: fixed wrong length calculation for concatenated
+      messages. UDH send always as octets.
+
+2006-12-19 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/octstr.[ch]: fixed warning: inlining failed in call to
+      'octstr_convert_printable': function body not available.
+
+2006-12-19  Stipe Tolj  <stolj at kannel.org>
+    * gw/smsc/smsc_emi.c: fix charset re-encoding for OP/53 DLR text.
+      Thanks to Vincent for providing a patch.
+      [Msg-Id: <2ab401c71669$8afc34b0$9600a8c0@vince>]
+
+2006-12-14 Andreas Fink <andreas at fink.org>
+    * gwlib/list.c: fix mutex locking for gwlist_sort. It was using the wrong
+      mutex giving deadlocks if you did gwlist_lock(), gwlist_sort(), gwlist_unlock()
+      now also unlocking the right mutex if the list length was zero.
+
+2006-12-02  Stipe Tolj  <stolj at kannel.org>
+    * gw/smsc/smpp_pdu.c: moving 'Unknown TLV' output to WARNING for the sake
+      of log-file readability. User's may switch to appropriate log-level in
+      case their SMPP SMSC uses a lot of vendor-specific TLVs. NLC.
+      
+2006-12-01  Stipe Tolj  <stolj at kannel.org>
+    * gw/smsc/smsc_emi.c: some updates of references in comments. NLC.
+      Thanks to Vincent for providing a patch.
+      [Msg-Id: <0ac101c71542$ca5d3780$9600a8c0@vince>]
+      
+2006-11-29  Stipe Tolj  <stolj at kannel.org>
+    * gwlib/http.c: fixing case-insensitivity for MIME/HTTP header value
+      parameters. Thanks to Paul for patch and Enver for review.
+      [Msg-Id: <DEF58FCA-6522-47B6-BACB-8C6A46DE6D4B@dsmagic.com>]  
+
+2006-11-27 Andreas Fink <andreas at fink.org>
+    * gwlib/list.c: fix mutex locking for gwlist_sort. It was using the wrong
+      mutex giving deadlocks if you did gwlist_lock(), gwlist_sort(), gwlist_unlock()
+
+2006-11-23  Stipe Tolj  <stolj at kannel.org>
+    * gwlib/http.c: fix HTTP/1.1 keep-alive interpreation handling. We need to
+      check response headers in addition to HTTP status version to see if
+      server/proxy will allow us to act in persistant connection mode.
+
+2006-11-19  Stipe Tolj  <stolj at kannel.org>
+    * gw/ota_prov.c: fixing bug #356, where calltype parsing was not right.
+      Thanks a lot to Richad Kotal <info@waplikace.cz> for patch.
+      
+2006-11-19  Stipe Tolj  <stolj at kannel.org>
+    * configure[.in]: fixing bug #368 to support Oracle 10g, via 10.x instant 
+      client libs and headers. Thanks to Martin.
+    * gw/shared.c: added sqlite3 version output to version preamble, added
+      Oracle OCI version output.
+   
+2006-11-19  Stipe Tolj  <stolj at kannel.org>
+	* gw/bearerbox.c: resolves bug #369 by adding warning() calls for 
+	  --disable-sms or --disable-wap functions, so users are aware 
+	  that the function range is limited. Thanks to Martin for this patch. 
+	  Some more source code beauty via indention. NLC.
+	  
+2006-11-18  Stipe Tolj  <stolj at kannel.org>
+    * wap/wsp_headers.c: re-adding quote char (") recognizing within the 
+      wsp_field_value() that isolates header values. Thanks again to Paul.
+      [Msg-Id: <D594FE8B-729D-4183-BCFA-3337FE547D37@dsmagic.com>]
+      
+2006-11-18  Stipe Tolj  <stolj at kannel.org>
+    * gwlib/mime.c: fixing bug causing segfault due to destroyed, but then
+      reused Octstr pointer. Thanks to Paul for spotting this.
+      [Msg-Id: <E1F2DA11-C90B-49F5-9DC7-6481F44D14C7@dsmagic.com>]
+
+2006-11-18  Stipe Tolj  <stolj at kannel.org>
+    * configure[.in]: add /usr/lib64 search path within --with-ssl block, 
+      ie. FC5 on x64_64 has that lib64 layout for devel import libs.
+       
+2006-11-17  Stipe Tolj  <stolj at kannel.org>
+    * gw/smsbox.c: allow empty message responses.
+      Thanks to Colin Pitrat <colin.pitrat@bull.net> for this patch.
+      [Msg-Id: <44BCDE02.4090000@bull.net>]
+      
+2006-11-17  Stipe Tolj  <stolj at kannel.org>
+    * gw/wap_push_ppg.c: adding support to pass the 'from' source addr via
+      X-Kannel-From HTTP header in the PPG request.
+      Thanks to Christian Boustany <noorentertainment@yahoo.com> for this patch.
+      
+2006-11-17  Stipe Tolj  <stolj at kannel.org>
+    * doc/userguide/userguide.xml: section describing the new 'interactive' mode
+      for fakesmsc.
+    * test/fakesmsc.c: adding 'interactive' mode via stdin and stdout to allow
+      a more human like interaction with the fake smsc module.
+      Thanks to Alejandro Guerrieri <alejandro.guerrieri@gmail.com> for patch.
+      [Msg-Id: <cd6a81510610032000s2799a2c5uc2a255b15c53e899@mail.gmail.com>]
+
+2006-11-13  Stipe Tolj  <stolj at kannel.org>
+    * gw/smsc/smsc_smpp.c: relaxing the TON=1 must have >= 7 digits condition.
+      According to Andreas (see reference), there can be international routable
+      numbers with less then 7 digits. So we only drop a WARNING here and 
+      continue with processing. 
+      [Msg-Id: <0C09E1C0-D32C-41AA-AD14-4F8D849D92C4@fink.org>]
+      
+2006-11-11  Stipe Tolj  <stolj at kannel.org>
+    * gw/bb_alog.c: also add octstr_convert_printable() if custom access-log
+      formating is used.
+
+2006-11-10  Stipe Tolj  <stolj at kannel.org>
+    * gwlib/octstr.[ch]: adding function octstr_convert_printable() to allow
+      a simple convertion for an Ocstr to be printed in a printable locale
+      character set. Converts and non-printbale char to '.', as octstr_dump()
+      does.
+    * gw/bb_alog.c: ensure in bb_alog_sms() that we use octstr_convert_printable()
+      before calling alog() for DC_7BIT messages that still may contain control
+      sequences and hence break the "one-line-per-entry" rule.      
+
+2006-11-03 Alexander Malysh <amalysh at kannel.org>
+    * gw/bb_boxc.c: fixed message of order issue when we retry to deliver
+      to smsbox. Thanks to Ben Suffolk <ben at vanilla.net> for the patch.
+      [Msg-Id: <C1DA6177-EA8E-458A-9BE7-B329DEC793C3@vanilla.net>]
+
+2006-10-31 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/conn.c, gwlib/http.c: fixed race condition in
+      unregister/callback usage/destroy of callback data. The race is
+      as follow, spotted with help of http.c:
+	1 Thread				2 Thread
+      1) http:conn_pool_get			1) http:check_pool_conn
+      2) conn = XYZ
+      3) conn_unregister
+		in conn_unregister
+		destroy callbackdata
+						2) dict_get(conn_pool, key) -> crash
+                                                   because connback data already destroyed
+
+2006-10-26 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/http.c: security bug fix for http.c. We have issue when we
+      use keep alive connections with our connection pool. This is scenario
+      without a patch:
+          1) http_start_request(..., ssl=0,certkeyfile=NULL,our_host=NULL)
+          2) http_start_request(..., ssl=1,certkeyfile=XYZ,our_host=XYZ)
+      in (2) we will get from conn_pool_get connection from (1)!
+
+2006-10-13  Stipe Tolj  <stolj at kannel.org>
+    * gwlib/mime.c: fixing unquoting while contructing octstr from mime object.
+      Thanks to Paul for this fix.
+      [Msg-Id: <121E1E3B-AADA-4FC4-956A-AE410B416EF9@dsmagic.com>]
+    
+2006-10-13  Stipe Tolj  <stolj at kannel.org>
+    * gw/urltran.c: fxing alias support for sms-service in smsbox. Thanks to
+      Vincent for analysis and patch. Also removed debugging grp_dump() from
+      Alex' previous UTF-8 patch.
+      [Msg-Id: <000901c6eb10$e930c750$9600a8c0@vince>]
+      
+2006-10-10  Stipe Tolj  <stolj at kannel.org>
+    * gwlib/mime.c: fix MIME boundry check and fixup. Thanks to Paul for this.
+      [Msg-Id: <443F5E2B-781C-425C-8B85-E2D7ACEAA430@dsmagic.com>]
+      
+2006-10-10  Stipe Tolj  <stolj at kannel.org>
+    * configure[.in], gwlib/regex.h: ensure that we use the pcreposix wrapper 
+      lib for POSIX.1 instead of system regex if PCRE is enabled.
+   
+2006-10-06 Alexander Malysh <amalysh at kannel.org>
+(CB)  * gw/sms.c, gw/smsbox.c, gw/urltrans.c, gw/smsc/smsc_at.c, gw/smsc/smsc_cimd2.c,
+      gw/smsc/smsc_emi.c, gw/smsc/smsc_ois.c, gw/smsc/smsc_oisd.c, gw/smsc/smsc_smpp.c,
+      gw/smsc/smsc_soap.c, gwlib/charset.c, gwlib/charset.h, gwlib/latin1_to_gsm.h:
+      Applied patch that converts internal kannel charset to UTF-8. Please note that
+      I didn't add smsbox compatibility code, means smsbox expect text body to be 
+      encoded in UTF-8 as default also MOs will be forwarded in UTF-8. It could be
+      workarounded with charset cgi variable.
+
+2006-10-02  Stipe Tolj  <stolj at kannel.org>
+    * doc/userguide/userguide.xml: fix once again URL in example of 'generic'
+      in order not to use '&' char.
+    
+2006-10-02  Stipe Tolj  <stolj at kannel.org>
+    * doc/userguide/userguide.xml: fix URL in example of 'generic'
+      system-type of smsc http group. Obviously brakets indicate an
+      XML tag and jade doesn't like this.
+
+2006-10-01  Stipe Tolj  <stolj at kannel.org>
+    * doc/userguide/userguide.xml: fix typo delete in XML structure.
+    
+2006-10-01  Stipe Tolj  <stolj at kannel.org>
+    * doc/userguide/userguide.xml: updating SMSC HTTP section for new
+      'generic' system-type regex directives and a group example.
+    * gwlib/cfg.def: adding 'status-[success|tempfail|permfail]-regex'
+      to smsc group for 'generic' system-type of SMSC HTTP.
+    * gw/urltranc.[ch]: adding urltrans_fill_escape_codes() to make the
+      msg struct internal values available via the escape code function.
+    * gw/smsc/smsc_http.c: adding the new 'generic' system-type to allow
+      the usage of the escape code sequenced in send-url and regex parsing
+      of HTTP response. This new system-type may handle a lot of existing
+      properitary HTTP APIs of SMS gateway aggregators without the need to
+      code and add the explicite HTTP API to this module.
+
+2006-09-29  Stipe Tolj  <stolj at kannel.org>
+    * test/test_urltrans.c: modified argument list for urltrans_find(), 
+      according to previous patchset commit.
+    
+2006-09-29  Stipe Tolj  <stolj at kannel.org>
+    * doc/userguide/userguide.xml: section on new 'accepted-account' and
+      'accepted-account-regex' config directives for sms-service group.
+	* gwlib/cfg.def: adding 'accepted-account' and 'accepted-account-regex' 
+	  config directives for sms-service group.
+    * gw/smsbox.c, gw/urltrans.[ch]: adding service routing based on account
+      field. This allows routing of MO messages depending on the account set
+      by an aggregative SMSC provider.
+      Patchset submited by Alejandro Guerrieri <alejandro.guerrieri@gmail.com>
+      [Msg-Id: <cd6a81510607212039g1f805f25jaba5ef4249922aa5@mail.gmail.com>]
+      [Msg-Id: <cd6a81510607231933h2554dd44i9450f507bcb9f470@mail.gmail.com>]
+      
+2006-09-29  Stipe Tolj  <stolj at kannel.org>
+    * gw/smsc/smsc_fake.c: add TODO comment to add a SMPP DLR payload text
+      for a DLR returned back via fake module.
+    * gw/smsc/smsc_smpp.c: obey charset more closely in msg_to_pdu(), where
+      we don't call charset_latin1_to_gsm() if charset flag of msg struct
+      carries the "GSM-03.38" indication. This is not yet used by smsbox, but
+      may be used by external modules before we have a clean transition to
+      UTF-8 as internal charset and target charset indication via msg struct's
+      charset value. Also ensures now that we write a "FAILED DLR SMS" 
+      access-log entry if we receive a DLR, but can't find it via handle_dlr().
+    
+2006-09-29  Stipe Tolj  <stolj at kannel.org>
+    * gwlib/http.h: remove semicolon ';' from #define of http_receive_result(),
+      otherwise the macro is not usable in regular expressions in the code.
+      Thanks to Paul for pointing this out.
+      [Msg-Id: <100C7857-7696-4A6F-B5E4-B5B4D1735E00@dsmagic.com>] 
+     
+2006-09-25  Stipe Tolj  <stolj at kannel.org>
+    * Making stable release 1.4.1.

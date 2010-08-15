@@ -1,0 +1,609 @@
+2001-05-07  Richard Braakman  <dark@wapit.com>
+
+	* Making release 1.1.4.
+
+2001-05-07  Richard Braakman  <dark@wapit.com>
+
+	* gwlib/list.h: list_len(NULL) returns 0.  This has been true
+	for some time now.  Make it part of the documented interface.
+
+2001-05-07  Richard Braakman  <dark@wapit.com>
+
+	* gwlib/octstr.[ch]: Added octstr_dump_short() for dumping octstrs
+	that are expected to be short printable strings.  The output is
+	much shorter for such strings, but the function can still handle
+	any kind of octstr.
+
+	* gwlib/smpp_pdu.c: Made smpp_pdu_dump() use octstr_dump_short().
+
+2001-05-07  Richard Braakman  <dark@wapit.com>
+
+	* Updated NEWS file.
+
+2001-05-07  Uoti Urpala  <uau@wapit.com>
+
+	* gw/smsc_emi2.c: Changed error handling for (re)opening
+	connections, reorganized some code.
+
+2001-05-07  Richard Braakman  <dark@wapit.com>
+
+	* gw/smsc_smpp.c: Use system-type for receiver as well as transmitter.
+
+2001-05-06  Richard Braakman  <dark@wapit.com>
+
+	* gwlib/octstr.c: Fix edge cases in octstr_get_bits and
+	octstr_set_bits.
+
+2001-05-04  Richard Braakman  <dark@wapit.com>
+
+	* gw/smsc_cimd2.c: Made packet_encode_message() cope if the
+        sender field is not set.
+
+2001-05-04  Richard Braakman  <dark@wapit.com>
+
+	* configure.in, configure: Made libxml version check require
+	2.2.5 again, and added some output about the check.
+
+2001-05-04  Aarno Syvänen <syvanen@wapit.com>
+
+	* gw/wap_push_pap_compiler.c: Fixed an uninitialised variable
+
+2001-05-03  Tuomas Luttinen  <tuo@wapit.com>
+
+	* gw/wml_compiler.c (parse_text): A bug fix: added a check that around 
+	text emphasis the white space is not removed.
+
+2001-05-03  Lars Wirzenius  <liw@iki.fi>
+
+	* Makefile.in, configure.in: applied patch from Craig Emery to
+	slightly improve (and simplify!) building and configuring.
+
+2001-05-03  Lars Wirzenius  <liw@iki.fi>
+
+	* gw/smsbox.c: Log username (at info level) whenever someone
+	uses the sendsms service. Based on request from Johan du Buson.
+	
+	* gw/smsc_smpp.c: The transmitter thread is woken up as soon as
+	there is something to send. Previously it woke up only when it
+	was time to send the next enquire_link PDU. This was slighly slow.
+	
+	* test/drive_smpp.c: Deal with enquire_link PDUs.
+
+2001-05-03  Lars Wirzenius  <liw@iki.fi>
+
+	* gw/smsc_smpp.c: Implemented system-type and address-range
+	variables from the config file. In the I/O thread, timeouts
+	are calculated to the next time when enquire_link needs to be
+	sent, instead of using 1.0 seconds always. Configuration file
+	is checked that it specifies smsc-username and smsc-password.
+	
+	* test/drive_smpp.conf: Added missing smsc-username and
+	smsc-password.
+
+2001-05-03  Lars Wirzenius  <liw@iki.fi>
+
+	* gw/smsc_smpp.c: Partly rewritten to use a simpler thread
+	structure and to deal with I/O errors (such as broken
+	connections). Most of the code is the same, but it has been
+	rearranged.
+	
+	* test/test_smsc.c, gwlib/date.[ch]: Moved function
+	date_universal_now from test_smsc.c to date.c.
+	
+2001-05-03  Aarno Syvänen <syvanen@wapit.com>
+
+	* gw/wap_push_pap_compiler.[ch]: A compiler for compiling pap control
+	messages to wap events.
+
+	* gw/wap_push_ppg.c: Do not panic, when pi message does not not have
+	any headers (a warning instead). Corrected a misspelling. Use prefix
+	PAP in all enumerations defined by pap protocol.
+
+	* gw/wap_push_ppg.h: Another misspelling corrected. Hnadle default 
+	values of pap attributes (by reordering, so that the numeric equi-
+	valent of an attribute has value 0).
+
+	* gw/wap_push_pap.c: A new test version of pap module.
+
+	*wap/wap_events.def: Corrected a typo.
+
+2001-05-03  Nick Clarey  <nclarey@3glab.com>
+
+	* gw/smsc_at.c: Applied patch from Alex Judd (ajudd@snaz.com),
+	adding an automatic retry to message sending should it fail.
+
+2001-05-02  Richard Braakman  <dark@wapit.com>
+
+	* gw/smsc_cimd2.c: Fix encoding of text messages that have UDH.
+	(It got the length wrong due to a _probable_ misreading of the
+	spec.  If SMSCs implement what we thought it had said, then we
+        have a problem.)
+
+2001-05-02  Richard Braakman  <dark@wapit.com>
+
+	* gwlib/octstr.c: Made octstr_get_char() not crash if pos < 0.
+	It now returns -1 instead.
+
+2001-05-02  Richard Braakman  <dark@wapit.com>
+
+	* gw/wap_push_ppg.h, wap_push_pap.c: Renamed TRUE and FALSE
+	to PAP_TRUE and PAP_FALSE.  (These are enumerated protocol
+	values.)  Needed for portability to systems that predefine
+	TRUE and FALSE macros.
+
+2001-04-30  Richard Braakman  <dark@wapit.com>
+
+	* gw/smsc_{at,cimd2,ois,smpp}.c, gw/sms.h, gw/smpp_pdu.h:
+        Standardized on two data coding scheme values, called DCS_GSM_TEXT
+        and DCS_OCTET_DATA.  Not all protocols can use these, but at least
+	the ones that do will all use the same values.  Both have now been
+        chosen to set only the alphabet, and leave message class alone.
+
+2001-04-29  Derry Hamilton <rasilon@tardis.ed.ac.uk>
+
+	* configure.in,configure: Allow libxml versions between
+	2.2.10 and 2.2.19.
+
+2001-04-26  Lars Wirzenius  <liw@iki.fi>
+
+	* gw/smsc.c, gw/smsc_p.h, gw/smsc_smpp.c, gw/smscconn.c,
+	gw/smscconn_p.h: Converted SMPP driver to use the SMSCConn
+	interface. This is needed to improve reliablity of the driver,
+	which will happen next.
+
+2001-04-26  Richard Braakman  <dark@wapit.com>
+
+        * gw/smsc_cimd2.c: Reopen connection if SMSC does not respond
+        to "alive" request.
+
+2001-04-26  Richard Braakman  <dark@wapit.com>
+
+	* gwlib/http.c: Handle 100-Continue responses.
+
+2001-04-26  Richard Braakman  <dark@wapit.com>
+
+	* gw/smsc_cimd2.c: Stopped sending "delivery request" when
+        logging in.  It is not needed in the normal configuration, and
+        it confuses some SMSCs.  Thanks to Antti Valtokari for tracking
+	this down.  (If it _is_ needed in your configuration, then you
+        will not get messages that arrived while Kannel wasn't connected.)
+
+	* doc/userguide/userguide.xml: Explain what configuration the
+	cimd2 driver expects from the SMSC.
+	
+2001-04-25  Tuomas Luttinen  <tuo@wapit.com>
+
+	* configure[.in] : Kannel now requires libxml 2.2.5 or newer. Reasons 
+	for this are: *encondingAliases functions that were included in 2.2.3
+	              *a bug that affects XML attributes in 2.2.3 and 2.2.4
+
+2001-04-25  Uoti Urpala  <uau@wapit.com>
+
+	* gw/smsc_emi2.c, gw/emimsg.c: Changed debugging output, made
+	reconnections more robust.
+
+2001-04-25  Richard Braakman  <dark@wapit.com>
+
+	* gw/smsc_at.c: In pdu_encode(), revert to using a Protocol-ID
+        of 0 (implicit) rather than 0x1F (which doesn't seem to be
+        defined).  This might be the key to the problems people have
+        had with this module.  Please let us know.
+
+2001-04-25  Richard Braakman  <dark@wapit.com>
+
+	* doc/TESTCASES: Removed, we have "make check" now.
+
+2001-04-24  Uoti Urpala  <uau@wapit.com>
+
+	* doc/userguide/userguide.xml: Added information about emi2.
+
+2001-04-24  Lars Wirzenius  <liw@iki.fi>
+
+	* gw/smsc_smpp.c, test/test_smsc.c: Implemented sending of
+	enquire_link packets and handling of their responses. This is
+	very simplistic, still: It doesn't check that the responses
+	are actually received. That will have to be implemented later.
+
+2001-04-24  Richard Braakman  <dark@wapit.com>
+
+	* gw/smsc_wrapper.c: Produce an info log when a reconnection
+	attempt succeeds.
+
+2001-04-23  Lars Wirzenius  <liw@iki.fi>
+
+	* gwlib/octstr.c, test/fakesmsc.c, utils/start-stop-daemon.c,
+	wap/wsp_push_client_machine.def, wap/wsp_session.c: Applied
+	manually parts of patch send by Dirk-Willem van Gulik as
+	improvements for MacOS X. Mainly this included renaming of some
+	local variables (uint -> ui), presumably because MacOS X defines
+	uint as a macro. Also reformatted fakesmsc and start-stop-daemon
+	output and corrected preprocessor syntax.
+	
+2001-04-23  Richard Braakman  <dark@wapit.com>
+
+	* gwlib/http.[ch]: Added support for HEAD method, supplied
+	by Jarkko Kovala.
+
+2001-04-23  Richard Braakman  <dark@wapit.com>
+
+	* gwlib/socket.c: Clear sockaddr_in structure before using it,
+	to make FreeBSD happier.
+
+2001-04-21  Uoti Urpala  <uau@wapit.com>
+
+	* gw/smsc_emi2.c: Fixed a stupid bug in the previous fix.
+
+2001-04-20  Uoti Urpala  <uau@wapit.com>
+
+	* gw/smsc_emi2.c: Fixed a bug in SMSC time stamp parsing.
+
+2001-04-19  Richard Braakman  <dark@wapit.com>
+
+	* gw/smsbox.c: Fixed bad assertion in prepend_catenation_udh().
+
+2001-04-18  Richard Braakman  <dark@wapit.com>
+
+	* gwlib/gwthread-pthread.c: Made gwthread_join safe.
+
+2001-04-18  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/bb_store.c: updated writing to file a bit. Still problem if
+	messages arrive faster than store_cleanup works, needs to modify
+	to use hash at some point
+
+	* gw/bb_smscconn.c: changed so that when shutting down, ignores
+	messages that cannot be routed. So if you have not enabled
+	SMS-store, some messages can be lost.
+	
+2001-04-18  Kalle Marjola  <rpr@wapit.com>
+
+	* doc/userguide/userguide.xml: fixed some typos 
+
+2001-04-17  Uoti Urpala  <uau@wapit.com>
+
+	* gw/smsc_emi2.c, gw/emimsg.[ch]: Added support for operation type
+	01, other changes to work with different SMSC setups.
+
+2001-04-17  Richard Braakman  <dark@wapit.com>
+
+	* gw/urltrans.c: In strip_keyword(), use the right test for
+	end of octstr.  This fixes handling of messages that only
+	have the keyword.
+
+2001-04-17  Lars Wirzenius  <liw@iki.fi>
+
+	* gwlib/http.c: When the http module is shut down, set run_status
+	to limbo so it can be restarted. Paul Keogh wanted this so that
+	(parts of) Kannel can run as a COM object.
+
+2001-04-17  Lars Wirzenius  <liw@iki.fi>
+
+	* doc/CodingStyle: Added a paragraph about CVS tags.
+
+2001-04-16  Richard Braakman  <dark@wapit.com>
+
+	* gw/wap_push_ota.c: Removed <arpa/inet.h> and <netinet/in.h>
+	includes.  They are not used by anything and cause portability
+	problems.
+
+2001-04-13  Uoti Urpala  <uau@wapit.com>
+
+	* gw/smsbox.c: Bugfix, messages sent with sendsms GET requests
+	were always marked as binary (this bug was created when sendsms
+	POST was added).
+
+2001-04-12  Lars Wirzenius  <liw@iki.fi>
+
+	* gw/smsc_smpp.c: Make it optional to dump or not dump SMPP pdus
+	that are received or sent. Not dumping them reduces "make bench"
+	log file sizes by about half a gigabyte.
+
+2001-04-12  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/urltrans.c (urltrans_get_pattern): fixed that %s cannot cause
+	overflow if there is catch-all argument
+
+2001-04-11  Richard Braakman  <dark@wapit.com>
+
+        * gw/urltrans.c: Slight simplification of strip_keyword().
+
+2001-04-11  Kalle Marjola  <rpr@wapit.com>
+
+	* README: changed smsc interface guidelines to point to
+	smscconn_p.h
+
+	* gw/smsc_interface.def: removed as depricated
+
+	* doc/userguide/userguide.xml: fixed typo, it is strip-keyword,
+	not split-keyword
+
+	* gw/urltrans.c: modified strip-keyword function
+
+	* gw/bearerbox.c: changed shutdown message a bit when killedby
+	signal
+
+2001-04-10  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/bb_store.c: some little fixes, dumps acks to file, too, if
+	any in memory
+
+	* gw/bb_boxc.c: added some comments for possible future updates
+	
+2001-04-10  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/bb_store.c: Bugfix: comprasion was wrong way around...
+
+2001-04-10  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/bb_store.c: Updated to use double-memory buffering and to do
+	frequent dumps out of that data. Now it is fast and does not take
+	much disk space. Interval is currently fixed (5 secs), and there
+	is still no message queue limitations, and sendsms (push9 messages
+	are not yet supported. But otherwise it should work.
+
+	* gw/bearerbox.c|h: required little modifications
+
+	* doc/userguide/userguide.xml: added notes of store-file variable
+	
+2001-04-10  Richard Braakman  <dark@wapit.com>
+
+	* gw/smsbox.c: Add no-cache headers to sendsms replies.
+
+2001-04-05  Uoti Urpala  <uau@wapit.com>
+
+	* gwlib/http.c: Fixed a bug in the sending of HTTP replies. It was
+	unlikely to be triggered with replies as short as Kannel normally
+	uses, though.
+
+	* gwlib/conn.[ch]: The callback function of registered connections
+	is called when all queued output is sent. This was required for
+	the above fix.
+
+2001-04-04  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/smsbox.c: Bugfix. Fixed memory leak in header parsing
+
+2001-04-03  Richard Braakman  <dark@wapit.com>
+
+	* gwlib/fdset.c: When destroying an fdset with active fd's,
+        simply ignore those fd's and make it the caller's responsibility
+	to deal with them.  This reverses a change from 2000-11-22, which
+	was made at the time to fix the http shutdown sequence.  It didn't,
+	and now it's in the way of a better solution.
+
+2001-03-30  Uoti Urpala  <uau@wapit.com>
+
+	* gwlib/http.c: Enabled keepalive connections again.
+
+2001-03-29  Uoti Urpala  <uau@wapit.com>
+
+	* gw/urltrans.c: Test in find_translation() was the wrong way
+	around, 'accepted-smsc' actually worked like denied-smsc. Fixed.
+	Also enabled using 'accepted-smsc' in default SMS-service groups.
+
+2001-03-29  Uoti Urpala  <uau@wapit.com>
+
+	* gw/smsc_emi2.c: Added support for the "our-port" parameter.
+
+	* gwlib/conn.[ch]: Added function conn_open_tcp_with_port, which
+	allows specifying the local port number.
+
+2001-03-29  Uoti Urpala  <uau@wapit.com>
+
+	* gwlib/http.c: Added a test that checks whether connections in
+	the connection pool have been closed before trying to reuse them.
+
+2001-03-28  Uoti Urpala  <uau@wapit.com>
+
+	* gw/smsc_emi2.c: Wrote. New implementation of the emi_ip protocol.
+
+	* gw/emimsg.c, gw/emimsg.h: Wrote. Functions for working with EMI
+	messages. Used by smsc_emi2.c and testing programs which I didn't
+	add to CVS yet.
+
+	* gw/smscconn.c, gw/smscconn_p.h: Modified to recognize the new
+	smsc type.
+
+2001-03-28  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/smsbox.c: added content-type checking in sendsms POST, and
+	set binary of sms.msgdata accordingly (note: UDH+7bit msgdata
+	might not work with some SMSC center protocols currently)
+
+2001-03-27 Aarno Syvänen <syvanen@wapit.com>
+
+	* gw/wap_push_ppg.c: Fixed a compiler warning
+
+2001-03-27  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/smsbox.c: combatibility breaker: do not allow default sendsms
+	user anymore (guess I thought that that has been disabled years
+	ago...)
+
+	* gw/smsbox.c: added POST support for send-sms, too. Hopefully
+	works. Use is automatic, if request to Kannel is POST, body is
+	used as message text, otherwise cgi-args are parsed. Username,
+	password, receiver number etc. are taken from X-Kannel headers
+	(like X-Kannel-Password) and are documented real soon...  
+
+2001-03-27  Kalle Marjola  <rpr@wapit.com>
+
+	* doc/userguide/userguide.txt: added new configuration variables,
+	but missing X-Kannel header definations. Will add these later.
+
+	* gw/smskannel.conf: changed 'url' to 'get-url' (althought plain
+	url still works, for backward compability)
+
+2001-03-27  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/smsbox.c: added post-url support for sms-service
+	group. Documentation in User's Guide RSN (hopefully)
+
+	* gw/urltrans.c: added that strip-keyword with POST is done here,
+	althougt that is ugly (but easier to do that way)
+	
+2001-03-27  Kalle Marjola  <rpr@wapit.com>
+
+	* gwlib/cfg.h|c: added new function cfg_get_bool, taking
+	true/false, on/off, yes/no or 0/1
+
+	* urltrans.c: modified to use new bool type with concatenation,
+	omit-empty and some new variables (theoretical compatibility breaker)
+
+	* urltrans.c|h: added new variables for sms-service group:
+	catch-all (should work as %a or %r in pattern),
+	accept-x-kannel-headers (see below) and some variables for POST
+	use
+
+	* smsbox.c: Compatibility breaker: modified to allow from, to and
+	UDH field set by SMS service, as X-Kannel- header, if
+	accept-x-kannel-headers set for sms-service. The compatibility
+	breaker is that X-Kannel-UDH does not work anymore unless
+	accept-x-kannel-headers is set
+
+	* smsbox.c: Compatibility breaker: if sms-service HTTP fetch reply
+	is of content-type application/octet-stream set flag 8bit on. This
+	can be prevented by setting assume-plain-text on for the service.
+
+2001-03-27  Tuomas Luttinen  <tuo@wapit.com>
+
+	* configure.in: Removed the earlier patch, the test was just on the 
+	old implementation, I didn't run autoconf...
+
+2001-03-27 Aarno Syvänen <syvanen@wapit.com>
+
+	* gw/wap_push_pap.c|h. Testing  version of the pap module
+
+	* gw/wap_ppg_push_machine.def, gw/wap_ppg_session_machine.def:
+	Machines to store push data.
+
+	* gw/wap_push_ppg.c|h: push proxy gateway main module
+
+	* gw/wap_push_ota.c: Lots of bugfixes. Courtesy to Peter Galluc,
+	Derry Hamilton and Uoti. (There were other bugs, too.) Trans-
+	ferred handling of header X-Wap-Application-Id to module ppg.
+        Fixing memory leaks.
+
+	* wap/wap_events.def: push_id removed from Pom-Connect.req.
+
+	* gw/wapbox.c: Initing and shutdown of new modules, include new
+	headers.
+
+	* gw/wap-appl.c: Added handling of the event Pom-Connect.req
+
+	* wap/wsp_server_session_states.def: Corrected a typo spotted by
+	Aymerick Jehanne.
+
+	* wap/wsp_session.c: Added functions to create events for push 
+	abort and confirmation, fixed bugs in functions make_confirmed_push
+	pdu and make_push_pdu. Fixed memory leaks.
+
+2001-03-27  Tuomas Luttinen  <tuo@wapit.com>
+
+	* configure.in: Replaced the earlier way to detect xml2-config with 
+	patch provided by Craig Emery that is shorter and as effective. Both 
+	were tested with different libxml versions, also with both xml-config 
+	and xml2-config.
+
+2001-03-27  Richard Braakman  <dark@xs4all.nl>
+
+	* gw/smsbox.c: Fix bad memory management of faked_sender string.
+
+2001-03-26  Richard Braakman  <dark@xs4all.nl>
+
+	* gw/smsbox.c: Converted some char * to Octstr *.
+
+	* gw/smsc_cimd2.c: Changed "const static" to "static const" in
+	variable declarations (ansification).
+
+	* utils/run_kannel_box.c: In print_usage(), actually use the
+	stream argument instead of always printing to stderr.
+
+2001-03-26  Uoti Urpala  <uau@wapit.com>
+
+	* gw/msg.c: Fixed bug when sizeof(long) != 4, removed unneeded
+	code.
+
+2001-03-23  Richard Braakman  <dark@xs4all.nl>
+
+	* gw/smsbox.c: Fix call to alog (urltrans_username returns
+	Octstr *, not char *).  Spotted by Paul Keogh and Gildas PERROT.
+
+2001-03-23  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/smscconn_p.h: made interface a bit more clarified and
+	moved counters to callback
+
+	* gw/bb_smscconn.c: added counter increases
+
+	* gw/smsc_wrapper.c, gw/smsc_fake.c: removed counter increases
+	
+2001-03-23  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/smsc_http.c: various little fixes
+
+2001-03-23  Tuomas Luttinen  <tuo@wapit.com>
+
+	* utils/kannel-stable-rh*.spec (Requires): Now requires libxml2 >= 
+	libxml2-2.2.0. 
+
+2001-03-22  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/smsc_http.c: put smsc-id to correct place
+	
+2001-03-22  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/smsc_http.c: fixed several memory leaks
+
+2001-03-22  Uoti Urpala  <uau@wapit.com>
+
+	* gwlib/http.c: Fixed memory leak.
+
+2001-03-21  Lars Wirzenius  <liw@iki.fi>
+
+	* gwlib/cfg.h: Commented return value policy for octet strings.
+
+2001-03-21  Tuomas Luttinen  <tuo@wapit.com>
+
+	* configure.in, configure: Added the xml2-config that libxml-2.3.* and 
+	newer want instead of xml-config. Tested with libxml-2.2.11 and 2.3.4.
+	Yet to be tested with both libxml1 and libxml2 installed.
+
+2001-03-21  Kalle Marjola  <rpr@wapit.com>
+
+	* gwlib/xmlrpc.h|c: Updated, still missing many things
+	
+2001-03-21  Kalle Marjola  <rpr@wapit.com>
+
+	* gwlib/xmlrpc.h|c: Added. Initial code to implement XML-RPC
+	specification.
+
+2001-03-21  Lars Wirzenius  <liw@iki.fi>
+
+	* checks/check_http.sh: Kill server via HTTP, instead of via
+	a signal. This way, if the server has trouble dying properly,
+	it will be quite visible, instead of possibly hidden by signal
+	handling.
+
+2001-03-21  Uoti Urpala  <uau@wapit.com>
+
+	* gwlib/http.c: Fixed memory leaks, updated keepalive connections
+	to work again after Richard's changes (still left them disabled by
+	default though).
+
+2001-03-21  Uoti Urpala  <uau@wapit.com>
+
+	* gw/bb_smscconn.c: Fixed incorrect test in sms_router, the
+	smsc_id of a discarded message was logged only if it _was_ NULL.
+
+2001-03-20  Richard Braakman  <dark@wapit.com>
+
+	* gwlib/http.c: Server side now accepts POST requests.  This
+	involved separating the header and body reading code into a
+	section shared by server and client side.
+
+	* Fixed a bug along the way which would cause busy-waiting in the
+	client code when waiting for a result to arrive.
+	Also made return codes consistent for the state functions, so
+	that 0 means completion and 1 means waiting for more input.
+

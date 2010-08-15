@@ -1,0 +1,741 @@
+/* ==================================================================== 
+ * The Kannel Software License, Version 1.0 
+ * 
+ * Copyright (c) 2001-2009 Kannel Group  
+ * Copyright (c) 1998-2001 WapIT Ltd.   
+ * All rights reserved. 
+ * 
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions 
+ * are met: 
+ * 
+ * 1. Redistributions of source code must retain the above copyright 
+ *    notice, this list of conditions and the following disclaimer. 
+ * 
+ * 2. Redistributions in binary form must reproduce the above copyright 
+ *    notice, this list of conditions and the following disclaimer in 
+ *    the documentation and/or other materials provided with the 
+ *    distribution. 
+ * 
+ * 3. The end-user documentation included with the redistribution, 
+ *    if any, must include the following acknowledgment: 
+ *       "This product includes software developed by the 
+ *        Kannel Group (http://www.kannel.org/)." 
+ *    Alternately, this acknowledgment may appear in the software itself, 
+ *    if and wherever such third-party acknowledgments normally appear. 
+ * 
+ * 4. The names "Kannel" and "Kannel Group" must not be used to 
+ *    endorse or promote products derived from this software without 
+ *    prior written permission. For written permission, please  
+ *    contact org@kannel.org. 
+ * 
+ * 5. Products derived from this software may not be called "Kannel", 
+ *    nor may "Kannel" appear in their name, without prior written 
+ *    permission of the Kannel Group. 
+ * 
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED 
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES 
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+ * DISCLAIMED.  IN NO EVENT SHALL THE KANNEL GROUP OR ITS CONTRIBUTORS 
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,  
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT  
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR  
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,  
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE  
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,  
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * ==================================================================== 
+ * 
+ * This software consists of voluntary contributions made by many 
+ * individuals on behalf of the Kannel Group.  For more information on  
+ * the Kannel Group, please see <http://www.kannel.org/>. 
+ * 
+ * Portions of this software are based upon software originally written at  
+ * WapIT Ltd., Helsinki, Finland for the Kannel project.  
+ */ 
+
+/*
+ * Macro calls to generate rows of the state table. See the documentation for
+ * guidance how to use and update these. 
+ *
+ * Macros have following arguments:
+ *
+ * STATE_NAME(name of a wtp machine state)
+ *
+ * ROW(the name of the current state,
+ *     the event feeded to wtp machine,
+ *     the condition for the action,
+ *     {the action itself},
+ *     the state wtp machine will transit)
+ *
+ * Condition 1 means that the action will be performed unconditionally, action
+ * {} means that the event in question will be ignored (of course, the state 
+ * of the machine can change). 
+ *
+ * There are many ROWS generating code for ignoring a certain event (ones hav-
+ * ing {} as their action). In these cases the event in question is caused by a
+ * duplicate message and the first one has already changed wtp responder mach-
+ * ine. In this case ignoring the event is natural.
+ *
+ * State tables use the phrase "abort transaction" many times. In this imple-
+ * mentation this means "clear data structures used for storing transaction 
+ * data". This happens in function resp_event_handle, after included state 
+ * table code.
+ *
+ * Commenting the state table is perhaps best done by pointing out how various 
+ * services provided by WTP contribute rows to the state table.
+ *
+ * Normal transaction goes as follows (timers excluded):
+ *        - WTP get an invoke pdu from the peer. WTP does TR-Invoke.ind (trans-
+ *          mitting to WSP its PDU) and the state changes to INVOKE_RESP_WAIT
+ *        - WSP does TR-Invoke.res, telling that it has handled the 
+ *          indication. 
+ *          The state changes to RESULT_WAIT.
+ *        - WSP tells that it has results from the content server, or reply 
+ *          pdu to send. It does TR-Result.req. State changes to 
+ *          RESULT_RESP_WAIT. 
+ *        - WTP gets acknowledgement from the peer. It generates TR_Result.cnf
+ *          and state changes to LISTEN. The transaction is over.
+ *
+ * Retransmission until acknowledgement guarantees reliability of the trans-
+ * action, if the peer stays up. It is implemented by using retransmissions 
+ * controlled by timers and counters. There are two kind of timers, retrans-
+ * mission and acknowledgement timers. (Actually, there is one timer 
+ * iniatilised with two intervals. But let us keep the language simple). 
+ * These are used in concert with corresponding counters, RCR (retransmission 
+ * counter) and AEC (acknowledgement expiration counter). AEC counts expired 
+ * acknowledgement intervals.
+ *
+ * WTP starts an acknowledgement timer when it waits a WSP acknowledgement, 
+ * and retransmission timer when it sends something. So when the acknowledge_
+ * ment timer expires, the action is to increment AEC, and when the retrans-
+ * mission timer expires, the action is to resend a packet. (Note, however, 
+ * the chapter concerning user acknowledgement.)
+ *
+ * WTP ignores invoke pdus having same tid as the current transaction. This 
+ * quarantees rejection of the duplicates. Note, however, how reliability is 
+ * achieved when WTP is doing tid verification (next chapter).
+ *
+ * Tid verification is done if tid validation fails (which happens when the 
+ * message is a duplicate or when tid wrapping-up could confuse the protocol).
+ * In this case, the state changes to TIDOK_WAIT. WSP is indicated only after 
+ * an acknowledgement is received. After a negative answer (Abort PDU) the 
+ * transaction is teared down. Reliablity is quaranteed by resending, which 
+ * happens when WTP receives a resent invoke pdu, when its state TIDOK_WAIT.
+ * Abort pdu now means a negative answer to a question "have you a transaction
+ * having tid included in the tid verification message". So there is no need 
+ * to indicate WSP.
+ *
+ * Error handling is mostly done before feeding an event to the state machine. 
+ * However, when a pdu with an illegal header (header WTP does not understand)
+ * is received, this is a special kind of event, because its handling depends
+ * of the state. WTP must always send an abort pdu. If a transaction is 
+ * established, it must be teared down. If WSP has been indicated about a 
+ * transaction, WTP must do TR-Abort.ind.
+ *
+ * There are two kind of aborts: by the peer, when it sends abort pdu and by the 
+ * wsp, when it does a primitive TR-Abort.req. When WSP does an abort, WTP 
+ * must send an abort pdu to the peer; when WTP receives an abort, WSP must be
+ * indicated (note, however, the special meaning abort pdu has in tid 
+ * verification; see the relevant chapter).
+ *
+ * User acknowledgement means that WTP waits WSP (which in most cases is WTP
+ * user) acknowledgement, instead of doing it by itself. This means, that if 
+ * user acknowledgement flag is off, WTP sends an ack pdu when acknowledgement
+ * timer expires.
+ *
+ * By Aarno Syvänen for WapIT Ltd.
+ */
+
+STATE_NAME(LISTEN)
+STATE_NAME(TIDOK_WAIT)
+STATE_NAME(INVOKE_RESP_WAIT)
+STATE_NAME(RESULT_WAIT)
+STATE_NAME(RESULT_RESP_WAIT)
+STATE_NAME(WAIT_TIMEOUT_STATE)
+
+ROW(LISTEN,
+    RcvInvoke,
+    (event->u.RcvInvoke.tcl == 2 || event->u.RcvInvoke.tcl == 1) &&
+     wtp_tid_is_valid(event, resp_machine) == ok,
+    {
+     resp_machine->u_ack = event->u.RcvInvoke.up_flag;
+     resp_machine->tcl = event->u.RcvInvoke.tcl;
+
+     wsp_event = create_tr_invoke_ind(resp_machine, 
+         event->u.RcvInvoke.user_data);
+     if (resp_machine->tcl == 1)
+         wsp_push_client_dispatch_event(wsp_event);
+     else
+         wsp_session_dispatch_event(wsp_event);
+
+     start_timer_A(resp_machine); 
+     resp_machine->ack_pdu_sent = 0;
+    },
+    INVOKE_RESP_WAIT)
+
+/*
+ * We must here store event fields and wsp indication into the wtp responder 
+ * state machine: if tid is valid, we will continue the transaction without a 
+ * new event.
+ */
+ROW(LISTEN,
+    RcvInvoke,
+    (event->u.RcvInvoke.tcl == 2 || event->u.RcvInvoke.tcl == 1) &&
+     (wtp_tid_is_valid(event, resp_machine) == fail || 
+     wtp_tid_is_valid(event, resp_machine) == no_cached_tid),
+    { 
+     send_ack(resp_machine, TID_VERIFICATION, resp_machine->rid);
+     
+     resp_machine->u_ack = event->u.RcvInvoke.up_flag;
+     resp_machine->tcl = event->u.RcvInvoke.tcl;
+     resp_machine->invoke_indication = create_tr_invoke_ind(resp_machine, 
+                                       event->u.RcvInvoke.user_data);
+     debug("wap.wtp", 0, "WTP_STATE: generating invoke indication, tid being" 
+           "invalid");
+    },
+    TIDOK_WAIT)
+
+/*
+ * Do not change state when class 0 message is received.
+ */
+ROW(LISTEN,
+    RcvInvoke,
+    event->u.RcvInvoke.tcl == 0,
+    {
+     wsp_event = create_tr_invoke_ind(resp_machine, 
+         event->u.RcvInvoke.user_data);
+     wsp_session_dispatch_event(wsp_event);
+    },
+    LISTEN)
+
+/*
+ * No user indication here: transaction is not yet started.
+ */
+ROW(LISTEN,
+    RcvErrorPDU,
+    1,
+    { 
+     send_abort(resp_machine, PROVIDER, PROTOERR);
+    },
+    LISTEN)
+
+/*
+ * Need to control SAR incomplete packets
+ */	
+ROW(LISTEN,
+    TimerTO_W,
+    1,
+    {},
+    LISTEN)
+
+/*
+ * We must cache the newly accepted tid item, otherwise every tid after a 
+ * suspected one will be validated. We use wsp event stored by the responder
+ * machine.
+ */
+ROW(TIDOK_WAIT,
+    RcvAck,
+    (resp_machine->tcl == 2 || resp_machine->tcl == 1) && 
+     event->u.RcvAck.tid_ok == 1,
+    { 
+     wsp_event = wap_event_duplicate(resp_machine->invoke_indication);
+     if (resp_machine->tcl == 1)
+         wsp_push_client_dispatch_event(wsp_event);
+     else
+         wsp_session_dispatch_event(wsp_event);
+     
+     wtp_tid_set_by_machine(resp_machine, event->u.RcvAck.tid);
+
+     start_timer_A(resp_machine); 
+     resp_machine->ack_pdu_sent = 0;
+    },
+    INVOKE_RESP_WAIT)
+
+/*
+ * When we get a negative answer to tid verification, we just abort trans-
+ * action. Because wtp machines are destroyed when their state return to 
+ * LISTEN and because no transaction is yet started, there is no need to do 
+ * anything here.
+ */
+ROW(TIDOK_WAIT,
+    RcvAbort,
+    1,
+    { },
+    LISTEN)
+
+ROW(TIDOK_WAIT,
+    RcvInvoke,
+    event->u.RcvInvoke.rid == 0,
+    { },
+    TIDOK_WAIT)
+
+/*
+ * Because the phone sends invoke again, previous ack was dropped by the 
+ * bearer.
+ */
+ROW(TIDOK_WAIT,
+    RcvInvoke,
+    event->u.RcvInvoke.rid == 1,
+    { 
+     send_ack(resp_machine, TID_VERIFICATION, resp_machine->rid);
+    },
+    TIDOK_WAIT)
+
+/*
+ * No need for wsp indication: the transaction is not yet started.
+ */
+ROW(TIDOK_WAIT,
+    RcvErrorPDU,
+    1,
+    {
+     send_abort(resp_machine, PROVIDER, PROTOERR);
+    },
+    LISTEN)
+
+ROW(INVOKE_RESP_WAIT,
+    RcvInvoke,
+    1,
+    { },
+    INVOKE_RESP_WAIT)
+
+ROW(INVOKE_RESP_WAIT,
+    TR_Invoke_Res,
+    resp_machine->tcl == 2,
+    { 
+     start_timer_A(resp_machine); 
+     resp_machine->aec = 0;
+    },
+    RESULT_WAIT)
+
+ROW(INVOKE_RESP_WAIT,
+    TR_Invoke_Res,
+    resp_machine->tcl == 1,
+    {
+      send_ack(resp_machine, ACKNOWLEDGEMENT, resp_machine->rid);
+      start_timer_W(resp_machine);
+    },
+    WAIT_TIMEOUT_STATE)
+
+ROW(INVOKE_RESP_WAIT,
+    RcvAbort,
+    1,
+    {
+     wsp_event = create_tr_abort_ind(resp_machine, 
+         event->u.RcvAbort.abort_reason);
+     if (resp_machine->tcl == 1)
+         wsp_push_client_dispatch_event(wsp_event);
+     else
+         wsp_session_dispatch_event(wsp_event);
+    },
+    LISTEN)
+
+ROW(INVOKE_RESP_WAIT,
+    TR_Abort_Req,
+    1,
+    { 
+     send_abort(resp_machine, USER, event->u.TR_Abort_Req.abort_reason);
+    },
+    LISTEN)
+
+/*
+ * non-SARed
+ */
+ROW(INVOKE_RESP_WAIT,
+    TR_Result_Req,
+    resp_machine->sar == NULL,
+    {
+     WAPEvent *result;
+
+     resp_machine->rcr = 0;
+
+     start_timer_R(resp_machine);
+     wap_event_destroy(resp_machine->result);
+     resp_machine->rid = 0;
+     result = wtp_pack_result(resp_machine, event);
+     resp_machine->result = wap_event_duplicate(result);
+     dispatch_to_wdp(result);
+     resp_machine->rid = 1;
+    },
+    RESULT_RESP_WAIT)
+
+/*
+ * SARed
+ */
+ROW(INVOKE_RESP_WAIT,
+     TR_Result_Req,
+     resp_machine->sar != NULL,
+     {
+      resp_machine->rcr = 0;
+
+      start_timer_R(resp_machine);
+      wap_event_destroy(resp_machine->result);
+      resp_machine->rid = 0;
+      begin_sar_result(resp_machine, event);	
+     },
+     RESULT_RESP_WAIT)
+
+/*
+ * Conditions below do not correspond wholly ones found from the spec. (If 
+ * they does, user acknowledgement flag would never be used by the protocol, 
+ * which cannot be the original intention.) 
+ * User acknowledgement flag is used following way: if it is on, WTP does not
+ * send an acknowledgement (user acknowledgement in form of TR-Invoke.res or 
+ * TR-Result.req instead of provider acknowledgement is awaited); if it is 
+ * off, WTP does this. IMHO, specs support this exegesis: there is condition 
+ * Uack == False && class == 2 with action send ack pdu. In addition, WTP 
+ * 8.3.1 says " When [user acknowledgement] is enabled WTP provider does not
+ * respond to a received message until after WTP user has confirmed the 
+ * indication service primitive by issuing the response primitive".
+ *
+ * BTW: CR correcting this shall appear soonish.
+ */
+ROW(INVOKE_RESP_WAIT,
+    TimerTO_A,
+    resp_machine->aec < AEC_MAX && resp_machine->u_ack == 1,
+    { 
+     ++resp_machine->aec;
+     start_timer_A(resp_machine);
+    },
+    INVOKE_RESP_WAIT)
+
+ROW(INVOKE_RESP_WAIT,
+    TimerTO_A,
+    (resp_machine->aec < AEC_MAX && resp_machine->u_ack == 0),
+    { 
+     ++resp_machine->aec;
+     start_timer_A(resp_machine);
+     send_ack(resp_machine, ACKNOWLEDGEMENT, resp_machine->rid);
+     if (resp_machine->ack_pdu_sent == 0)
+         resp_machine->ack_pdu_sent = 1;
+    },
+    INVOKE_RESP_WAIT)
+
+/*
+ * When a transaction is aborted, WSP must surely know this. One of corrections
+ * in MOT_WTP_CR_01. What to do when a counter reaches its maximum value dep-
+ * ends on whether we have opened the connection or not. In previous case, we 
+ * must go to the state WAIT_TIMEOUT_STATE, for instance to prevent bad incarn-
+ * ations.
+ */
+ROW(INVOKE_RESP_WAIT,
+    TimerTO_A,
+    resp_machine->aec == AEC_MAX && resp_machine->tcl == 2,
+    {
+     send_abort(resp_machine, PROVIDER, NORESPONSE);
+     wsp_event = create_tr_abort_ind(resp_machine, NORESPONSE);
+     wsp_session_dispatch_event(wsp_event);
+    },
+    LISTEN)
+
+ROW(INVOKE_RESP_WAIT,
+    TimerTO_A,
+    resp_machine->aec == AEC_MAX && resp_machine->tcl == 1,
+    {
+      start_timer_W(resp_machine);
+    },
+    WAIT_TIMEOUT_STATE)
+
+ROW(INVOKE_RESP_WAIT,
+    RcvErrorPDU,
+    1,
+    {
+     send_abort(resp_machine, PROVIDER, PROTOERR);
+     
+     wsp_event = create_tr_abort_ind(resp_machine, PROTOERR);
+     if (resp_machine->tcl == 1)
+         wsp_push_client_dispatch_event(wsp_event);
+     else
+         wsp_session_dispatch_event(wsp_event);
+    },
+    LISTEN)
+
+/*
+ * Non-SARed
+ */
+ROW(RESULT_WAIT,
+    TR_Result_Req,
+    resp_machine->sar == NULL,
+    {
+     WAPEvent *result;
+     resp_machine->rcr = 0;
+
+     start_timer_R(resp_machine);
+
+     wap_event_destroy(resp_machine->result);
+     resp_machine->rid = 0;
+     result = wtp_pack_result(resp_machine, event);
+     resp_machine->result = wap_event_duplicate(result);
+     dispatch_to_wdp(result);
+     resp_machine->rid = 1;
+    },
+    RESULT_RESP_WAIT)
+
+/*
+ * SARed
+ */
+ROW(RESULT_WAIT,
+    TR_Result_Req,
+    (resp_machine->sar != NULL) && ((octstr_len(event->u.TR_Result_Req.user_data)-1)/SAR_SEGM_SIZE < 255),
+    {
+     resp_machine->rcr = 0;
+
+     start_timer_R(resp_machine);
+
+     wap_event_destroy(resp_machine->result);
+     resp_machine->rid = 0;
+     begin_sar_result(resp_machine, event);	
+    },
+    RESULT_RESP_WAIT)
+
+ROW(RESULT_WAIT,
+    TR_Result_Req,
+    (resp_machine->sar != NULL) && ((octstr_len(event->u.TR_Result_Req.user_data)-1)/SAR_SEGM_SIZE >= 255),
+    {
+     send_abort(resp_machine, PROVIDER, NOTIMPLEMENTEDESAR);
+     wsp_event = create_tr_abort_ind(resp_machine, NOTIMPLEMENTEDESAR);
+     wsp_session_dispatch_event(wsp_event);
+
+     wap_event_destroy(resp_machine->result);
+    },
+    LISTEN)
+
+ROW(RESULT_WAIT,
+    RcvAbort,
+    1,
+    {
+     wsp_event = create_tr_abort_ind(resp_machine, 
+         event->u.RcvAbort.abort_reason);
+     wsp_session_dispatch_event(wsp_event);
+    },
+    LISTEN)
+
+ROW(RESULT_WAIT,
+    RcvInvoke,
+    event->u.RcvInvoke.rid == 0,
+    { },
+    RESULT_WAIT)
+
+ROW(RESULT_WAIT,
+    RcvInvoke,
+    event->u.RcvInvoke.rid == 1 && resp_machine->ack_pdu_sent == 0,
+    { },
+    RESULT_WAIT)
+
+ROW(RESULT_WAIT,
+    RcvInvoke,
+    event->u.RcvInvoke.rid == 1 && resp_machine->ack_pdu_sent == 1,
+    {
+     send_ack(resp_machine, ACKNOWLEDGEMENT, resp_machine->rid);
+    },
+    RESULT_WAIT)
+
+ROW(RESULT_WAIT,
+    TR_Abort_Req,
+    1,
+    { 
+     send_abort(resp_machine, USER, event->u.TR_Abort_Req.abort_reason);
+    },
+    LISTEN)
+
+ROW(RESULT_WAIT,
+    RcvErrorPDU,
+    1,
+    {
+     send_abort(resp_machine, PROVIDER, PROTOERR);
+     
+     wsp_event = create_tr_abort_ind(resp_machine, PROTOERR);
+     wsp_session_dispatch_event(wsp_event);
+    },
+    LISTEN)
+   
+/*
+ * This state follows two possible ones: INVOKE_RESP_WAIT & TR-Invoke.res and 
+ * INVOKE_RESP_WAIT & TimerTO_A & Class == 2 & Uack == FALSE. Contrary what 
+ * spec says, in first case we are now sending first time. We must, too, abort
+ * after AEC_MAX timer periods.
+ */
+ROW(RESULT_WAIT,
+    TimerTO_A,
+    resp_machine->aec < AEC_MAX,
+    { 
+     start_timer_A(resp_machine);
+     send_ack(resp_machine, ACKNOWLEDGEMENT, resp_machine->rid);
+     if (resp_machine->ack_pdu_sent == 0)
+        resp_machine->ack_pdu_sent = 1;
+     resp_machine->aec++;
+    },
+    RESULT_WAIT)
+
+ROW(RESULT_WAIT,
+    TimerTO_A,
+    resp_machine->aec == AEC_MAX,
+    {
+     send_abort(resp_machine, PROVIDER, NORESPONSE);
+     wsp_event = create_tr_abort_ind(resp_machine, NORESPONSE);
+     wsp_session_dispatch_event(wsp_event);
+    },
+    LISTEN)
+
+/*
+ * A duplicate ack(tidok) caused by a heavy load (the original changed state
+ * from TIDOK_WAIT). This implements CR-Nokia-WTP-20-March-2000/2.
+ */
+ROW(RESULT_WAIT,
+    RcvAck,
+    event->u.RcvAck.tid_ok,
+    {},
+    RESULT_WAIT)
+
+/*
+ * Non-SARed
+ */
+ROW(RESULT_RESP_WAIT,
+    RcvAck,
+    resp_machine->sar == NULL || event->u.RcvAck.psn == resp_machine->sar->nsegm,
+    {
+     wsp_event = create_tr_result_cnf(resp_machine);
+     wsp_session_dispatch_event(wsp_event);
+    },
+    LISTEN)
+
+/*
+ * SARed
+ */
+ROW(RESULT_RESP_WAIT,
+    RcvAck,
+    resp_machine->sar != NULL && event->u.RcvAck.psn != resp_machine->sar->nsegm,
+    {
+     continue_sar_result(resp_machine, event);	 
+    },
+    RESULT_RESP_WAIT)
+
+ROW(RESULT_RESP_WAIT,
+    RcvNegativeAck,
+    resp_machine->sar != NULL,
+    {
+     resend_sar_result(resp_machine, event);	 
+    },
+    RESULT_RESP_WAIT)
+
+/*
+ * Specs does not tell what to do, when wtp responder receives invoke pdu and
+ * its state is RESULT_RESP_WAIT. This can happen, however: event causing the 
+ * transition RESULT_WAIT -> RESULT_RESP_WAIT is TR-Result.req, an internal 
+ * responder event. 
+ */
+ROW(RESULT_RESP_WAIT,
+    RcvInvoke,
+    1,
+    { },
+    RESULT_RESP_WAIT)
+
+ROW(RESULT_RESP_WAIT,
+    RcvAbort,
+    1,
+    {
+     wsp_event = create_tr_abort_ind(resp_machine, 
+         event->u.RcvAbort.abort_reason);
+     wsp_session_dispatch_event(wsp_event);
+    },
+    LISTEN)
+
+ROW(RESULT_RESP_WAIT,
+    TR_Abort_Req,
+    1,
+    { 
+     send_abort(resp_machine, USER, event->u.TR_Abort_Req.abort_reason);
+    },
+    LISTEN)
+
+ROW(RESULT_RESP_WAIT,
+    TimerTO_R,
+    resp_machine->rcr < MAX_RCR,
+    {
+     WAPEvent *resend;
+
+     start_timer_R(resp_machine);
+     resend = wap_event_duplicate(resp_machine->result);
+     wtp_pack_set_rid(resend, resp_machine->rid);
+     dispatch_to_wdp(resend);
+     ++resp_machine->rcr;
+    },
+    RESULT_RESP_WAIT)
+
+ROW(RESULT_RESP_WAIT,
+    TimerTO_R,
+    resp_machine->rcr == MAX_RCR,
+    {
+     send_abort(resp_machine, PROVIDER, NORESPONSE);
+     wsp_event = create_tr_abort_ind(resp_machine, NORESPONSE);
+     wsp_session_dispatch_event(wsp_event);
+    },
+    LISTEN)
+
+ROW(RESULT_RESP_WAIT,
+    RcvErrorPDU,
+    1,
+    {
+     send_abort(resp_machine, PROVIDER, PROTOERR);
+      
+     wsp_event = create_tr_abort_ind(resp_machine, PROTOERR);
+     wsp_session_dispatch_event(wsp_event);
+    },
+    LISTEN)
+
+ROW(WAIT_TIMEOUT_STATE,
+    RcvInvoke,
+    event->u.RcvInvoke.rid == 0,
+    { },
+    WAIT_TIMEOUT_STATE)
+
+ROW(WAIT_TIMEOUT_STATE,
+    RcvInvoke,
+    event->u.RcvInvoke.rid == 1,
+    {
+     send_ack(resp_machine, ACKNOWLEDGEMENT, resp_machine->rid);
+    },
+    WAIT_TIMEOUT_STATE)
+
+ROW(WAIT_TIMEOUT_STATE,
+    RcvErrorPDU,
+    1,
+    {
+     send_abort(resp_machine, PROVIDER, PROTOERR);
+      
+     wsp_event = create_tr_abort_ind(resp_machine, PROTOERR);
+     wsp_push_client_dispatch_event(wsp_event);
+    },
+    LISTEN)
+
+ROW(WAIT_TIMEOUT_STATE,
+    RcvAbort,
+    1,
+    {
+     wsp_event = create_tr_abort_ind(resp_machine, PROTOERR);
+     wsp_push_client_dispatch_event(wsp_event);
+    },
+    LISTEN)
+
+/*
+ * Waiting to prevent premature incarnations.
+ */
+ROW(WAIT_TIMEOUT_STATE,
+    TimerTO_W,
+    1,
+    {
+     wsp_event = create_tr_abort_ind(resp_machine, NORESPONSE);
+     wsp_push_client_dispatch_event(wsp_event); 
+    },
+    LISTEN)
+
+ROW(WAIT_TIMEOUT_STATE,
+    TR_Abort_Req,
+    1,
+    {
+     send_abort(resp_machine, USER, event->u.TR_Abort_Req.abort_reason);
+    },
+    LISTEN)
+
+#undef ROW
+#undef STATE_NAME

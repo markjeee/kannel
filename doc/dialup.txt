@@ -1,0 +1,183 @@
+From: Roger Willcocks <Roger.Willcocks@LOOT.com>
+To: devel@wapgateway.org
+Subject: RE: WAPGateway
+Date: Mon, 17 Jan 2000 18:39:58 -0000
+
+Here's a list of the changes I had to make to RedHat 6.1 'out of the box' to
+get the WAPGateway 0.2 up and running ...
+
+My modems serial line rate is fixed at 9600 baud.
+
+
+Install the mgetty package:
+
+rpm --install mgetty-<version>-RPM
+
+In /etc/inittab add a line:
+
+S0:2345:respawn:/sbin/mgetty ttyS0 -x 6 -D /dev/ttyS0
+
+
+In kannel.conf add (the IP address is the address of the Linux box)
+
+wdp-udp = wap
+interface-name = 192.9.200.100
+wap-service = "wsp/wtp"
+
+
+In kannel.wapconf change the heartbeat-frequency to the same as in
+kannel.conf
+
+heartbeat-freq = 5
+
+---
+XXX: sidenote 7.7.2000:
+ In new Kannel (version 0.9.2 and up) configuration files are a bit
+ different. Just use gw/wapkannel.conf for both the bearerbox and
+ wapbox and you should do just fine (except that if the
+ wdp-interface-name '*' does not work, replace it with actual IP of
+ your Linux box)
+                         -- rpr@wapit.com
+---
+
+Add /etc/ppp/options.server (first IP address is server address, 2nd is
+assigned phone address):
+
+-detach
+default-asyncmap
+modem
+crtscts
+lock
++pap
+-chap
+proxyarp
+noauth
+passive
+192.9.200.100:192.9.200.200
+debug
+
+
+In /etc/mgetty+sendfax/login.config change about line fifty to say:
+
+/AutoPPP/ - - /usr/sbin/pppd 9600 file /etc/ppp/options.server
+
+
+in /etc/mgetty+sendfax/mgetty.config change the connect speed (was 38400):
+
+speed 9600
+
+
+Add hello.wml in the root html directory of your http server (RedHat 6.1
+supplies Apache)
+
+<?xml version="1.0"?>
+<!DOCTYPE wml PUBLIC "-//WAPFORUM//DTD WML 1.1//EN" 
+ "http://www.wapforum.org/DTD/wml_1.1.xml">
+<wml>
+
+<card id="main" title="Hello, world" newcontext="true">
+ <p>Hello, this is a message from Roger's Linux WAP server :-)</p>
+</card>
+
+</wml>
+
+
+In /etc/hosts add 'x' as an alias for the local server:
+
+127.0.0.1	x localhost
+
+
+In /etc/syslog.conf add a line saying (to enable ppp debug messages):
+
+daemon.*	/dev/console
+
+
+In /etc/ppp/pap-secrets add a line saying (ip address is phone's assigned
+address):
+
+wap * "" 192.9.200.200
+
+---
+
+Now configure your phone (mine is 7110) with
+
+homepage http:/x/hello.wml
+connection type continuous
+connection security off
+bearer data
+dial up number <your modem>
+ip address 192.9.200.100 (or whatever)
+auth type normal
+data call type analogue
+data call speed 9600
+username wap
+password <blank>
+
+--
+
+Hope this helps,
+--
+Roger
+
+-----------------------------------------------------------------------------
+
+When you access a "web page" using a PC based browser, the 
+"web server" tells your PC browser what kind of document it
+should expect. This is done by using something called MIME-types.
+The common MIME type for a plain HTML document is "text/html".
+However, for a WAP micro browser, which cannot read HTML, the
+MIME type has to be different. 
+
+The MIME types for serving WML contents are: 
+
+     Document type             MIME type                       Typical ext
+
+     Plain WML documents       text/vnd.wap.wml                .wml
+     Wireless Bitmap Images    image/vnd.wap.wbmp              .wbmp
+     Compiled WML documents    application/vnd.wap.wmlc        .wmlc
+     WMLScripts                text/vnd.wap.wmlscript .wmls    .wmls
+     Compiled WML Scripts      application/vnd.wap.wmlscriptc  .wmlsc
+
+To add the above MIME types to the Apache HTTP server,
+here's what you do: 
+
+Edit the srm.conf file (usually in /etc/httpd/conf) 
+Locate the AddType section, and add the following
+section to the file: 
+
+     # MIME Types for WAP
+     AddType text/vnd.wap.wml .wml
+     AddType image/vnd.wap.wbmp .wbmp
+     AddType application/vnd.wap.wmlc .wmlc
+     AddType text/vnd.wap.wmlscript .wmls
+     AddType application/vnd.wap.wmlscriptc .wmlsc
+
+Save the file and restart the Apache HTTPd. 
+
+
+------------------------------------------------------------------------------
+
+Date: Mon, 3 Jul 2000 09:33:16 +0200
+From: Wutke Matthias <Matthias.Wutke@erl9.siemens.de>
+To: devel@kannel.org
+Subject: kannel working with S35i
+
+The new version kannel 0.10 works really fine with the Siemens S35i.
+The preferences for the Gateway can be found in the menu
+
+internet -> profiles -> <choose a profile> -> preferences
+
+
+They are to be configured as written below:
+
+Profile:           Name of your profile
+Dial Number:       Phone number for connecting with your provider (Server)
+Connection Type:   Analogue or ISDN (has no effect)
+User:              Registered user at the provider
+Passwd:            Password of user
+IP:                IP-Address of the Provider's Gateway
+Port:              Port, which the Gateway listens to (e.g. 9201 for
+                     wsp/wtp protocol)
+Startpage:         Homepage of your Provider or any other wml-page
+Cancel Time:       Time in seconds, after which the connection is closed 
+

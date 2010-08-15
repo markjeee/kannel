@@ -1,0 +1,39 @@
+<!DOCTYPE html public "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>Administration</title>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000">
+
+<hr>
+<h1><u>Administration</u></h1>
+<ul>
+  <li><a href="admin.php?command=status">Get the current status of the gateway.</a></li>
+  <li><a href="admin.php?command=suspend">Set Kannel state as
+    'suspended'. (<i>Password required).</i></a></li>
+  <li><a href="admin.php?command=isolate">Set Kannel state as
+    'isolated'. (<i>Password required).</i></a></li>
+  <li><a href="admin.php?command=resume">Set Kannel state as
+    'running' if it is suspended or isolated. (<i>Password required).</i></a></li>
+  <li><a href="admin.php?command=shutdown">Bring down the
+    gateway, by setting state to 'shutdown'. (<i>Password required).</i></a></li>
+  <li><a href="admin.php?command=restart">Restart Kannel. <i>(Password
+    required).</i></a></li>
+</ul>
+<p>&nbsp;</p>
+<h1><u>Usage</u></h1>
+<ul>
+  <li><a href="sendsms.php">Send a SMS Text message</a>.</li>
+  <li><a href="sendota.php">Send an OTA WAP configuration</a>.</li>
+  <li><a href="sendvcard.php">Send a vCard.</a></li>
+  <li><a href="sendol.php">Send an Operator logo.</a></li>
+  <li><a href="sendgl.php">Send a Group Logo.</a></li>
+  <li><a href="sendrt.php">Send a Ringing tone.</a></li>
+  <li><a href="sendvcal.php">Send a vCalendar.</a></li>
+  <li><a href="sendcli.php">Send a Caller Line Identification logo.</a></li>
+</ul>
+
+</body>
+
+</html>

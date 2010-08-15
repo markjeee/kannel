@@ -1,0 +1,34 @@
+#!/bin/sh
+#
+# This script looks for long lines in source files in Kannel.
+#
+# Lars Wirzenius
+
+if [ ! -e /usr/bin/expand ]
+then
+	# No expand -> we can't expand tabs -> let's just fail silently
+	exit 0
+fi
+
+if [ -z "$1" ]
+then
+	dirs="."
+else
+	dirs="$@"
+fi
+
+find $dirs -type f ! -name '*.[oa]' ! -name '.*' ! -name '*.ps' ! \
+	-name '*.html' ! -name '*.pdf' ! -name '*.rtf' ! \
+	-name '*.png' ! -name core ! -name configure ! -name config.status \
+	! -name '*.log' ! -name '*.fig' |
+grep -v '/CVS/' |
+while read file
+do
+	if file "$file" | grep executable >/dev/null
+	then
+		:
+	else
+		expand $file | 
+		awk -vfile="$file" 'length > 78 { print file ":" NR ":" $0 }'
+	fi
+done

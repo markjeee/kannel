@@ -1,0 +1,147 @@
+#!/usr/bin/awk -f
+#
+# Summarize Kannel log files.
+#
+# - total number of lines
+# - start and end times
+# - smsbox/wapbox requests: total, within the last hour (total and avg/s)
+# - number of restarts
+#
+# Lars Wirzenius
+#
+
+BEGIN {
+	days_in_month[1] = 31
+	days_in_month[2] = 28
+	days_in_month[3] = 31
+	days_in_month[4] = 30
+	days_in_month[5] = 31
+	days_in_month[6] = 30
+	days_in_month[7] = 31
+	days_in_month[8] = 31
+	days_in_month[9] = 30
+	days_in_month[10] = 31
+	days_in_month[11] = 30
+	days_in_month[12] = 31
+
+	"date -u '+%Y-%m-%d %H:%M:%S'" | getline nowstr
+	now = secs(nowstr)
+	new_request_age = 3600 * 4
+	new_restart_age = 3600 * 24
+}
+
+FILENAME != prev_filename {
+	if (prev_filename) {
+		lines = NR - prev_nr
+		report(prev_filename, lines, starts, ends, requests, 
+			new_requests, restarts, new_restarts)
+	}
+	prev_filename = FILENAME
+	prev_nr = NR
+	starts = substr($0, 0, 20)
+	requests = 0
+	new_requests = 0
+	restarts = 0
+	new_restarts = 0
+}
+
+/INFO: Added logfile `.*' with level/ {
+	++restarts
+	if (now - secs($0) <= new_restart_age)
+		++new_restarts
+}
+
+/INFO: Starting to service <.*> from <.*> to <.*>$/ ||
+/INFO: WSP: Fetched <.*>$/ {
+	++requests
+	if (now - secs($0) <= new_request_age)
+		++new_requests
+}
+
+/^[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9]/ {
+	ends = substr($0, 0, 20)
+}
+
+END {
+	if (prev_filename)
+		report(prev_filename, NR - prev_nr, starts, ends, requests,
+			new_requests, restarts, new_restarts)
+}
+
+function report(filename, lines, starts, ends, requests, new_requests, \
+restarts, new_restarts) {
+	duration = secs(ends) - secs(starts)
+	avgperday = requests / (duration / 86400)
+	persec = new_requests / new_request_age
+
+	print "File:", filename
+	print "Lines:", lines
+	print "Starts:", starts
+	print "Ends:", ends
+	print "Duration:", secs2str(duration)
+	print "Restarts:", restarts
+	print "Recent restarts:", new_restarts, "(in the last", \
+		new_restart_age/3600, "hours)"
+	if (requests > 0) {
+		print "Requests:", requests, "total", \
+			avgperday, "average per day"
+		print "Recent requests (last", new_request_age/3600, \
+			"hours):", new_requests
+		print "Recent average per second:", persec
+	}
+	print ""
+}
+
+function secs2str(s) {
+	days = idiv(s, 86400)
+	s -= days * 86400
+	hours = idiv(s, 3600)
+	s -= hours * 3600
+	mins = idiv(s, 60)
+	s -= mins * 60
+	return days "d " hours "h " mins "m " s "s"
+}
+
+function secs(timestamp) {
+	year = substr(timestamp, 1, 4)
+	mon = substr(timestamp, 6, 2)
+	day = substr(timestamp, 9, 2)
+	hour = substr(timestamp, 12, 2)
+	min = substr(timestamp, 15, 2)
+	sec = substr(timestamp, 18, 2)
+	return sec + min*60 + hour*3600 + (day-1)*86400 + \
+	       mon2secs(mon, year) + year2secs(year)
+}
+
+function mon2secs(mon, year) {
+	days = 0
+	mon = mon + 0 # make sure it is a number
+	for (m = 1; m < mon; ++m)
+		days += days_in_month[mon]
+	if (mon > 2 && isleap(year))
+		++days
+	return days * 86400
+}
+
+function year2secs(year) {
+	s = 0
+	for (y = 1970; y < year; ++y) {
+		if (isleap(year))
+			s += 366 * 86400
+		else
+			s += 365 * 86400
+	}
+	return s
+}
+
+function isleap(year) {
+	return (year % 4) == 0 &&
+		((year % 100) != 0 || (year % 400) == 0)
+}
+
+function idiv(a, b) {
+	# assume a >= 0, b > 0
+	for (i = 0; a > b; ++i)
+		a -= b;
+	return i
+}

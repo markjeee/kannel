@@ -1,0 +1,647 @@
+/* ==================================================================== 
+ * The Kannel Software License, Version 1.0 
+ * 
+ * Copyright (c) 2001-2009 Kannel Group  
+ * Copyright (c) 1998-2001 WapIT Ltd.   
+ * All rights reserved. 
+ * 
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions 
+ * are met: 
+ * 
+ * 1. Redistributions of source code must retain the above copyright 
+ *    notice, this list of conditions and the following disclaimer. 
+ * 
+ * 2. Redistributions in binary form must reproduce the above copyright 
+ *    notice, this list of conditions and the following disclaimer in 
+ *    the documentation and/or other materials provided with the 
+ *    distribution. 
+ * 
+ * 3. The end-user documentation included with the redistribution, 
+ *    if any, must include the following acknowledgment: 
+ *       "This product includes software developed by the 
+ *        Kannel Group (http://www.kannel.org/)." 
+ *    Alternately, this acknowledgment may appear in the software itself, 
+ *    if and wherever such third-party acknowledgments normally appear. 
+ * 
+ * 4. The names "Kannel" and "Kannel Group" must not be used to 
+ *    endorse or promote products derived from this software without 
+ *    prior written permission. For written permission, please  
+ *    contact org@kannel.org. 
+ * 
+ * 5. Products derived from this software may not be called "Kannel", 
+ *    nor may "Kannel" appear in their name, without prior written 
+ *    permission of the Kannel Group. 
+ * 
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED 
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES 
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+ * DISCLAIMED.  IN NO EVENT SHALL THE KANNEL GROUP OR ITS CONTRIBUTORS 
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,  
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT  
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR  
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,  
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE  
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,  
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * ==================================================================== 
+ * 
+ * This software consists of voluntary contributions made by many 
+ * individuals on behalf of the Kannel Group.  For more information on  
+ * the Kannel Group, please see <http://www.kannel.org/>. 
+ * 
+ * Portions of this software are based upon software originally written at  
+ * WapIT Ltd., Helsinki, Finland for the Kannel project.  
+ */ 
+
+/*
+ * cfg.def - definition of configuration groups and variables
+ *
+ * Lars Wirzenius
+ */
+
+
+#ifndef OCTSTR
+#error OCTSTR not defined.
+#endif
+
+#ifndef SINGLE_GROUP
+#error SINGLE_GROUP not defined.
+#endif
+
+#ifndef MULTI_GROUP
+#error MULTI_GROUP not defined.
+#endif
+
+
+SINGLE_GROUP(core,
+    OCTSTR(admin-port)
+    OCTSTR(admin-port-ssl)
+    OCTSTR(admin-interface)    
+    OCTSTR(admin-password)
+    OCTSTR(status-password)
+    OCTSTR(admin-deny-ip)
+    OCTSTR(admin-allow-ip)
+    OCTSTR(smsbox-port)
+    OCTSTR(smsbox-port-ssl)
+    OCTSTR(smsbox-max-pending)
+    OCTSTR(wapbox-port)
+    OCTSTR(wapbox-port-ssl)
+    OCTSTR(box-deny-ip)
+    OCTSTR(box-allow-ip)
+    OCTSTR(udp-deny-ip)
+    OCTSTR(udp-allow-ip)
+    OCTSTR(wdp-interface-name)
+    OCTSTR(log-file)
+    OCTSTR(log-level)
+    OCTSTR(access-log)
+    OCTSTR(access-log-time)
+    OCTSTR(access-log-format)
+    OCTSTR(access-log-clean)
+    OCTSTR(store-file)
+    OCTSTR(store-dump-freq)
+    OCTSTR(store-type)
+    OCTSTR(store-location)
+    OCTSTR(unified-prefix)
+    OCTSTR(white-list)
+    OCTSTR(white-list-regex)
+    OCTSTR(black-list)
+    OCTSTR(black-list-regex)
+    OCTSTR(http-proxy-host)
+    OCTSTR(http-proxy-port)
+    OCTSTR(http-proxy-ssl)
+    OCTSTR(http-proxy-exceptions)
+    OCTSTR(http-proxy-exceptions-regex)
+    OCTSTR(http-proxy-username)
+    OCTSTR(http-proxy-password)
+    OCTSTR(ssl-client-certkey-file)
+    OCTSTR(ssl-server-cert-file)
+    OCTSTR(ssl-server-key-file)
+    OCTSTR(ssl-trusted-ca-file)
+    OCTSTR(dlr-storage)
+    OCTSTR(maximum-queue-length)
+    OCTSTR(sms-incoming-queue-limit)
+    OCTSTR(sms-outgoing-queue-limit)
+    OCTSTR(sms-resend-freq)
+    OCTSTR(sms-resend-retry)
+    OCTSTR(sms-combine-concatenated-mo)
+    OCTSTR(sms-combine-concatenated-mo-timeout)
+    OCTSTR(http-timeout)
+)
+
+
+SINGLE_GROUP(wapbox,
+    OCTSTR(bearerbox-host)
+    OCTSTR(timer-freq)
+    OCTSTR(url-map)
+    /* to be deprecated (begin) */
+    OCTSTR(map-url)
+    OCTSTR(map-url-max)
+    OCTSTR(map-url-0)
+    OCTSTR(map-url-1)
+    OCTSTR(map-url-2)
+    OCTSTR(map-url-3)
+    OCTSTR(map-url-4)
+    OCTSTR(map-url-5)
+    OCTSTR(map-url-6)
+    OCTSTR(map-url-7)
+    OCTSTR(map-url-8)
+    OCTSTR(map-url-9)
+    /* to be deprecated (end) */
+    OCTSTR(device-home)
+    OCTSTR(log-file)
+    OCTSTR(log-level)
+    OCTSTR(syslog-level)
+    OCTSTR(smart-errors)
+    OCTSTR(access-log)
+    OCTSTR(access-log-time)
+    OCTSTR(access-log-clean)
+    OCTSTR(http-interface-name)
+    OCTSTR(concatenation)
+    OCTSTR(max-messages)
+    OCTSTR(wml-strict)
+    OCTSTR(http-timeout)
+)
+
+
+MULTI_GROUP(wap-url-map,
+    OCTSTR(name)
+    OCTSTR(url)
+    OCTSTR(map-url)
+    OCTSTR(send-msisdn-query)
+    OCTSTR(send-msisdn-header)
+    OCTSTR(send-msisdn-format)
+    OCTSTR(accept-cookies)
+)
+
+
+MULTI_GROUP(wap-user-map,
+    OCTSTR(name)
+    OCTSTR(user)
+    OCTSTR(pass)
+    OCTSTR(msisdn)
+)
+
+
+SINGLE_GROUP(wtls,
+    OCTSTR(certificate-file)
+    OCTSTR(privatekey-file)
+    OCTSTR(privatekey-password)
+)
+
+
+SINGLE_GROUP(ppg,
+    OCTSTR(ppg-url)
+    OCTSTR(ppg-port)
+    OCTSTR(ppg-ssl-port)
+    OCTSTR(trusted-pi)
+    OCTSTR(concurrent-pushes)
+    OCTSTR(users)
+    OCTSTR(ppg-allow-ip)
+    OCTSTR(ppg-deny-ip)
+    OCTSTR(ssl-server-cert-file)
+    OCTSTR(ssl-server-key-file)
+    OCTSTR(global-sender)
+    OCTSTR(default-smsc)
+    OCTSTR(default-dlr-url)
+    OCTSTR(ppg-smsbox-id)
+    OCTSTR(service-name)
+)
+
+
+MULTI_GROUP(wap-push-user,
+    OCTSTR(wap-push-user)
+    OCTSTR(ppg-username)
+    OCTSTR(ppg-password)
+    OCTSTR(country-prefix)
+    OCTSTR(allowed-prefix)
+    OCTSTR(allowed-prefix-regex)
+    OCTSTR(denied-prefix)
+    OCTSTR(denied-prefix-regex)
+    OCTSTR(white-list)
+    OCTSTR(white-list-regex)
+    OCTSTR(black-list-regex)
+    OCTSTR(black-list)
+    OCTSTR(deny-ip)
+    OCTSTR(allow-ip)
+    OCTSTR(forced-smsc)
+    OCTSTR(default-smsc)
+    OCTSTR(dlr-url)
+    OCTSTR(smsbox-id)
+)
+
+
+SINGLE_GROUP(test-ppg,
+    OCTSTR(retries)
+    OCTSTR(pi-ssl)
+    OCTSTR(ssl-client-certkey-file)
+    OCTSTR(ssl-trusted-ca-file)
+)
+
+
+SINGLE_GROUP(configuration,
+    OCTSTR(push-url)
+    OCTSTR(content-file)
+    OCTSTR(pap-file)
+    OCTSTR(username)
+    OCTSTR(password)
+)
+
+
+SINGLE_GROUP(smsbox,
+    OCTSTR(smsbox-id)
+    OCTSTR(bearerbox-host)
+    OCTSTR(bearerbox-port)
+    OCTSTR(bearerbox-port-ssl)
+    OCTSTR(sendsms-port)
+    OCTSTR(sendsms-port-ssl)
+    OCTSTR(sendsms-interface)    
+    OCTSTR(sendsms-url)
+    OCTSTR(sendota-url)
+    OCTSTR(xmlrpc-url)
+    OCTSTR(sendsms-chars)
+    OCTSTR(global-sender)
+    OCTSTR(log-file)
+    OCTSTR(log-level)
+    OCTSTR(access-log)
+    OCTSTR(access-log-time)
+    OCTSTR(access-log-clean)
+    OCTSTR(sms-length)
+    OCTSTR(reply-couldnotfetch)
+    OCTSTR(reply-couldnotrepresent)
+    OCTSTR(reply-requestfailed)
+    OCTSTR(reply-emptymessage)
+    OCTSTR(allowed-prefix)
+    OCTSTR(denied-prefix)
+    OCTSTR(white-list)
+    OCTSTR(black-list)
+    OCTSTR(mo-recode)
+    OCTSTR(http-request-retry)
+    OCTSTR(http-queue-delay)
+    OCTSTR(white-list-regex)
+    OCTSTR(black-list-regex)
+    OCTSTR(immediate-sendsms-reply)
+    OCTSTR(max-pending-requests)
+    OCTSTR(http-timeout)
+)
+
+
+MULTI_GROUP(smsbox-route,
+    OCTSTR(smsbox-id)
+    OCTSTR(smsc-id)
+    OCTSTR(shortcode)
+)
+
+
+MULTI_GROUP(smsc,
+    OCTSTR(smsc)
+    OCTSTR(smsc-id)
+    OCTSTR(smsc-admin-id)
+    OCTSTR(denied-smsc-id)
+    OCTSTR(allowed-smsc-id)
+    OCTSTR(preferred-smsc-id)
+    OCTSTR(allowed-prefix)
+    OCTSTR(denied-prefix)
+    OCTSTR(preferred-prefix)
+    OCTSTR(unified-prefix)
+    OCTSTR(reroute)
+    OCTSTR(reroute-smsc-id)
+    OCTSTR(reroute-receiver)
+    OCTSTR(reroute-dlr)
+    OCTSTR(log-file)
+    OCTSTR(log-level)
+    OCTSTR(our-host)
+    OCTSTR(alt-dcs)
+    OCTSTR(throughput)
+    OCTSTR(alt-charset)
+    OCTSTR(host)
+    OCTSTR(alt-host)
+    OCTSTR(port)
+    OCTSTR(use-ssl)
+    OCTSTR(alt-port)
+    OCTSTR(smsc-username)
+    OCTSTR(smsc-password)
+    OCTSTR(keepalive)
+    OCTSTR(sim-buffering)
+    OCTSTR(modemtype)
+    OCTSTR(device)
+    OCTSTR(speed)
+    OCTSTR(validityperiod)
+    OCTSTR(our-port)
+    OCTSTR(receive-port)
+    OCTSTR(connect-allow-ip)
+    OCTSTR(system-id)
+    OCTSTR(system-type)
+    OCTSTR(address-range)
+    OCTSTR(smsc_nua)
+    OCTSTR(home_nua)
+    OCTSTR(wait_report)
+    OCTSTR(ois-debug-level)
+    OCTSTR(modem-type)
+    OCTSTR(pin)
+    OCTSTR(phone)
+    OCTSTR(send-url)
+    OCTSTR(dlr-url)    
+    OCTSTR(sender-prefix)
+    OCTSTR(flow-control)
+    OCTSTR(wait-ack)
+    OCTSTR(wait-ack-expire)
+    OCTSTR(no-sender)
+    OCTSTR(no-coding)
+    OCTSTR(window)
+    OCTSTR(idle-timeout)
+    OCTSTR(no-sep)
+    OCTSTR(appname)
+    OCTSTR(ussdc)
+    OCTSTR(session-length)
+    OCTSTR(my-number)
+    OCTSTR(sms-center)
+    OCTSTR(source-addr-ton)
+    OCTSTR(source-addr-npi)
+    OCTSTR(dest-addr-ton)
+    OCTSTR(dest-addr-npi)
+    OCTSTR(bind-addr-ton)
+    OCTSTR(bind-addr-npi)
+    OCTSTR(service-type)
+    OCTSTR(source-addr-autodetect)
+    OCTSTR(enquire-link-interval)
+    OCTSTR(max-pending-submits)
+    OCTSTR(reconnect-delay)
+    OCTSTR(transceiver-mode)
+    OCTSTR(interface-version)
+    OCTSTR(priority)
+    OCTSTR(notification-pid)
+    OCTSTR(notification-addr)
+    OCTSTR(msg-id-type)
+    OCTSTR(no-dlr)
+    OCTSTR(connection-timeout)
+    OCTSTR(allowed-smsc-id-regex)
+    OCTSTR(denied-smsc-id-regex)
+    OCTSTR(preferred-smsc-id-regex)
+    OCTSTR(allowed-prefix-regex)
+    OCTSTR(denied-prefix-regex)
+    OCTSTR(preferred-prefix-regex)
+    OCTSTR(max-error-count)
+    OCTSTR(alt-addr-charset)
+    OCTSTR(status-success-regex)
+    OCTSTR(status-permfail-regex)
+    OCTSTR(status-tempfail-regex)
+    OCTSTR(max-sms-octets)
+    OCTSTR(login-prompt)
+    OCTSTR(password-prompt)
+    OCTSTR(generic-param-username)
+    OCTSTR(generic-param-password)
+    OCTSTR(generic-param-from)
+    OCTSTR(generic-param-to)
+    OCTSTR(generic-param-text)
+    OCTSTR(generic-param-udh)
+    OCTSTR(generic-param-service)
+    OCTSTR(generic-param-account)
+    OCTSTR(generic-param-binfo)
+    OCTSTR(generic-param-dlr-mask)
+    OCTSTR(generic-param-dlr-url)
+    OCTSTR(generic-param-dlr-mid)
+    OCTSTR(generic-param-flash)
+    OCTSTR(generic-param-mclass)
+    OCTSTR(generic-param-mwi)
+    OCTSTR(generic-param-coding)
+    OCTSTR(generic-param-validity)
+    OCTSTR(generic-param-deferred)
+    OCTSTR(generic-param-foreign-id)
+    OCTSTR(generic-message-sent)
+    OCTSTR(generic-status-sent)
+    OCTSTR(generic-status-error)
+    OCTSTR(generic-foreign-id-regex)
+)
+
+
+MULTI_GROUP(sms-service,
+    OCTSTR(name)
+    OCTSTR(keyword)
+    OCTSTR(aliases)    
+    OCTSTR(url)
+    OCTSTR(get-url)
+    OCTSTR(post-url)
+    OCTSTR(post-xml)
+    OCTSTR(file)
+    OCTSTR(text)
+    OCTSTR(exec)
+    OCTSTR(accepted-smsc)
+    OCTSTR(accepted-smsc-regex)
+    OCTSTR(accepted-account)
+    OCTSTR(accepted-account-regex)
+    OCTSTR(forced-smsc)
+    OCTSTR(default-smsc)
+    OCTSTR(faked-sender)
+    OCTSTR(max-messages)
+    OCTSTR(concatenation)
+    OCTSTR(split-chars)
+    OCTSTR(split-suffix)
+    OCTSTR(omit-empty)
+    OCTSTR(header)
+    OCTSTR(footer)
+    OCTSTR(prefix)
+    OCTSTR(suffix)
+    OCTSTR(assume-plain-text)
+    OCTSTR(accept-x-kannel-headers)
+    OCTSTR(strip-keyword)
+    OCTSTR(send-sender)
+    OCTSTR(catch-all)
+    OCTSTR(allowed-prefix)
+    OCTSTR(allowed-prefix-regex)
+    OCTSTR(denied-prefix)
+    OCTSTR(denied-prefix-regex)
+    OCTSTR(allowed-receiver-prefix)
+    OCTSTR(allowed-receiver-prefix-regex)
+    OCTSTR(denied-receiver-prefix)
+    OCTSTR(denied-receiver-prefix-regex)
+    OCTSTR(white-list)
+    OCTSTR(white-list-regex)
+    OCTSTR(black-list)
+    OCTSTR(black-list-regex)
+    OCTSTR(dlr-url)
+    OCTSTR(keyword-regex)
+)
+
+
+MULTI_GROUP(sendsms-user,
+    OCTSTR(name)
+    OCTSTR(username)
+    OCTSTR(password)
+    OCTSTR(user-deny-ip)
+    OCTSTR(user-allow-ip)
+    OCTSTR(forced-smsc)
+    OCTSTR(default-smsc)
+    OCTSTR(faked-sender)
+    OCTSTR(default-sender)
+    OCTSTR(max-messages)
+    OCTSTR(concatenation)
+    OCTSTR(split-chars)
+    OCTSTR(split-suffix)
+    OCTSTR(omit-empty)
+    OCTSTR(header)
+    OCTSTR(footer)
+    OCTSTR(allowed-prefix)
+    OCTSTR(denied-prefix)
+    OCTSTR(white-list)
+    OCTSTR(black-list)
+    OCTSTR(dlr-url)
+    OCTSTR(allowed-prefix-regex)
+    OCTSTR(denied-prefix-regex)
+    OCTSTR(white-list-regex)
+    OCTSTR(black-list-regex)
+)
+
+
+MULTI_GROUP(ota-setting,
+    OCTSTR(ota-id)
+    OCTSTR(location)
+    OCTSTR(service)
+    OCTSTR(ipaddress)
+    OCTSTR(phonenumber)
+    OCTSTR(bearer)
+    OCTSTR(connection)
+    OCTSTR(calltype)
+    OCTSTR(speed)
+    OCTSTR(pppsecurity)
+    OCTSTR(authentication)
+    OCTSTR(login)
+    OCTSTR(secret)
+)
+
+
+MULTI_GROUP(ota-bookmark,
+    OCTSTR(ota-id)
+    OCTSTR(name)
+    OCTSTR(url)
+)
+
+
+MULTI_GROUP(modems,
+    OCTSTR(id)
+    OCTSTR(name)
+    OCTSTR(detect-string)
+    OCTSTR(detect-string2)
+    OCTSTR(init-string)
+    OCTSTR(speed)
+    OCTSTR(enable-hwhs)
+    OCTSTR(need-sleep)
+    OCTSTR(no-pin)
+    OCTSTR(no-smsc)
+    OCTSTR(sendline-sleep)
+    OCTSTR(keepalive-cmd)
+    OCTSTR(broken)
+    OCTSTR(message-storage)
+    OCTSTR(message-start)
+    OCTSTR(enable-mms)
+    OCTSTR(reset-string)
+)
+
+
+MULTI_GROUP(mssql-connection,
+    OCTSTR(id)
+    OCTSTR(username)
+    OCTSTR(password)
+    OCTSTR(server)
+    OCTSTR(database)
+    OCTSTR(max-connections)
+)
+
+
+MULTI_GROUP(mysql-connection,
+    OCTSTR(id)
+    OCTSTR(host)
+    OCTSTR(port)
+    OCTSTR(username)
+    OCTSTR(password)
+    OCTSTR(database)
+    OCTSTR(max-connections)
+)
+
+
+MULTI_GROUP(oracle-connection,
+    OCTSTR(id)
+    OCTSTR(username)
+    OCTSTR(password)
+    OCTSTR(tnsname)
+    OCTSTR(max-connections)
+)
+
+
+MULTI_GROUP(sdb-connection,
+    OCTSTR(id)
+    OCTSTR(url)
+    OCTSTR(max-connections)
+)
+
+
+MULTI_GROUP(pgsql-connection,
+    OCTSTR(id)
+    OCTSTR(host)
+    OCTSTR(port)
+    OCTSTR(username)
+    OCTSTR(password)
+    OCTSTR(database)
+    OCTSTR(max-connections)
+)
+
+
+MULTI_GROUP(sqlite-connection,
+    OCTSTR(id)
+    OCTSTR(database)
+    OCTSTR(max-connections)
+    OCTSTR(lock-timeout)
+)
+
+MULTI_GROUP(sqlite3-connection,
+    OCTSTR(id)
+    OCTSTR(database)
+    OCTSTR(max-connections)
+    OCTSTR(lock-timeout)
+)
+
+ 
+SINGLE_GROUP(dlr-db,
+    OCTSTR(id)
+    OCTSTR(table)
+    OCTSTR(field-smsc)
+    OCTSTR(field-timestamp)
+    OCTSTR(field-source)
+    OCTSTR(field-destination)
+    OCTSTR(field-service)
+    OCTSTR(field-url)
+    OCTSTR(field-mask)
+    OCTSTR(field-status)
+    OCTSTR(field-boxc-id)
+)
+
+
+SINGLE_GROUP(radius-acct,
+    OCTSTR(our-host)
+    OCTSTR(our-port)
+    OCTSTR(remote-host)
+    OCTSTR(remote-port)
+    OCTSTR(remote-timeout)
+    OCTSTR(nas-ports)
+    OCTSTR(secret-nas)
+    OCTSTR(secret-radius)
+    OCTSTR(unified-prefix)
+)
+
+
+MULTI_GROUP(smpp-tlv,
+    OCTSTR(name)
+    OCTSTR(tag)
+    OCTSTR(length)
+    OCTSTR(type)
+    OCTSTR(smsc-id)
+)
+
+
+#undef OCTSTR
+#undef SINGLE_GROUP
+#undef MULTI_GROUP
+
+
+
+

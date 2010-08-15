@@ -1,0 +1,65 @@
+#!/bin/bash
+#
+# kannel-nag - do a test compile of Kannel and mail results to devel list
+#
+# This script is meant to compile Kannel and mail all warnings and errors
+# to the development list. It is meant to be run on a few carefully chosen
+# machines, not by everyone on the Internet. The goal is to make sure Kannel
+# at least compiles on many platforms. It is quite uninteresting to have
+# fiftyseven thousand people running this script on identical Linux machines.
+#
+# I repeat: DO NOT RUN THIS SCRIPT without asking for permission of the
+# receiver first.
+#
+# TODO:
+# - CFLAGS now set for GCC, should be more portable
+#
+# Lars Wirzenius <liw@wapit.com>
+#
+
+set -e
+
+addr=""
+CVSROOT=":pserver:anonymous@cvs.kannel.3glab.org:/home/cvs"
+
+dir="kannel-nag-dir"
+
+cd /var/tmp
+rm -rf $dir
+mkdir $dir
+cd $dir
+cvs -Q -d$CVSROOT co gateway
+cd gateway
+if CFLAGS='-Wall -O2 -g' ./configure >config.output 2>&1
+then
+	configure=ok
+	touch .depend || true
+	make -s depend || true
+	make -s >make.output 2>&1 || true
+else
+	configure=failed	
+fi
+
+if test -s make.output || [ "$configure" = failed ]
+then
+	(
+	echo "Kannel compilation test."
+	echo "" 
+	echo "Host: `uname -a`"
+	echo ""
+	echo "Kannel compilation had warnings or failed."
+	echo ""
+	if test -e make.output
+	then
+		echo "Output of 'make -s':"
+		cat make.output
+		echo "-------------------------------------------------------"
+		echo ""
+	fi
+	echo "Output of 'CFLAGS='-Wall -O2 -g' ./configure':"
+	cat config.output
+	) | mail -s "Kannel automatic compilation test for `uname -s`" $addr
+fi
+
+cd /var/tmp
+rm -rf $dir

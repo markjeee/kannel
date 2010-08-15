@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<!DOCTYPE pap PUBLIC "-//WAPFORUM//DTD PAP//EN"
+          "http://www.wapforum.org/DTD/pap_1.0.dtd">
+<pap>
+  <push-message push-id="9fjeo39jf084@pi.com"
+  deliver-after-timestamp="2001-02-28T06:45:00Z"
+  progress-notes-requested="false">
+    <address address-value="WAPPUSH=213.243.140.102/TYPE=IPv4@ppg.carrier.com">
+    </address>
+    <quality-of-service
+    priority="low"
+    delivery-method="unconfirmed"
+    bearer-required="true"
+    bearer="CSD" 
+    network-required="true"
+    network="GSM">
+    </quality-of-service>
+  </push-message>
+</pap>

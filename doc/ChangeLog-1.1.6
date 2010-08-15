@@ -1,0 +1,1822 @@
+2002-03-28  Stipe Tolj  <stolj@wapme.de>
+    * Re-Making release 1.1.6.
+
+2002-03-27  Bruno Rodrigues  <bruno.rodrigues@litux.org>
+    * gw/smsc_at2.c: small fix
+
+2002-03-27  Bruno Rodrigues  <bruno.rodrigues@litux.org>
+    * doc/userguide/userguide.xml: changed at2 speed information
+
+2002-03-27  Bruno Rodrigues  <bruno.rodrigues@litux.org>
+    * test/test_http_server.c: Disable SSL checking if #SSL is disabled in 
+      configure
+    * NEWS, Changelog: some minor fixes ;)
+    * gw/smsc_at2.[ch]: changed speed behaviour. If speed is unset in smsc 
+      group, kannel try to use modem->speed and if it fails, autodetects
+
+2002-03-27  Bruno Rodrigues  <bruno.rodrigues@litux.org>
+    * gwlib/http.c: Disabled keepalive until someone fixes it for good
+
+2002-03-27  Stipe Tolj  <stolj@wapme.de>
+    * test/test_http_server.c: included SSL support for HTTP test server
+
+2002-03-27  Stipe Tolj  <stolj@wapme.de>
+    * config*, wap/cookies.[ch], gw/wap-appl.c: revised the cookie support for
+      WSP and added --enable-cookies configure option.
+
+2002-03-27  Stipe Tolj  <stolj@wapme.de>
+    * gwlib/cfg.c: fixed release showstopper from previous multiple include
+      fix from Bruno.
+
+2002-03-26  Stipe Tolj  <stolj@wapme.de>
+    * Making release 1.1.6.
+
+2002-03-26  Stipe Tolj  <stolj@wapme.de>
+    * Updated NEWS to prepare for 1.1.6.
+
+2002-03-26  Bruno Rodrigues  <bruno.rodrigues@litux.org>
+    * gwlib/cfg.c: fixed bug when including several include files
+    * gw/urltrans.c: added seconds to "%t"
+
+2002-03-26  Stipe Tolj  <stolj@wapme.de>
+    * checks/check_ppg.sh: checking test_http_server output seems not necessary
+      in this case and more verbose error output
+
+2002-03-26  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc_emi2.c: fixing timestamp issue for the 0-based months,
+      now conversion function gets the right value
+
+2002-03-26  Stipe Tolj  <stolj@wapme.de>
+    * checks/check_[fakesmsc|pph].sh: need some time before trying to grep 
+      around in the logs and decide if things are doing well
+
+2002-03-26  Stipe Tolj  <stolj@wapme.de>
+    * gw/pushkannel.conf: adjusted log-file entries for make checking
+
+2002-03-26  Stipe Tolj  <stolj@wapme.de>
+    * gwlib/date.c: bounced back to rev 1.8 to satisfy "make -s check" run
+      in preparation of new release
+
+2002-03-26  Stipe Tolj  <stolj@wapme.de>
+    * gw/dlr.c: fixed another kannel-nag warning about unused vars
+      in dlr_find_mysql()
+
+2002-03-25  Stipe Tolj  <stolj@wapme.de>
+    * gwlib/octstr.c: added support for Linux on PowerPC and S390
+      architectures, patch submitted by "Jacob Vennervald Madsen" 
+      <jvm@gopinocchio.com>
+      [Msg-ID: <EB0B5D39043C344BA53B0F4AB15AE6330299B4@gop-server.GOP-server.local>]
+
+2002-03-25  Stipe Tolj  <stolj@wapme.de>
+    * gw/dlr.c: fixed kannel-nag compile warning in dlr_find_mysql()
+
+2002-03-24  Stipe Tolj  <stolj@wapme.de>
+    * gw/dlr.c: fixed SQL statement in dlr_flush() for MySQL storage
+
+2002-03-24  Stipe Tolj  <stolj@wapme.de>
+    * gw/bearerbox.[ch], gw/dlr.c: fixed the way mutex are locked for 
+      flushing the DLR queue
+
+2002-03-24  Stipe Tolj  <stolj@wapme.de>
+    * gw/bb_http.c, gw/bearerbox.c, gw/dlr.[ch], doc/userguide/userguide.xml: 
+      added '/flush-dlr' HTTP administration command to flush the DLR queue
+ 
+2002-03-24  Stipe Tolj  <stolj@wapme.de>
+    * gw/bearerbox.c, gw/dlr.[ch]: added DLR information to the status page
+
+2002-03-24  Stipe Tolj  <stolj@wapme.de>
+    * gw/dlr.c: added octstr_get_cstr() wrapping for global Octstr* of
+      the SQL statements
+
+2002-03-24  Stipe Tolj  <stolj@wapme.de>
+    * gw/dlr.c: removed call to mysql_get_proto_info()
+
+2002-03-24  Stipe Tolj  <stolj@wapme.de>
+    * gw/dlr.c: fixed a typo in dlr_init() from the previous commit.
+
+2002-03-24  Stipe Tolj  <stolj@wapme.de>
+    * gw/dlr.[ch]: restructuring the DLR MySQL support to fit the new general
+      MySQL connection configuration sections.
+    * gwlib/cfg.def: changed config directives to support general MySQL 
+      connections using 'mysql-connection' groups and added 'dlr-storage' type 
+      indicator to core group.
+    * configure[.in], aclocal.m4: added mysql-4.x detection routine, changed 
+      --enable-mysql-dlr to --with-dlr[=TYPE] to support general DLR storage
+      types, re-arranged configure groups, beautified configure ouput
+    * doc/userguide/userguide.xml, doc/dlr-mysql.conf: added documentation about
+      the new general MySQL connection groups and the specific definitions for
+      external DLR storage support.
+
+2002-03-22  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc_at2.[ch]: splitted .c to header and source file, run 
+      through astyle and edited both by hand.
+
+2002-03-22  Stipe Tolj  <stolj@wapme.de>
+    * gwlib/cfg.def, gw/smsc_smpp.c: added manual NPI and TON defining support
+      via configuration directives, patch by Alex Judd <ajudd@skywire.co.uk>
+      [Msg-ID: <Pine.LNX.4.44.0203210918030.7205-101000@samsara.kgbinternet.com>]
+
+2002-03-22  Stipe Tolj  <stolj@wapme.de>
+    * doc/modems.conf, doc/userguide/userguide.xml, gw/smsc_at2.c,
+      gwlib/cfg.def: added SIM buffering pool patch, 
+      contributed by Oded Arbel <oded@m-wise.com>, forwarded by Andrea
+      [Msg-ID: <20020321103746.QED1149.fep31-svc.tin.it@[127.0.0.1]>]
+
+2002-03-22  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc_at2.c: fixed timestamp issue in at2, patch contributed by 
+      Oded Arbel <oded@m-wise.com>
+      [Msg-ID: <2CFC21DAF860CC49AF57333C4459DD4B166E88@exchange.m-wise.com>]
+
+2002-03-22  Stipe Tolj  <stolj@wapme.de>
+    * doc/userguide/userguide.xml, gw/smsc_smpp.c, gwlib/socket.c: added
+      support for multi-homed bearerbox machines to select outgoing
+      ethernet device, patch contributed by Simon Beale <simon.beale@ngame.com>
+      [Msg-ID: <006801c1d101$86f525f0$c80a0a0a@ngame.com>]
+
+2002-03-21  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc_cgw.c: bug and stability fixes, patch contributed by
+      "Anders Lindh" <alindh@flyerone.com>
+      [Msg-ID: <002401c1d039$7a92f850$8078a8c0@alindh>]      
+
+2002-03-21  Bruno Rodrigues  <bruno.rodrigues@litux.org>
+    * gw/smsbox.c: Fixed sms.service display in bearerbox_access.log: it were
+      only displayed in get/post url, not in text
+    * gw/urltrans.[ch], gwlib/cfg.def: added default-sender to sendsms-user to
+      be used if from field is unset and per-user
+    * doc/userguide/userguide.xml: added default-sender information
+    * doc/userguide/userguide.xml: Added an id parameter to a section title, to
+      fix the link warning
+    * gw/smsbox.c: Added X-Kannel-SMSC to smsbox -> appl HTTP POST
+
+2002-03-20  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc_at2.c: fixed compiler warning
+
+2002-03-19  Bruno Rodrigues  <bruno.rodrigues@litux.org>
+    * gw/smsc_at2.c: fix warning 
+
+2002-03-17  Bruno Rodrigues  <bruno.rodrigues@litux.org>
+    * doc/modems.cfg: Changed T68 initstring
+    * doc/modems.cfg, gw/smsc_at2.c: Added broken boolean value to handle 
+      Ericsson T68 brokenness. Probably will be removed when I or somebody else
+      talk with Ericsson and understand what happened with that phone.
+      Behaviour: accept +CMT: without ","; compare the +CMT value with the 
+      the full string length, instead of ony the PDU part. (There's still 
+      missing the +CNMA response that I cannot send to this mobile)
+    * doc/userguide/userguide.xml, gw/smsc_at2.c: changed alt-dcs to boolean
+    * gw/smsc_at2.c: reset keepalive time when sending a message
+    * gw/smsc_at2.c: fix keepalive initialization when keepalive is not defined
+      in configuration
+    * gw/smsc_at2.c: fix panic when not autodetecting. I really thought that
+      octstr_destroy would set the octstr to null
+    * gw/smsc_at2.c: fix autodetect_modem to read every modem group (i=1)
+    * gw/smsc_at2.c: at2_read_modems won't output some debugs when using 
+      idnumber (autodetect), because at2_detect_modem do the output 
+    * gwlib/cfg.def: fix a small memory leak
+    * gw/smsc_at2.c: removed checks from cfg_get_bool, because it always sets 
+      the value to 0 or 1 
+    * gw/smsc_at2.c: fix parsing alphanumeric sender when receiving message
+    * gw/smsc_at2.c: activate +MMS (More Message to Send) when there's more
+      than one message to send
+
+2002-03-14  Bruno Rodrigues  <bruno.rodrigues@litux.org>
+    * gwlib/cfg.[ch]: added cfg_get_configfile to return the config filename of
+      the Cfg grp we are using; fixed a small glitch
+    * gwlib/cfg.def: added modems multi-group variables
+    * doc/modems.conf: added a default configuration with modem definitions, the
+      same values that were hard-coded in smsc_at2. Should be included in main
+      kannel.conf, using include = "modems.conf"
+    * gw/smsc_at2.c: removed hard-coded modem definitions and added reading the
+      modems.conf groups included in kannel.conf 
+    * doc/userguide/userguide.xml: added information for modems group 
+
+2002-03-14  Bruno Rodrigues  <bruno.rodrigues@litux.org>
+    * gw/smsc_emi2.c: force sending a UCP-31 after login (thus reseting the
+      last_activity_time) - sometimes emi2 login and don't send keepalives,
+      specially if it can't connect at the first time
+
+2002-03-14  Bruno Rodrigues  <bruno.rodrigues@litux.org>
+    * gw/smsc_emi2.c: added a missing octdestroy and changed dcs encoding
+      behaviour: if dcs equals to default + 8bit, we don't need to add a 
+      DCS in XSER, the MCLs=1 is enough (Should fix complaint from 
+      Avner Sternheim <AvnerS@outlook.co.il>)
+
+2002-03-13  Bruno Rodrigues  <bruno.rodrigues@litux.org>
+    * gw/smsc_at2.c: fixed a bug when keepalive field is undefined
+
+2002-03-13 Jörg Pommnitz <jpo@condat.de>
+    * fix AT2 to work with Wavecom modem again. This should not hurt 
+      anything else.
+
+2002-03-12  Bruno Rodrigues  <bruno.rodrigues@litux.org>
+    * gw/smsc_at2.c: fixed a typo, removed ceil function and fixed len in 
+      alphanumeric text
+
+2002-03-12  Bruno Rodrigues  <bruno.rodrigues@litux.org>
+    * gw/smsc_at2.c: increased timeout when sending the +CPIN? command; added
+      a colon to +CMT so kannel doesn't interpret +CMTI; added alphanumeric
+      sender interpretation to received messages; added interpretation of
+      international sender to received messages, adding a '+' on it; added
+      setting pid field in message received; 
+
+2002-03-09  Bruno Rodrigues  <bruno.rodrigues@litux.org>
+    * gw/smsc_emi2.c, gwlib/cfg.h: fixed some compilation warnings
+
+2002-03-08 Andreas Fink <andreas@fink.org>
+    * gw/smsc_at2.c: fixed a bug for +CPIN which wasnt waiting for OK after
+    +CPIN answer. This was screwing up AT command answers and Siemens TC35
+    couldnt get initialized anymore.
+
+2002-03-08  Bruno Rodrigues  <bruno.rodrigues@litux.org>
+    * doc/userguide/userguide.xml: added mysql config information from Oded 
+      Arbel patch 
+      [Msg-ID: <2CFC21DAF860CC49AF57333C4459DD4B166DF5@exchange.m-wise.com>]
+
+2002-03-08  Bruno Rodrigues  <bruno.rodrigues@litux.org>
+    * gwlib/cfg.h: removed two warnings
+
+2002-03-08  Bruno Rodrigues  <bruno.rodrigues@litux.org>
+    * gw/bearerbox.c, gwlib/cfg.def: Added mysql-* configuration variables to 
+      define the hostname, user, password and database name (It's still missing
+      documentation about mysql) - Oded Arbel Patch
+    * gw/emimsg.c, gw/emimsg.h, gw/smsc_at2.c, gw/smsc_emi2.c: Uniformization
+      of log files: now AT2 and EMI2 always say "AT2[name]: something" and 
+      "EMI2[name]: something". 
+    * gw/smsc_emi2.c: Added name to privdata. Name is equal to smsc-id or, if 
+      undefined, is [[our-host|kannel]:[our-port|*]->]host:port. (Sorry for 
+      passing "whoami" Octstr through some functions, but later we should remove
+      all debug() from them and only debug() at the parent and make all function
+      "childs" return -1 or something)
+    * gw/smsc_at2.c: Added name to privdata. Name is equal to smsc-id or, if 
+      undefined, is device-name as before
+    * gw/smsc_emi2.c, gwlib/cfg.def: Added our-host configuration value to define 
+      kannel local ip
+    * gw/smsc_emi2.c, gwlib/cfg.def: Added alt-host and alt-port configuration 
+      value. If main connection fails, emi2 switch to a alternate connection. 
+      Both are optional and emi2 defaults to original host/port. (ex: if 
+      our_port is undef, emi2 switches to alt-host:port) (should be used with 
+      retry = true)
+    * gw/smsc_emi2.c: Always set status=RECONNECTING on entering 
+      open_send_connection and status=ACTIVE on successful connection
+    * gw/smsc_emi2.c: Don't set why_killed=SMSC_KILLED_PASSWORD when retry is 
+      true, because emi2 won't be really killed
+    * gw/smsbox.c: Added octstr_destroy to sendsms_url and sendota_url
+    * gw/urltrans.c: Added %u value to sms-service, dumping UDH 
+    * gwlib/cfg.def: Fixed a bug in Stipe Tolj patch that were creating a new 
+      Octstr for each config line read
+    * gw/http.c: Added a new header to kannel "httpd": "Server: Kannel-VERSION"
+    * doc/userguide/userguide.xml: added a missing <para>
+
+2002-03-07 Andreas Fink <andreas@fink.org>
+    * gw/smsc_http.c: Made kannel accept a more structured reply
+      besides "Sent". Used by some sms aggregators.
+
+2002-03-07  Stipe Tolj  <stolj@wapme.de>
+    * gw/wap_push_ppg.c, test/test_ppg.c, wap/wsp_strings.def: corrected
+      MMS related well known values and stuff that is required to use
+      the PPG part for the M.notification-ind processing.
+    
+2002-03-07  Stipe Tolj  <stolj@wapme.de>
+    * gw/cfg.[ch]: implemented inclusion feature for configuration file
+      processing. Now you may use 'include = "foobar.conf"' anywhere in
+      the config file to include sub-configuration parts. 
+    * doc/userguide/userguide.xml: added section which describes the new
+      'include' configuration directive.
+
+2002-03-03  Bruno Rodrigues  <bruno.rodrigues@litux.org>
+    * gw/smsc_emi2.c: keepalive time is now only updated after sending an
+      operation 51 or the keepalive itself
+    * doc/userguide/userguide.xml: added my-number information to at2 group
+    * gw/smsc_emi2.c: added my-number configuration to emi2. Sometimes, the
+      large account number is not the same as the short number. 
+    * doc/userguide/userguide.xml: added my-number information to emi2 group
+    * gw/msg-decl.h, gw/smsbox.c, gw/urltrans.c: added charset field to 
+      message. If undefined, kannel should assume default charsets by looking 
+      at coding value
+    * gwlib/cfg.def, gw/smsbox.c: added mo-recode boolean value to ask smsbox
+      to try to recode a UCS2 received message to iso-8859-1.
+    * gw/smsbox.c: commented the debug lines in charset_processing. It works,
+      we don't need them anymore
+    * gw/urltrans.c: added variables %c for coding and %C for charset
+    * gwlib/octstr.c: added check to avoid converting from utf-8 to utf-8
+    * doc/userguide/userguide.xml: added mo-recode information to smsbox group,
+      and %c and %C information
+
+2002-03-03  Bruno Rodrigues  <bruno.rodrigues@litux.org>
+    * gw/smsc_at2.c: applied sms-center configuration for at2, based on patch
+      privided by Oded Arbel 
+      [Msg-ID: <2CFC21DAF860CC49AF57333C4459DD4B166D5E@exchange.m-wise.com>]
+    * gw/smsbox.c: fixed a panic when text is empty and kannel try to print it
+    * gw/smsc_at2.c: set keepalive to 0 if not defined in configuration; close
+      device after auto-detecting modem; return ok(4) when receive the 
+      +CPIN:READY reply
+    * gw/smsc_at2.c, gw/smsc_emi2.c: set retry to 0 if not defined in 
+      configuration
+
+2002-02-25  Bruno Rodrigues  <bruno.rodrigues@litux.org>
+    * contrib/web/*: Added a form and a php file to send messages.
+      Includes text, mwi, NSM, Wap related and Siemens MMC.
+      There's still some portuguese strings in it and it misses to
+      java applets, but it's usable.
+      I just hope that there's no problem with copyrights...
+      .(and yes, you can send a mp3 via sms to a Siemens SL45i)
+
+2002-02-25  Bruno Rodrigues  <bruno.rodrigues@litux.org>
+    * Changelog: fixed spaces in my last entries.
+    * gw/smsc_at2.c: fixed a bug introduced by my last patch that even on
+      successful modem connection, kannel would still stay inside the 
+      connection cicle (a missing "break" command).
+    * gw/smsc_at2.c: Changed a possible bug. On timeout, at2_wait_modem_command
+      returned -10, and every other line shows that it should be -1;
+    * gw/smsc_at2.c: When auto-detecting speed, try 57600 too (if defined) 
+      Siemens SL45 only uses 57600. :)
+    * gw/msg-decl.h, gw/smsbox.c, gw/smsc_emi2.c, gw/smsc_at2.c: added pid http
+      argument. Pid is used to send Sim Toolkit Messages.
+      A get like: ...&pid=127&coding=2&alt-dcs=1&mclass=3 passes without error 
+      on emi but not yet on at2. (I'm checking on that)
+    * gw/msg-decl.h, gw/smsbox.c, gw/smsc_emi2.c, gw/smsc_at2.c: added alt-dcs 
+      http argument. Like the configuration variable in AT2, this is used to 
+      force the 0X or FX kind of DCS when sending the message. (Fixes a bug 
+      when sending flash messages to old mobiles).
+    * gw/smsc_at2.c: Added my-number configuration variable, so the message 
+      appears in logs with the correct number instead of "1234"
+    * gw/smsc_at2.c: Added keepalive configuration variable. From this many
+      seconds, kannel sends an AT command and if it fails, reconnect to the
+      modem (We could later use other command instead of a simple AT, to check
+      if we are still connected to the GSM Network :) )
+    * doc/userguide/userguide.xml: Added pid, alt-dcs and at2-keepalive info;
+      Separated at and at2 in feature tables
+
+2002-02-23  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc_emi2.c: removed unused variable `retry' to make 
+      kannel-nag script happy again.
+      
+2002-02-22  Bruno Rodrigues  <bruno.rodrigues@litux.org>
+    * gw/smsc_emi2.c, gw/smsc_at2.c, gwlib/cfg.def: Added retry configuration
+      boolean value to force these to smsc to always try to reconnect.  The 
+      idea is that if the connection went ok once, it should retry it.
+      Example: M20 sometimes don't start. EMI with multiple smsc's or a bad
+      terminated connection could reply with a "Too many sessions".
+    * gw/smsc_at2.c: In initialization, the modem could be probbed for speed
+      and modemtype. Changed code to exit or retry if one of these fail; in
+      detect_speed, if every speed probe fail, speed would be 0. Now it returns
+      an error
+    * doc/userguide/userguide.xml: added retry configuration information
+
+2002-02-22  Bruno Rodrigues  <bruno.rodrigues@litux.org>
+    * gw/smsbox.c: fixed a bug when reply_requestfailed message was used, 
+      because the memory wasn't duplicated and is deleted later
+
+2002-02-21  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc_at2.c: fixing memory leak
+      reported by: "Oded Arbel" <oded@m-wise.com>
+      [Msg-ID: <2CFC21DAF860CC49AF57333C4459DD4B166D80@exchange.m-wise.com>]
+    * gw/smsbox.c, gwlib/http.c: fixing memory leaks
+      reported by: "Nektarios K. Papadopoulos" <npapadop@inaccessnetworks.com>
+      [Msg-ID: <3C73F986.58353A9F@inaccessnetworks.com>]
+
+2002-02-20  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc_at2.c: fixing a list_search() mistake
+      reported by: "Nektarios K. Papadopoulos" <npapadop@inaccessnetworks.com>
+      [Msg-ID: <3C72B61A.1BC22DD7@inaccessnetworks.com>]
+
+2002-02-20  Stipe Tolj  <stolj@wapme.de>
+    * gwlib/conn.c: fixing mutex race condition in conn_register()
+      suggested by: Uoti Urpala <uoti.urpala@netikos.com>
+      [Msg-ID: <3C724267.1040508@netikos.com>]
+      
+2002-02-20  Stipe Tolj  <stolj@wapme.de>
+    * gwlib/conn.c: fixing major bug in poll_callback() that
+      caused heavy CPU cycling impact on Linux and system error
+      on Solaris and Cygwin while handling the poll in/out.
+      suggested by: Uoti Urpala <uoti.urpala@netikos.com>
+      [Msg-ID: <3C724267.1040508@netikos.com>]
+
+2002-02-18  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsbox.c: fixed bug in smsbox_req_sendota()
+      reported by Peter Löfman <petlof@aland.net>
+      [Msg-ID: <004e01c1b32b$98c8b2e0$9d0a70c2@mtel.mtel.aland.fi>]
+
+2002-02-12 Andreas Fink <andreas@fink.org>
+    * gwlib/octstr.c: removed annoying info message for making gwlib
+      be better usable for command line tools.
+
+2002-02-10  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc_ois.c: removed unused ois_convert_from_iso88591() for the
+      sake of kannel-nag
+
+2002-02-08  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc_at2.c: added Alcatel support as AT GSM modem SMSC
+      submitted by: Olivier Durécu <olivier.durecu@ms.alcatel.fr>
+      [Msg-ID: <3C63AA61.7000208@ms.alcatel.fr>]
+
+2002-02-07  Stipe Tolj  <stolj@wapme.de>
+    * gwlib/octstr.c: removed unused variable from octstr_read_pipe() in 
+      order to make kannel-nag run happily.
+
+2002-02-07  Stipe Tolj  <stolj@wapme.de>
+    * doc/userguide/userguide.xml: added documentation for "exec" sms-service
+    * gwlib/cfg.def: added "exec" translation type to sms-service multi
+    * gwlib/octstr.[ch]: added function octstr_read_pipe() to read 
+      everything from a file descriptor to an octstr.
+    * gw/smsbox.c: added translation type TRANSTYPE_EXECUTE and the 
+      corresponding popen() logic to execute shell commands for sms-services.
+    * gw/urltrans.[ch]: added translation type TRANSTYPE_EXECUTE
+    
+2002-02-07  Stipe Tolj  <stolj@wapme.de>
+    * STATUS: added Oded Arbel's fix for timestamp issue in at2
+    * gw/smsc_ois.c: Applied patch for handling 7bit encoded messages
+      submitted by: Oded Arbel <oded@m-wise.com>
+      [Msg-ID: <1013025181.2798.3.camel@preceptor.m-wise.co.il>]
+
+2002-01-31  Stipe Tolj  <stolj@wapme.de>
+    * gw/bearerbox.c, gw/smsbox.c: added SIGQUIT signal handling in
+      signal_handler() to call gw_check_leaks() like in gw/wapbox.c.
+
+2002-01-31  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsbox.c: applied missinc forced-smsc patch for sendota service in
+      smsbox_req_sendota(), sumbited by Indrek Mandre <indrek.mandre@trigger.ee>
+      [Msg-ID: <B9A4FDCD41EAD411B0C900D0B7A959211451D8@EXCHANGE>]
+
+2002-01-31 Andreas Fink <andreas@fink.org>
+    * gwlib/gwlib.h: included string.h to avoid compilation warnings
+
+2002-01-29  Stipe Tolj  <stolj@wapme.de>
+    * STATUS: added Alex Judd's smsc_smpps.c TON patch and added 
+      an open issue for re-connect trying of smsc_emi2.c
+    * gw/smsc_smpp.c: Applied patch for checking host config directive
+      submited by Alex Judd <ajudd@jantar.kgbinternet.com>
+      [Msg-ID: <Pine.LNX.4.33.0201290420170.22043-100000@jantar.kgbinternet.com>]
+      Applied patch fixing timestamping of messages 
+      submited by "Angel Fradejas" <afradejas@mediafusion.es>
+      [Msg-ID: <FMEKKCFKIGBADHGIJKPJAEBNCNAA.afradejas@mediafusion.es>]
+
+2002-01-29  Stipe Tolj  <stolj@wapme.de>
+    * gwlib/thread.c: minimal debug output change in
+      mutex_unlock_real() to be of same style as others.
+
+2002-01-29  Stipe Tolj  <stolj@wapme.de>
+    * STATUS: added file to hold any relevant information about
+      open issues, release showstoppers and patches that have been
+      proposed and have to be reviewed. Any CVS commiter may grap
+      open issues and work on this, please update status information
+      as frequently as possible to hold this file up to date.
+
+2002-01-29  Stipe Tolj  <stolj@wapme.de>
+    * gwlib/conn.c, gwlib/thread.[ch]: revised Andreas changes
+      for the debugging code of mutexes to be more gwlib/gwassert.h
+      style. This should help in reading the logs more cleanly.
+
+2002-01-28 Andreas Fink <andreas@fink.org>
+    * gwlib/thread.c/h: some debugging code for Mutex problems.
+      seems to fix a problem on solaris for no obvious reasons
+
+2002-01-28 Andreas Fink <andreas@fink.org>
+    * gw/smsc_smpp.c: fixed SMPP for unicode sending
+    * gwlib/conn.c: reported better where mutex fails
+
+2002-01-28  Stipe Tolj  <stolj@wapme.de>
+    * gw/bb_udp.c: bind to WTLS ports 9202 and 9203 only in case we
+      have HAVE_WTLS_OPENSSL defined, otherwise kwtls may be used to
+      bind to those.
+    * gw/shared.c: added WTLS reporting in version_report_string()
+
+2002-01-28  Stipe Tolj  <stolj@wapme.de>
+	* configure{,.in}: modified --with-wtls implementation to be
+      more --with-ssl style and moved it to the end.
+    * gw/pki.[ch], gw/wapbox.c, wtls-secmgr.c, wtls.c, wtls_pdu.c,
+      gw/wtls_pdusupport.c, wtls_statesupport.c: make at least the
+      whole thing compile and build using --with-wtls=openssl.
+
+2002-01-27  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsbox.c: added multi-cast support in smsbox_req_handle(), see 
+      [Msg-ID: <3C45F6E8.F677C8D1@wapme-systems.de>]
+
+2002-01-27  Stipe Tolj  <stolj@wapme.de>
+    * gw/wap_ota_prov.h: moved to gw/ota_prov_attr.h and added MMSURL type
+    * gw/ota_prov.c, gw/smsbox.c: changed header include to ota_prov_attr.h.
+    * gw/ota_compiler.c: added MMSURL type.
+
+2002-01-27  Stipe Tolj  <stolj@wapme.de>
+    * gw/ota_prov.[ch]: fixed typo in ota_tokenize_bookmarks(). Removed 
+      static function declarations from header file.
+
+2002-01-27  Stipe Tolj  <stolj@wapme.de>
+    * doc/userguide/userguide.xml: updated SMPP documentation for port = 0
+    * gw/smsc_smpp.c: applied patch to allow disabling of SMPP threads, using
+      values for the ports, suggested by Nisan Bloch <nisof@amagoblin.co.za>
+      [Msg-ID: <5.1.0.14.0.20020117224637.00a845b0@amagoblin.ialien.co.za>]
+
+2002-01-27  Stipe Tolj  <stolj@wapme.de>
+    * gwlib/date.c: applied fix to solve date_convert_universal()
+      misbehaviour, suggested by "Angel Fradejas" <afradejas@mediafusion.es>
+      [Msg-ID: <FMEKKCFKIGBADHGIJKPJEEIDCLAA.afradejas@mediafusion.es>]
+
+2002-01-27  Stipe Tolj  <stolj@wapme.de>
+    * doc/userguide/userguide.xml: added 'ota-bookmark' documentation
+
+2002-01-27  Stipe Tolj  <stolj@wapme.de>
+    * Incorporated a patch for fixing GSM 7 bit escape issue, 
+      submited by "Oded Arbel" <oded@m-wise.com>
+      [Msg-ID: <2CFC21DAF860CC49AF57333C4459DD4B166D19@exchange.m-wise.com>]
+    * gw/shared.c: added extract_msgdata_part_by_coding()
+    * gw/sms.[ch]: added sms_msgdata_len()
+    * gw/smsc_at2.c: using sms_msgdata_len() now for length calculation
+
+2002-01-26  Stipe Tolj  <stolj@wapme.de>
+    * doc/userguide/userguide.xml: Updated changes to OTA documentation
+    * gw/ota_prov.[ch]: Added OTA provisioning routines in an own
+      module so we keep smsbox.c more clean from those. Fixes a bug
+      in ota_tokenize_settings(), previously in smsbox_req_sendota()
+      which did not set PPP authentication and WTLS flags accordingly.
+      Seems the logic for the two parameters have been swapped.
+    * gw/smsbox.c: harmonized the literal names for the two options in 
+      sending OTA messages, via Aarno's OTA xml compiler or via the 
+      configuration groups in the config file. The 'otaconfig' group
+      has changed to 'ota-setting' group so we have the same "terms" for
+      both methods. *** BEWARE: this breaks backward compatibility with 
+      the previous gw/cfg.def rules for 'otaconfig' groups! ***
+      Added 'ota-bookmark' group logic to smsbox_req_sendota().
+    * gwlib/cfg.def: changed declaration of 'otaconfig' group to
+      'ota-setting' group to be harmonized with the OTA compiler CGI
+      type names and added 'ota-bookmark' group for OTA bookmarks.
+
+2002-01-25 Aarno Syvänen <aarno@wiral.com>
+    * gw/ota_compiler.[ch]: Added compiler for XML OTA configuration documents
+    * test/test_ota.c: Added a test program for it
+    * gw/settings.dtd: Added a DTD for OTA compiler
+    * test/test_http.c: Better debugging. Added an option for reading the 
+      test message from a file; useful when it contains lots of unsafe
+      characters
+    * gwlib/charset.c: In function charset_to_utf8:  If the original charset
+      is utf8, return immediately (to still an annoying error message)
+    * gw/wap_push_pap_compiler.c: Remove one use of string library (we should
+      use octstr instead). Updated the interface comment.
+    * test/test_pap.c: Added test program for pap compiler
+    * gwlib/cfg.def: Added configuration variable no_sep. Some network 
+      programs misshandle escaped characters.
+    * gw/smsc_http.c: Implement no_sep option: URL and text as a numeric hex
+      string
+    * gw/smsbox.c: Dump a message with UDH, too. Added calling of the ota 
+      compiler.
+    * doc/userguide/userguide.xml: Updated push and OTA documentation
+    * test/test_ppg.c: -H and -r options work again. Added option -k, for
+      sending Connection header.
+	
+2002-01-23  Stipe Tolj  <stolj@wapme.de>
+    * configure.in: added another docbook.dsl path to test for, there are
+      for some BSD systems, reported by "Bernino Lind" <lind@catpipe.net>
+      [Msg-ID: <OPEOKAFGKKMPLPGLEINCAEBGCGAA.lind@catpipe.net>]
+    * configure: the resulting outout of configure.in produced
+      by autoconf 2.13.
+    * Makefile.in: changed target .xml.ps to call true(1) without absolute
+      path. Some systems have /bin/true (i.e. Linux), some have /usr/bin/true
+      (i.e. Cygwin). Usually true(1) should be in $PATH and hence we don't
+      need any absolute path here I guess.
+
+2002-01-23  Stipe Tolj  <stolj@wapme.de>
+    * Makefile.in: fixed tab layout error from previous commit (Andreas) for 
+      target pkg. This has broken make.
+    * solaris/mk-solaris-package.sh: fixing obviously type in referencing
+      var VERSION. Andreas, this needs to be some more stylisher code here?! 
+
+2002-01-23 Andreas Fink <andreas@fink.org>
+    * Makefile.in, solaris/mk-solaris-package.sh, solaris/pkginfo,
+    solaris/pkginfo.tmpl: updated packaging for solaris8.
+    You now can type "make pkg"
+    * gw/smsc_at2.c: fixed memory leaks as inidcated by Oded Arbel <oded@m-wise.com>
+
+2002-01-22  Stipe Tolj  <stolj@wapme.de>
+    * configure.in: added /usr/local tree checking for docbook.dsl.
+      Reported by "Bernino Lind" <lind@catpipe.net>
+      [Msg-ID: <OPEOKAFGKKMPLPGLEINCGEBECGAA.lind@catpipe.net>]
+    * configure: the resulting outout of configure.in produced
+      by autoconf 2.13.
+
+2002-01-18  Tuomas Luttinen  <Tuomas.Luttinen@reach-u.com>
+
+	* gwlib/http.c (http_header_find_first): A bug corrected so that the 
+	function returns "<value>" instead of " <value>".
+
+2002-01-18  Stipe Tolj  <stolj@wapme.de>
+    * configure.in: added EXE_EXT variable to be used for systems that
+      have executable extensions, i.e. Cygwin 1.x. This makes certain
+      Makefile targets working more cleanly.
+    * configure: the resulting outout of configure.in produced
+      by autoconf 2.13.
+    * Makefile.in: added @EXE_EXT@ substitution tags for the executable
+      extensions.
+
+2002-01-17 Andreas Fink <andreas@fink.org>
+    * gw/smsc_emi2.c fixed small and rare memory leak 
+    * gw/smsc_smpp.c  corrected sender of DLR
+    * gw/bb_store.c removed compiler warnings
+    * gwlib/conn.c typecast to get rid of CRYPTO_set_id_callback warnings
+    * gw/smscconn_p.h added smsc_cgw prototype
+
+2002-01-16  Stipe Tolj  <stolj@wapme.de>
+    * doc/userguide/userguide.xml: fixed a typo
+ 
+2002-01-16  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc_cgw.c: applied patch for trn bug fix and minor changed
+      send in by Anders Lindh <alindh@flyerone.com>
+      [Msg-ID: <004601c19eb0$5769f8c0$8078a8c0@alindh>]
+
+2002-01-16  Stipe Tolj  <stolj@wapme.de>
+    * gwlib/list.h: added declaration of new function list_append_unique()
+    * gwlib/list.c: added implementation of new func list_append_unique()
+
+2002-01-16  Stipe Tolj  <stolj@wapme.de>
+    * doc/userguide/userguide.xml: fixed a typo in smsc_http.c module 
+      documenation block, where "username" and "password" where used
+      instead of "smsc-username" and "smsc-password".
+
+2002-01-16  Tuomas Luttinen  <Tuomas.Luttinen@reach-u.com>
+
+	* gwlib/http.c (client_is_persistent): A function added to the HTTP 
+	server to define whether the connection from the client is persistent 
+	or not. The value is stored into the client object and used to decide 
+	whether to close or reuse the client.
+	(http_send_reply): Added a check to the outgoing headers to cut the 
+	connection if there is "Connection: close" header.
+
+2002-01-15  Stipe Tolj  <stolj@wapme.de>
+    * gw/urltrans.c: fixed a bug while sending an empty SMS message
+      and servicing it with the default sms-service and using the
+      %k escape code. Reported by Angel Fradejas <afradejas@mediafusion.es>.
+      [Msg-ID: <FMEKKCFKIGBADHGIJKPJIEABCLAA.afradejas@mediafusion.es>]
+      
+2002-01-15  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsbox.c: fixed a bug regarding MWI messages reported by
+      Bernino Lind <lind@catpipe.net> 
+      [Msg-ID: <OPEOKAFGKKMPLPGLEINCAEKICFAA.lind@catpipe.net>]
+      caused by the commit to revision 1.162.
+      
+2002-01-15  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc_cgw.c: added interface implementation to Sonera 
+      ContentGateway. Contributed by Anders Lindh <alindh@flyerone.com>.
+      [Msg-ID: <000a01c19931$f126e5b0$8078a8c0@alindh>]
+    * gw/smscconn.c: added call to smsc_cgw_create()
+    * gwlib/cfg.def: added "appname" configuration directive for
+      smsc group.
+    * doc/userguide/userguide.xml: added "appname" documentation to
+      smsc group.
+
+2002-01-09 Andreas Fink <andreas@fink.org>
+    * gw/smsc_at2.c: fixed missing parameter
+
+2002-01-09 Andreas Fink <andreas@fink.org>
+    * gw/smsc_at2.c, gw/smsc_emi2.c, gw/smsc_smpp.c, gw/wap_push_pap_compiler.c
+    gwlib/conn.c, gwlib/conn.h, gwlib/date.c, gwlib/gwthread-pthread.c
+    gwlib/http.c. gwlib/thread.c, test/test_smsc.c, test/test_udp.c
+    minor cleanups to remove some compilation warnings.
+
+2002-01-08 Andreas Fink <andreas@fink.org>
+    * gw/smsc_at2.c: cleaned up a few things. introduced line sleep
+    to replace old debugging sleep(1)'s in the code.
+
+2002-01-04 Andreas Fink <andreas@fink.org>
+    * gw/smsc_emi2.c: fixed a PANIC situation after idle expired
+
+2002-01-03 Andreas Fink <andreas@fink.org>
+    * gwlib/thread.c: changed mutex_unlock to report calling location
+    in case of failure
+ 
+2002-01-03  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc_smpp.c: fixed an NULL pointer assertion reported
+      by Stefan Cars <stefan@globalwire.se>.
+      [Msg-ID: Pine.BSF.4.21.0112312155080.28423-100000@jocke.transit.net]
+
+2002-01-03  Stipe Tolj  <stolj@wapme.de>
+    * doc/userguide/userguide.xml: added documentation entries for
+      "sendsms-url" and "sendota-url" directives within the smsbox
+      group. Added optional (o) flag to all ssl-enabling boolean
+      directives.
+
+2002-01-03  Stipe Tolj  <stolj@wapme.de>
+    * aclocal.m4: added file for autoconf macros. Included 
+      AC_CHECK_VERSION macro which is capable of comparing 
+      installed and required version strings for software
+      dependencies, libxml2 in our case.
+    * configure.in: changed the way libxml2 version is checked.
+      We not use AC_CHECK_VERSION from the aclocal.m4 file.
+      This obsoletes the changequote() calls which are not 
+      supported for autoconf 2.5x, hence we are now 2.52 
+      compatible. Rearranged --with-ssl and --enable-ssl to 
+      ensure the right lib and header include paths are displayed.
+      Minor additional changes.
+    * configure: the resulting outout of configure.in produced
+      by autoconf 2.13. (autoconf 2.52 also works)
+
+2001-12-31  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsbox.c: changed hardcoded HTTP return status values to
+      use HTTP_* enum defines instead. Added config directive to
+      set sendsms and sentota request URLs, defaulting to
+      /cgi-bin/sendsms and /cgi-bin/sendota respectivly. The user
+      may change these with "sendsms-url" and "sendota-url" directives
+      within the smsbox group.
+    * gw/wap_push_ppg.c: substituted hardcoded HTTP return values
+      with HTTP_* enum defines.
+    * gw/wap_push_ppg_pushuser.c: same as wap_push_ppg.c
+    * gwlib/cfg.def: added allowed directives "sendsms-url" and
+      "sendota-url" to the smsbox group.
+    * gwlib/http.h: added a couple of additional HTTP_* return 
+      values specified in HTTP/1.1 from RFC2616.
+    * test/drive_wapbox.c: substituted hardcoded HTTP return values
+      with HTTP_* enum defines.
+    * test/test_ppg.c: same as drive_wapbox.c 
+
+2001-12-28  Stipe Tolj  <stolj@wapme.de>
+    * configure.in: fixing the ls option --full-time which is not 
+      supported on Solaris 2.6.
+    * configure: the resulting output of configure.in produced by
+      autoconf 2.13.
+ 
+2001-12-27  Stipe Tolj  <stolj@wapme.de>
+    * configure.in: re-wrote checking for openssl library and headers
+      and a couple of cosmetic clean-ups and re-arrangement of single 
+      checking routines. Added Solaris pkgadd support definitions.
+    * configure: the resulting output of configure.in produced by
+      autoconf 2.13.
+    * gw/shared.c: added mysql version output in version_report_string()
+      
+2001-12-25  Stipe Tolj  <stolj@wapme.de>
+    * gwlib/conn.c: remoted label error for conn_wrap_fd() in case
+      the ssl specific code causes an connection error. This also fixes
+      an warning message while compiling.
+
+2001-12-25  Stipe Tolj  <stolj@wapme.de>
+    * utils/attgetopt.c: exclude implementation of getopt() if config.h
+      has HAVE_GETOPT_IN_STDIO_H defined. This fixes make run bug
+      for Solaris 2.6 (at least).
+
+2001-12-25  Stipe Tolj  <stolj@wapme.de>
+    * configure.in: fixed -L/<path> linked flag option for configure's
+      --with-mysql option [thanks to Abd Rahman Johari 
+      <ajohari@man.iwpowerhouse.com> for pointing this out]
+    * configure: resulting output of fixed configure.in
+
+2001-12-23  Stipe Tolj  <stolj@wapme.de>
+    * utils/kannel-nag: changed cvsroot and added output support for
+      different platforms
+
+2001-12-23  Stipe Tolj  <stolj@wapme.de>
+    * configure.in: added options --with-mysql and --enable-mysql-dlr
+    * configure: resulting output of configure.in
+    * config.h.in: added #define HAVE_MYSQL and MYSQL_DIR
+    * gw/bb_box.c: fixed undefined reference error for conn_get_ssl()
+
+2001-12-21  Stipe Tolj  <stolj@wapme.de>
+    * doc/userguide/userguide.xml: added documentation for the introduced
+      configuration directives "smsbox-port-ssl" and "wapbox-port-ssl" in
+      the core group.
+    * gw/bb_boxc.c: added parameters for calling ssl-enabled box connection
+      using boolean configuration directives "smsbox-port-ssl" for bearerbox
+      to smsbox communication and "wapbox-port-ssl" for bearerbox to wapbox
+      communication. Changed the way boxc_status() displays the current 
+      status of kannel's boxes, including ssl information for internal conn.
+    * gw/bb_http.c: Commented out call to use_global_server_certkey_file()
+      within httpadmin_start(), this is now done globaly by conn_config_ssl().    
+    * gw/bearerbox.c: added checking in starter() if corresponding cert and 
+      key files are specified in the conf file for ssl-enabled inter-box 
+      connections. Changed the way the status is displayed.
+    * gw/shared.c: added OpenSSL version string within widely used 
+      version_report_string(). Added information that established inter-box
+      connections are ssl-enabled if so.
+    * gw/shared.h: changed declaration of connect_to_bearerbox() to include
+      ssl flag.
+    * gw/smsbox.c: added handling for "smsbox-port-ssl" conf directive.
+    * gw/wapbox.c: added handling for "wapbox-port-ssl" conf directive.
+    * gwlib/cfg.def: added "smsbox-port-ssl" and "wapbox-port-ssl" to allow
+      boolean configuration of ssl-enabled internal box connections.
+    * gwlib/conn.c: changed the way ssl connections are established in 
+      conn_wrap_fd() and checked. Fixes also a not previosly detected bug,
+      that causes non-ssl enabled connections on the same port as wanted 
+      for ssl, hence SSL_accept() = -1 was not handled correctly. Fixed
+      a potential (non-reported) bug in conn_destroy() that causes errors
+      if we call unlocked_write() in case of ssl-enabled connection.
+      Added function conn_get_ssl() to return the corresponding pointer.
+    * gwlib/conn.h: included declaration of conn_config_ssl() and 
+      conn_get_ssl().
+    * gwlib/gwlib.h: added header file inlusion for ssl.h.
+    * gwlib/http.c: added information to display if HTTP clients are using
+      ssl to connect to an ssl-enabled HTTP server.
+      Fixed potential bug if client_create() is called, but the previous
+      ssl-enabled conn_wrap_fd() has failed, now we check.
+    * gwlib/http.h: added response code for HTTP_BAD_REQUEST.
+    * gwlib/ssl.c: added file to hold all ssl specific code.
+    * gwlib/ssl.h: added file for declaration of all code implemented 
+      in ssl.c. 
+
+2001-12-20: Andreas Fink <andreas@fink.org>
+   * gw/smsc_emi2.c: fixed a problem resulting in timing out at high load.
+   *gw/bb_smscconn.c, gw/msg-decl.h, gw/smsbox.c:
+      introduced field "account" for accounting purposes.
+   *docs/userguide/userguide.xml: updated documentation for &access=...
+
+2001-12-19 Andreas Fink <andreas@fink.org>
+    *configure.in: added changes made to configure too.
+
+2001-12-18 Andreas Fink <andreas@fink.org>
+    * gw/dlr.c: corrected missing comma
+
+2001-12-18 Andreas Fink <andreas@fink.org>
+    * configure: include mysqlclientlib into linking if on the system to make dlr with mysql happy
+    * gw/dlr.c: use a mutex with mysql variant to avoid mysql errors because two commands
+      execute at exactly the same time under high load. Some other cleanups.
+    * gwlib/cfg.def: some config stuff for future modules
+
+2001-12-13 Aarno Syvänen <aarno@wiral.com>
+
+    * test/test_ppg.c: Reading a configuration file, using it. This is for
+      future, command line should work, too. Return 1 for abnormal exit and
+      0 otherwise.
+    * gw/wap_push_ppg.c: A bug and bad design spotted by Jörg Pomnitz correct-
+      ed: do not overload required attributes, use address type for selecting
+      the bearer. Corrected use of any values: in this case, revert to default
+      bearer and network, depending on address type (GSM+CSD or GSM+SMS). IP
+      bearer should work again.
+    * gw/wapbox.c: Related change. Another bugfix.
+    * wap/wsp_unit.c: Related change.
+    * gw/wap_push_ota.c: Related change.
+    * gw/wap_ppg_push_machine.def: Related change. Another bugfix.
+    * checks/check_ppg.sh: Added a shell script for testing ppg.
+    * test/*.txt: Files used by this shell script
+    * gwlib/conn.c: Removed a debug message telling about initialisation of
+      SSL libraries (caller can log this). Make check expect only error logg-
+      ing (problem here are test functions using gwlib).
+
+2001-12-13 Jörg Pommnitz <jpo@condat.de>
+    * gw/smsc_emi2.c: fix bug that could cause SMSC flooding under
+      heavy load.
+
+2001-12-12 Jörg Pommnitz <jpo@condat.de>
+    * gw/smsbox.c: fix charset handling for sendsms POST requests
+      and use octstr_case_compare when comparing Content-Types
+      (Quote RFC2045, page 12: Matching of media type and subtype
+      is ALWAYS case-insensitive).
+
+2001-12-11 Jörg Pommnitz <jpo@condat.de>
+    * gwlib/octstr.c: libxml seems to dislike a conversion from utf-8 
+      to utf-8, so this works around this problem.
+
+2001-12-10 Jörg Pommnitz <jpo@condat.de>
+    * gw/smsbox.c: rewrite of charset_processing
+    * gwlib/octstr.c, gwlib/octstr.h: new function octstr_recode
+
+2001-12-07  Tuomas Luttinen  <Tuomas.Luttinen@reach-u.com>
+
+	* gwlib/charset.[ch]: Function charset_shutdown added to release the
+	libxml charset aliases.
+
+	* gwlib/gwlib.c (gwlib_shutdown): Call to the charset_shutdown added.
+
+2001-12-07 Jörg Pommnitz <jpo@condat.de>
+    * gwlib/conn.c: fix error handling in conn_open_ssl
+
+2001-12-07  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc_at2.c: fixed a typo for the ericsson R520m,
+      reported by Bob Pepin <bob@gms.lu>
+
+2001-12-06 Jörg Pommnitz <jpo@condat.de>
+    * gwlib/cfg.def: introduce new config option ssl-trusted-ca-file
+    * gwlib/conn.c: implement client side SSL certificate verification
+    * doc/userguide/userguide.xml: document new option ssl-trusted-ca-file
+	
+2001-12-06 Jörg Pommnitz <jpo@condat.de>
+    * gwlib/conn.c, gwlib/conn.h: new function 
+      void conn_config_ssl (CfgGroup *grp); to uniformly configure
+      the SSL 
+    * gw/bearerbox.c, gw/smsbox.c, gw/wapbox.c: use conn_config_ssl
+      to configure SSL code.
+
+2001-12-05  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc_smpp.c: fixed bug in smsc-id setting, 
+      reported by Indrek Mandre <indrek.mandre@trigger.ee>
+
+2001-12-05 Jörg Pommnitz <jpo@condat.de>
+    * gwlib/conn.c: fix longstanding bug in SSL locking. This fixes the
+      crashes in gwlib_shutdown()
+	
+2001-12-05 Jörg Pommnitz <jpo@condat.de>
+    * gw/smsc_emi2.c: code cleanup/reorganization, new feature "idle-timeout"
+    * gwlib/cfg.def: add new smsc config option "idle-timeout"
+    * doc/userguide/userguide.xml: document new config option "idle-timeout"
+
+2001-12-05 Andreas Fink
+    * gw/smsc_smpp.c, gw/smpp_pdu.h: introduced some constants for number type
+
+2001-11-30 Jörg Pommnitz <jpo@condat.de>
+    * gw/wap_push_ppg.c: fix octstr_destroy of uninitialized username
+
+2001-11-28  Stipe Tolj  <stolj@wapme.de>
+
+    * gwlib/conn.c: fixed the SSL server shutdown bug reported by Aarno.
+
+2001-11-23 Aarno Syvänen <aarno@wiral.com>
+
+    * gw/wap_push_ppg.c: Added calling of SL compiler. Bugfixes. Specially,
+    Kannel again uses international phone number format. (And will use now on:
+    this is a  requirement of pap compiler, which needs an unique client 
+    identifier.)
+
+    * gw/wml_compiler.c: To avoid conflicts, give new name (containing st) to
+    parsing functions operating on compiler data structure containing string
+    tables.
+
+    * gw/wap_push_sl_compiler.[ch]: Added SL compiler
+
+    * gw/wap_push_si_compiler.c, gw/xml_shared.[ch]: Transferred parsing 
+    functions operating on compiler data structures not containing a string
+    to xml_shared.
+
+    * test/test_ppg.c: Added content type for SL and sia.
+
+    * test/test_sl.c: Added test program for SL compiler.
+
+    * gw/wap_push_ppg_pushuser.c: A bugfix: Do not check whitelist and black-
+    list when we have an IP address. Another.
+
+    * gw/wap_push_pap_compiler.c: A related change. A problem noticed by Jörg
+    Pomnitz: Do not reject a pap document without qos element (it is optional)
+    Instead, set default bearer and network based on address type (GSM+CSD for
+    IP addresses. GSM+SMS for MSISDN addresses)
+
+    * wap/wap_events.def: Ditto.
+
+    * gwlib/charset.c: Removed debug message from charset_init. Make check
+    assumes error logging only.
+
+    * gwlib/cfg.def: Added attribute for server size configuration files.
+    Added first part of test_ppg configuration.
+
+2001-11-22 Jörg Pommnitz <jpo@condat.de>
+	* doc/userguide/userguide.xml: fix doc to get through Jade.
+
+2001-11-22 Andreas Fink <andreas@fink.org>
+    * gw/smsc_smpp.c: set number plan indicator and type of number for
+    international numbers and alphanumeric ones.
+
+2001-11-20  Stipe Tolj  <stolj@wapme.de>
+
+    * gateway/doc/userguide/userguide.xml: added documentation about SSL 
+      specific configuration directives and changed some typing from PPG
+      part for cosmetical reasons.  
+
+2001-11-15  Tuomas Luttinen  <Tuomas.Luttinen@reach-u.com>
+
+    * gw/wml_definitions.h, gw/wml_compiler.c: Removed the windows character 
+      set registration from this module; it shouldn't have been here in the 
+      first place.
+
+    * gwlib/gwlib.c (gwlib_init): Added a call to charset_init.
+
+    * gwlib/charset.[ch]: New function charset_init added that registers 
+      windows charsets into the libxml character set aliases.
+
+    * gw/xml_shared.c: Added #include <string.h> to eliminate a compiler 
+      warning.
+
+2001-11-14 Jörg Pommnitz <jpo@condat.de>
+    * gw/wap_push_ppg.c: fix octstr_destroy of uninitialized username
+    * gw/smsc_at2.c: new function: at2_octstr_destroy(Octstr *ostr)
+      that makes function pointers work when octstr_destroy is a macro
+    * gwlib/octstr.c.debug,gwlib/octstr.h.debug: debug versions
+      of gwlib/octstr.[ch]
+
+2001-11-13 Jörg Pommnitz <jpo@condat.de>
+    * test/test_ppg.c, gw/smsc_emi.c: minor fixes to get through
+      Intel C/C++ compiler for Linux 5.0.1
+
+2001-11-12 Jörg Pommnitz <jpo@condat.de>
+    * gw/bb_smscconn.c: fix status reporting without a SMSC 
+      connection id (might legally be NULL).
+
+2001-11-12 Aarno Syvänen <aarno@wiral.com>
+    * gw/wap_push_pap_compiler.c: More debugging statements 
+
+2001-11-12 Aarno Syvänen <aarno@wiral.com>
+    * doc/userguide/userguide.xml: Documented ppg authentication configuration.
+
+2001-11-09 Jörg Pommnitz <jpo@condat.de>
+    * gateway/gw/wap_push_ppg.c: change Content-Transfer-Encoding to 
+      "binary" after successful decoding.
+
+2001-11-09 Aarno Syvänen <aarno@wiral.com>
+    * gw/wap_push_pap_compiler.c: Accept lowercase versions of bearer and net-
+      work
+
+    * gw/wap_push_ppg_pushuser.c: Drop a strange warning
+
+2001-11-09 Aarno Syvänen <aarno@wiral.com>
+    * gw/pushkannel.conf: Updated the sample configuration file
+	
+    * test/test_ppg.c: Handle http level responses. Added a switch for sending
+      authorization in headers. Response server challenge with authorization.
+	
+    * test/test_http_server.c: Answer whitelist and blacklist requests with
+      a hardcoded response.
+	
+    * gw/wap_push_ppg_pushuser.c: Rewrote. Do not close connection ever. Treat
+      username and password as a pair.
+	
+    * gw/wap_push_ppg.c: Fixed a memory leak. A bugfix.
+	
+    * gwlib/cfg.def: Added configuration variables.
+
+2001-11-08 Jörg Pommnitz <jpo@condat.de>
+    * gateway/gw/wap_push_ppg.c, gateway/test/test_ppg.c:
+      Add support for BASE64 encoded WAPPush content.
+
+2001-11-08 Andreas Fink <andreas@fink.org>
+    * gw/smpp_pdu.c, gw/smpp_pdu.def, gw/smsc_smpp.c
+      Added patch from Nisan <nisof@clickatell.com>
+      to support delivery reports on SMPP
+
+2001-10-31 Aaarno Syvänen <aarno@wiral.com>
+    * gwlib/cfg.def: Added new configuration variables.
+    
+    * gw/pushkannel.conf: Updated sample configuration file.
+
+    * gw/wap_push_ppg.c: A bugfix: Reject a push attempt without headers. This
+      was spotted by Jong Hien Zin. Reject a PAP document when network or 
+      bearer is required (by setting corresponding attribute) but not set.
+      This was spotted by Stipe Tolj. Reject other application ids than 
+      push.sia when push is confirmed. This was spotted Jong Hien Zin.
+	
+    * gw/wap_push_ppg_pushusers.[ch]: Added pi authentication. Not tested, yet.
+
+    * gwlib/dict.c: Dict_destroy now ignores silently NULL input.
+
+    * test/test_ppg.c: Change the hardcoded document. Now is is SI over SMS.
+
+2001-10-29 Andreas Fink <andreas@fink.org>
+    * gw/smsc_at2.c: changed default speeds for siemens to 19200
+      also updated so Siemens do a sleep wait after opening the port
+      as suggested by "Alexei Pashkovsky" <alexei@m-wise.co.il>
+
+2001-10-26  Stipe Tolj  <stolj@wapme.de>
+
+    * gw/wap_ota_prov.h: added file containing WAP OTA configuration 
+      message tokens for the WBXML encoding.
+
+    * gw/smsbox.c: refined static Octstr *smsbox_req_sendota() to use official
+      WAP OTA configuration specification to support all new handsets capable
+      of receiving OTA configuration messages via SMS bearer.
+
+2001-10-24  Stipe Tolj  <stolj@wapme.de>
+ 
+    * gw/connc.c: fixed a typo in void
+      use_global_client_certkey_file(Octstr *certkeyfile)
+
+    * doc/userguide.xml: fixed some minor typos in new PPG documentation
+      
+2001-10-24 Aarno Syvänen <aarno@wiral.com>
+
+    * gw/wap_push_ppg.c: A bugfix. And another: do not send password/username
+    pairs to lower layers. Some authentication code.
+
+    * wap/wap_events.def: Removing username/password pairs from events.
+
+    * gw/wap_push_ota.c, wap/wsp_unit.c: Related changes.
+
+2001-10-19  Stipe Tolj  <stolj@wapme.de>
+    
+    * README: replaced kannel.org with kannel.3glab.org to make the 
+    current home of Kannel more clear. Added a note that Win32 systems
+    are supported too using Cygwin 1.x and pthreads-win32 library.
+
+2001-10-19  Stipe Tolj  <stolj@wapme.de>
+
+    * gw/bb_boxc.c: changed conn_wrap_fd() prototype call (see
+    gwlin/conn.c)
+
+    * gw/bb_http.c: required additions in httpadmin_start() to detect in
+    the config file (core group) if the admin HTTP server should use SSL,
+    indicated by "admin-port-ssl = yes", then load the global server
+    certificate and key. Changed http_open_port() prototype call (see
+    gwlib/http.c)
+
+    * gw/cert.pem: added x509 PEM encoded sample public certificate used
+    in gw/smskannel-ssl.conf.
+
+    * gw/key.pem: added x509 PEM encoded sample private key used in
+    gw/smskannel-ssl.conf.
+
+    * gw/smsbox.c: required additions in init_smsbox() to detect in the
+    config file (smsbox group) if the sendsms HTTP server should use SSL,
+    indicated by "sendsms-port-ssl = yes", then load the global server
+    certificate and key. Changed http_open_port() prototype call (see
+    gwlib/http.c)
+
+    * gw/smsc_emi2.c: changed conn_wrap_fd() prototype call (see
+    gwlin/conn.c)
+
+    * gw/smsc_fake.c: changed conn_wrap_fd() prototype call (see
+    gwlin/conn.c)
+
+    * gw/smsc_http.c: changed http_open_port() prototype call (see
+    gwlib/http.c)
+
+    * gw/smskannel-ssl.conf: added sample configuration file for SSL
+    enabled HTTP servers using sample certificate (cert.pem) and key
+    (key.pem).
+
+    * gw/wap_push_ppg.c: changed http_open_port() prototype call (see
+    gwlib/http.c)
+
+    * gwlib/cfg.def: added "admin-port-ssl" to core group and
+    "sendsms-port-ssl" to smsbox group. Changed "ssl-certkey-file" to
+    "ssl-client-certkey-file" to make it more semantic and added
+    "ssl-server-cert-file" and "ssl-server-key-file" within the core group
+    for the server side.
+
+    * gwlib/conn.c: added global server SSL context, X509 cert and RSA
+    key for server side. Changed conn_wrap_fd() to include ssl enable or
+    disable flag and included the SSL magic here. Added tmp_rsa_callback()
+    function for the private RSA key. Added server side mutex. Added
+    server_ssl_int() function which initialized server side SSL stuff.
+    Added server_shutdown_ssl() function which is used for server side
+    shutdown. Changed use_client_certkey_file() prototype to
+    use_global_client_certkey_file() to be more semantic. Added
+    use_global_server_certkey_file() routine to load global server
+    certificate and private key.
+
+    * gwlib/conn.h: changed prototype definition for conn_wrap_fd().
+    Added prototype definitions for openssl_locking_function(),
+    server_init_ssl(), server_shutdown_ssl(). Changed prototype name
+    use_client_certkey_file() to use_global_client_certkey_file(). Added
+    prototype definition for use_global_server_certkey_file().
+
+    * gwlib/http.c: added int ssl to struct server to reflect if this
+    server is SSL enabled. Added array int ssl[MAX_SERVERS] within
+    server_thread() to reflect which servers are SSL enabled and how
+    conn_wrap_fd() has to be called. Changed http_open_port() to include
+    boolean flag if this port is used for an SSL enabled server. Added
+    server_ssl_init() call within http_init(). Added server_shutdown_ssl()
+    all within http_shutdown().
+
+    * gwlib/http.h: changed prototype definition for http_open_port(). 
+
+    * test/drive_smpp.c: changed conn_wrap_fd() prototype call (see 
+    gwlin/conn.c)
+
+    * test/drive_wapbox.c: changed http_open_port() prototype call (see
+    gwlib/http.c) and conn_wrap_fd() prototype call (see gwlin/conn.c)
+
+    * test/test_http_server.c: changed http_open_port() prototype call
+    (see gwlib/http.c)
+
+    * test/test_smsc.c: changed http_open_port() prototype call (see
+    gwlib/http.c) and conn_wrap_fd() prototype call (see gwlin/conn.c)
+    
+2001-10-18: Aarno Syvänen <aarno@wiral.com>
+
+	* doc/arch/arch.xml: Documented sessionless wsp and unconfirmed push
+	architecture.
+	* doc/userguide/userguide.xml: Documented use of Nokia Toolkit as a
+	part of push server developing enviroment. 
+
+2001-10-18 Andreas Fink <andreas@fink.org>
+	* gw/dlr.c: added support for MySQL based delivery reports
+	* gw/smsc_emi2.c: fixed delivery report failure if text
+	contained slashes. They are now replaced with a dot
+
+2001-10-17 Jörg Pommnitz <jpo@condat.de>
+	* doc/userguide/userguide.xml: fix doc to get through Jade.
+
+2001-10-17  Nick Clarey  <nclarey@3glab.com>
+
+        * smsc_at.c: Added change from Matt Flax <flatmax@cse.unsw.edu.au>
+        which logs retry failures correctly.
+
+2001-10-17 Aarno Syvänen <aarno@wiral.com>
+
+	* gw/wapbox.c: Added ppg configuration group. This is passed to the
+	ppg module. Currently enough for a ppg working with a trusted pi.
+	* gwlib/cfg.def: Added ppg configuration group definitions.
+	* gw/wap_push_ppg.c: Read ppg group. Use it for program control.
+	* gw/wap_push_ppg.h: Changed the prototype of function wap_push_ppg_
+	init.
+	* gw/pushkannel.conf: Updated the sample configuration file.
+	* doc/userguide/userguide.xml: Document ppg configuration group.
+
+2001-10-16 Bruno Rodrigues <bruno.rodrigues@litux.org>
+	* smsc_emi2.c: corrected a bug when username and keepalive aren't
+	defined and timeout would be undefined
+	* smsc_at2.c: changed position of speed config reading to be able
+	to force a serial speed
+
+2001-10-16 Aarno Syvänen <aarno@wiral.com>
+
+	* gw/wap_push_pap_compiler.c: Reject wrong address type for a
+	bearer (a phone number for IP bearer, IP address for SMS).
+	* gw/wap_push_pap_compiler.h: Tell this in the module comment.
+
+2001-10-15 Jörg Pommnitz <jpo@condat.de>
+
+	* doc/userguide/userguide.xml,doc/arch/arch.xml: fix doc to get 
+	through Jade.
+
+2001-10-12 Aarno Syvänen <aarno@wiral.com>
+
+	* gw/wap_push_ota.c, gw/wap-appl.c, gw/wap_push_pap_compiler.c, 
+	gw/wap_push_si_compiler.c, gw/wap_push_ppg.c: Better module comments.
+
+2001-10-12 Aarno Syvänen <aarno@wiral.com>
+
+	* gwlib/dict.c: A bugfix in function dict_put_once.
+	* gw/wap_push_pap_compiler.c: Reject unparsable phone numbers properly.
+	(Global phone number is here an unique identifier, so we must insist
+	it.)
+	* gw/wap_push_ppg.c: Stylised warnings. Updated comments. Add calling
+	of dict_put_once.
+
+2001-10-11 Bruno Rodrigues <bruno.rodrigues@litux.org>
+	* dlr: Changed Delivery Reports Code. Instead of having a DLR sms-
+	-service, each service has a dlr-url field where is defined the url
+	to get when a delivery report arrives. DLR are routed based on the
+	existing field "name" of sendsms-user.
+	* userguide.xml: documentation for delivery reports and some minor 
+	corrections
+	* bb_smscconn.c: added dlrmask field to alog; added code to expect 
+	a report type of sms and write to log correctly
+	* bb_store.c: when loading store, ignore all delivery report kind 
+	of messages.  SMSC wouldn't sent them to us anyway.
+	* dlr.c: removed keyword and id variables and added service and url. 
+	Service is the service name (defined by name= on sendsms-user or 
+	sms-service groups) and url is the url to fetch. Added DLR_BUFFERED 
+	awareness (don't delete dlr if it's expecting DLR_SUCCESS or 
+	DLR_FAIL. dlr message text now contains the url, if given by dlrurl 
+	CGI parameter. later the text will be replaced by smsc text 
+	reply (if any) plus '/' separator plus this url.
+	* dlr.h: added DLR_BUFFERED, DLR_SMSC_SUCCESS and DLR_SMSC_FAIL
+	* msg-decl.h, shared.c, smsbox.c: replaced dlr_id and dlr_keyword 
+	for dlr_url
+	* msg.h: added message type 3: report
+	* smsbox.c: if it's a http get for a delivery-report, don't log nor 
+	reply back to user. 
+	* smsc_cimd2.c: added & 0x03 to mantain compatibility.  Someone 
+	please encode the DLR_SMSC_* and DLR_BUFFERED
+	* smsc_emi2.c: added DLR_BUFFERED awareness and code to generate 
+	delivery-reports when message hits SMSC (ACK) or fails (NACK). If 
+	SMSC replyes with text, include it on delivery message as 
+	"smsc-text"/"given-url"
+	* urltrans.c: added a new dict with the service names to able 
+	delivery reports to search back for which service the original 
+	message was sent. Added urltrans_find_service. Changed get_pattern 
+	to be aware of delivery reports and return correct values (pattern 
+	would be the dlr-url); added %n (service name), %d (dlr value) and 
+	%A (smsc reply on delivery  report)
+	* : It's still missing some kind of DLR_SMSC_FAIL reports when a 
+	message cannot be routed
+
+2001-10-11 Andreas Fink <andreas@fink.org>
+	* smsc_at2.c: fixed bugs while sending SMS, autosensing speed
+	* config.guess, config.sub: updated to detect MacOS X correctly
+	Note: MacOS X doesnt support signals being sent to threads so
+	we cant disable them.
+
+2001-10-10 Aarno Syvänen <aarno@wiral.com>
+
+	* doc/userguide/userguide.xml: Some corrections.
+	* doc/arch/arch.xml: Wrote document about push architecture. 
+
+2001-10-08 Bruno Rodrigues <bruno.rodrigues@litux.org>
+	* gwlib/http.c: When url was like http://user:pass@site, the first
+	colon was changed to @ to differentiate from the colon for port
+	number. Now the code replaces it back to colon and replaces password
+	with "*". (unfortunatly keeps the same amount of chars)
+	* gw/smsc_at2.c: added a select command before the read, so kannel
+	delays some time if there's nothing to read (copy from old at). This
+	way, at2 doesn't eat my cpu :)
+	* gw/smsc_emi2.c: delay in x miliseconds was incorrect. Fixed.
+
+2001-10-08 Bruno Rodrigues <bruno.rodrigues@litux.org>
+	* gw/smsc_emi2.c, gwlib/cfg.def: Added "throughput" (messages per
+	second) variable to configuration. Delays 1/throughtput seconds 
+	between sending messages.
+	* gw/smsc_emi2.c, gwlib/cfg.def: Added "window" configuration that
+	defines the window size when using windowed flow-control (flow-
+	control=0). Defaults to 100, like before.
+	* gw/bb_boxc.c, shared.c, shared.h, smsc_cimd.c, smsbox.c, 
+	smsc_cimd2, smsc_emi.c, smsc_emi2.c, smsc_fake.c, smsc_ois.c, 
+	smsc_smpp.c, wapbox.c, gwlib/conn.c, conn.h, http.c, socket.c, 
+	socket.h, test/drive_smpp.c, drive_wapbox.c, fakesmsc.c, 
+	test_cimd2.c, test_smsc.c: Added preliminary our_host parameter to
+	later someone code our_host config parameters. Will be needed if we
+	want to fix our ip-address when we have ip aliases or to define the
+	ip we listen to (instead of ANY) to limit connections: bind bearerbox
+	to localhost only, for example.
+
+2001-10-08 Bruno Rodrigues <bruno.rodrigues@litux.org>
+	* gw/smsc_emi2.c: Support ACK without timestamp. Note that if smsc
+	doesn't send timestamp in ACK, delivery reports wouldn't work.
+
+2001-10-03 Aarno Syvänen <aarno@wiral.com>
+
+	* doc/userguide/userguide.xml: Added documentation for push proxy
+	gateway
+
+2001-09-27 Aarno Syvänen <aarno@wiral.com>
+	
+	* gw/wap_push_ppg.c: Removed #if 0 -code. Send username-password-pair
+	to OTA layer. Accept GSM SMS bearer. Correct comparisions between
+	signed and unsigned types. Remove MIME headers. Committed bugfixes by
+	Bernard Valton. Do confirmed push when preferconfirmed QoS is request-
+	ed, because Kannel supports confirmed push (a suggestion by Bernard
+	Valton). 
+	* test/test_ppg.c: Added HTTP status checking. Added an option for
+	interval between pushes.
+	* gw/wap_push_ota.c: Send username-password-pair to WSP layer. Accept
+	GSM SMS bearer.
+	* wap/wsp_unit.c: Send username-password-pair to wdp layer. Accept
+	GSM SMS bearer.
+	* wap/wap_events.def: Added username-password pair to events. Added
+	bearer and network fields to events.
+	* gw/wapbox.c: Added an ability to send SMS message from wapbox. It
+	is splitted when necessary.
+	* gw/smsbox.c, gw/shared.[ch]: Transferred SMS message splitting code
+	to the module shared.
+	* gw/bb_boxc.c: Accept sms messages from wapbox, route them to smsc.
+	* gw/wap_push_pap_compiler.c: Correct comparisions between signed and
+	unsigned types. A bugfix.
+	* gw/wap_push_si_compiler.c: Correct comparisions between signed and
+	unsigned types.
+	* gw/xml_shared.h: Added missing declarations.
+	* test/test_http_server.c: Better debugging of received requests.
+	* gw/wap_push_pap_mime.c: MIME parser expected a surplus crlf. Correct-
+	ed this. Accept lower case versions of the headers.
+	* gw/smsc_http.c: Added new configuration variables no-sender and no-
+	coding to make URLs simpler.
+	* gw/cfg.def: Added these variables.
+	* gwlib/dict.[ch]: Currently outcommented code for dict_put_once. This
+	function puts key to the dict, and doing this again is an error.
+	* checks/check_httpsmsc_kannel.sh: Corrected an infinite loop.
+	* gw/pushkannel.conf: Added sample configuration for push.
+
+2001-09-21 Bruno Rodrigues <bruno.rodrigues@litux.org>
+	* gw/smsbox.c: Forced 7bits coding if coding=DC_UNDEF and udh is 
+	empty. Fixed bug in text concatenation
+
+2001-09-21 Bruno Rodrigues <bruno.rodrigues@litux.org>
+	* gw/smsbox.c: Fixed a bug in reply-* octstr. Smsbox panics
+	on second error reply
+
+2001-09-20 Bruno Rodrigues <bruno.rodrigues@litux.org>
+	* gw/smsbox.c: Check for msgdata=NULL when loggin to alog
+	* gwlib/http.c: Added sms-service basic authentication.
+	url = "http://user:pass@host:port/path/file". Added parsing to 
+	parse_url and used existent http_add_basic_auth call
+	* gw/smsc_emi2.c: when using flow-control (stop-and-wait), if a
+	-31 message is not ack, make write=1 again to restart sending 
+	messages 
+
+2001-09-19 Bruno Rodrigues <bruno.rodrigues@litux.org>
+	* gw/bb_store.c: Fixed two bugs that don't close store.lock when
+	store_dump is called. One was (introduced by me) in store_rename
+	and the other was a missing close in store_dump to close old file.
+	* gw/smsc_emi2.c: Removed alert (31) sending just after login and
+	forced it in send_loop. This way, first message received will be
+	correctly processed.
+
+2001-09-19 Bruno Rodrigues <bruno.rodrigues@litux.org>
+	* gw/sms.c: fields_to_dcs correctly encodes mclass=MC_UNDEF and
+	don´t set bit "mclass present"
+	* gw/smsc_at.c, smsc_at2.c, smsc.c, smsc_p.h, docs/userguide: 
+	Added alt-dcs configuration field to smsc = at, to use the 0xFX 
+	mode if set. Removed fixed mode=1 when modem = SIEMENS
+	* gw/Smsc_emi.c: Corrected a bug. Old flag_8bit != 0 should be
+	coding = DC_7BITS
+
+2001-09-17 Bruno Rodrigues <bruno.rodrigues@litux.org>
+	* gw/sms.c: Fixed a bug in mode=1 dcs encoding and some other in
+	dcs_to_fields ('cause mclass and coding starts with 1, not 0)
+	* gw/bb_store.c: When I added a line saying which store file was
+	kannel reading, I had a mistake. Instead of printint the filename, 
+	I was printing the file. Ops, sorry. Fixed now.
+
+2001-09-14 Andreas Fink <andreas@fink.org>
+	* gw/smsc_at2.c
+	added some callbacks to bb_smscconn_sent and 
+	bb_smscconn_send_failed as suggested by Paul Keogh
+
+2001-09-12 Bruno Rodrigues <bruno.rodrigues@litux.org>
+	* bb_store.c: don't try to rename store.lock to store.lock.bak if
+	store.lock does not exists
+
+2001-09-10 Andreas Fink <andreas@fink.org>
+	* gw/smsc_at2.c gw/smsc_emi2.c
+	incoming messages where counted twice.
+
+2001-09-10 Andreas Fink <andreas@fink.org>
+	* gw/smsc_at2.c
+	made the counters really count
+	the SMSC ID is now set on incoming
+
+2001-09-07 Andreas Fink <andreas@fink.org>
+	* gw/smsc_at2.c
+	some systems dont have SSIZE_MAX defined
+	so I presume its larger than 1024 in those cases
+	On my system SSIZE_MAX is INT_MAX which is ((int)(~0U>>1))
+	
+2001-09-07 Andreas Fink <andreas@fink.org>
+	* gw/smsc_at2.c
+	fixed to wait for OK while sending
+	AT+CNMS to acknowledge the received
+	packet. Changed the doc
+
+2001-09-06 Bruno Rodrigues <bruno.rodrigues@litux.org>
+	* userguide.xml, bb_smscconn.c, control.html, msg-decl.h, sms.c, smsbox.c,
+	smsc_http.c, smsc_ois.c: replaced "class" to "mclass" to avoid future C++
+	conflits
+	* gw/http.c: in http_status_class, changed int class to sclass
+	* gw/smsc_at2.c: removed some unused variables and added some '(' ')' to
+	clean gcc warnings
+
+2001-09-06 Andreas Fink <andreas@fink.org>
+	* gw/smsc_at2.c
+	fixed some oddities left over from the old driver.
+	debugged for nokia and siemens. enabled hardware
+	handshake for better performance.
+
+2001-09-05 Andreas Fink <andreas@fink.org
+	* gw/smscconn_p.h gw/smscconn.c gw/smsc_at2.c
+	new AT driver for GSM modems. This one is operating
+	in GSM Phase 2+ mode. Well tested with siemens TC35
+	config options are as in old at driver with addionally:
+	  speed = speed in bps. 0 = autobaud
+	  modemtype = as in old driver but defaulting to autodetect
+	  (can be specified by passing "auto")
+
+2001-09-03 Bruno Rodrigues <bruno.rodrigues@litux.org>
+	* Makefile.in, docs/*/*.xml: Corrected Makefiles, xml and other 
+	files so now all documentation should compile
+	* Makefile.in: Added RTF generation of documentation; install-docs
+	now install userguide, alligata and wtls files; tweaks in jade lines
+	* configure.in (and configure): changed --disable-ssl code, ssl is
+	still enable per-default, but before --enable-ssl would triger 
+	incorrectly --disable-ssl; 
+	* debian/changelog, debian/rules: some tweaks to generate CVS deb file
+	* user2.1.xml and wtls.xml: moved to own directories and renamed 
+	user2.1 to alligata. Present on doc/alligata and doc/wtls
+	* Makefile.in: added "convert" dependency to generated .ps files 
+	from .png to be able to compile documents and done some tweaks to xml
+	* gw/smsbox.c: charset_processing now returns -1 for error and 0 for ok
+
+2001-09-02 Bruno Rodrigues <bruno.rodrigues@litux.org>
+	* userguide.xml: Written information about latest patch. Added 
+	"Installing Kannel from DEB packages" section. Added info about
+	removing prefixes using unified-prefix. Corrected some glitches.
+	Added status.[txt|html|xml] information. Corrected validity and
+	deferred text (it's minutes, not seconds). Added modem types table
+	(well, just the table, we could add a list of tested modems in there).
+	Splitted "feature list". One list have the "user" features (what 
+	matters for who is using kannel. The other have "internal features" 
+	(what matters for coders/administrators). Added X-Kannel headers
+	list.
+	* gw/control.html: Added new fields to form and included some 
+	javascript (I hope it's ok) to select host and port to compose URL.
+	* gw/smsbox.c: Added charset processing to sms-service (and hopefully
+	to sendsms push). Tested sms-service functionality. 
+	* gw/smsbox.c: Unicode Patch: I need help to test and improve the 
+	code using other charsets.
+	* doc/kannel.conf: Added ALL possible fields, commented, so it's
+	easier to see what we want and uncomment it.
+
+2001-09-01 Bruno Rodrigues <bruno.rodrigues@litux.org>
+	* gw/smsbox.c, gw/msg-decl.h, gw/smsc_*.c: "charset", "class" and 
+	"coding" patch. Use class to define Message Class (older flash). 
+	Use coding to select manually 7/8bit or UCS2.  Use charset to tell 
+	kannel which charset the text is.
+	* gw/smsbox.c, gw/smsc_emi2.c, gw/msg-decl.h: Removed mwimessages 
+	(udh string will be included on userguide)
+	* gw/smsbox.c, gw/msg-decl.h: Added compress field (compress code not 
+	yet included)
+	* gw/sms.c, gw/smsc.h: Added fields_to_dcs and dcs_to_fields to 
+	encode/decode DCS field according to ETSI GSM 03.38 in new sms.c. 
+	Added MC_*, MWI_* and DC_*
+	* gw/smsbox.c: Added reply-requestfailed and reply-emptymessage 
+	configuration strings.
+	* gw/smsc_*.c: coding (older flag_8bit) is retro-compatible. 
+	* gw/smsbox.c, gw/urltrans.c: If unset, defaults to 7 bit, or 8 bit 
+	if udh is set. 
+	* gw/smsbox.c: charset defines which charset text field is. default 
+	to ISO-8859-1 for coding=DC_7BIT, UTF16BE for DC_UCS2 (%00%33%00%34) 
+	or raw (ignored) for DC_8BIT
+	* gw/smsc_emi2.c: Tested in emi2. 
+	* gw/smsc_at.c: Changed dcs processing using fields_to_dcs. 
+	* gw/smsc_at.c: Added validity field to AT code. If unset, uses older 
+	validity configuration value. 
+	* gw/smsc_at.c: If modem is a Siemens, use Fx mode of DCS.
+	* gw/smsc_cimd.c: If message is empty, in cimd, change to a one-space 
+	message. (Can't cimd send empty messages ?)
+	* gw/smsc_emi.c: In old emi, is DCS defined in XSER2 like in emi2 ?
+	* gw/urltrans.c: Added allowed/denied-prefix to sms-service too. Just 
+	like accepted-smsc, if a number prefix is denied on one service, kannel 
+	will search for other service. This way, we can have one service for 91 
+	started numbers and other for other prefixes.
+	* gw/urltrans.c: Added black/white list to urltranslations. If rejected, 
+	search for a "black-list" service (just like default works)
+	* Just try 
+	http://...&class=0&text=%00%33&coding=3
+	http://...&class=0&text=ãáç&coding=3&charset=ISO-8859-1
+
+2001-08-31 Bruno Rodrigues <bruno.rodrigues@litux.org>
+	* gw/bb_smscconn.c: If message is NACKed, write it to store so 
+	message got out of queue.
+	* gw/smsbox.c, gwlib/cfg.def: Added white/black-list send filter to 
+	sms-user and global smsbox.
+	* gw/smscconn.c, gw/smsc.c: Added allowed-prefix send filter to 
+	smsc (besides denied-prefix)
+	* gw/bb_smscconn.c: Added more fields to bearerbox_access.log
+	* gw/: Added dlr.h and dlr.c from Andreas Fink <andreas@fink.org> as of
+	Message-Id: <p05100301b7b0fc812c5c@[x]> [delivery reports (update)]
+	* Corrected some glitches, cleaning some warnings when using gcc -Wall
+
+2001-08-30 Andreas Fink <andreas@fink.org>
+	* gw/bearerbox.c, gw/emimsg.c, gw/msg-decl.h, gw/smsbox.c,
+	* gw/smsc_cimd2.c: Added delivery report mechanism.
+	* to use it: ask for a DLR by specifying &dlrmask =
+	* 0 = no dlr, 1 = success, 2 = failure, 3 both.
+	* and &dlrid= a unique application specific ID.
+	* the DLR is treated as an incoming message of the style:
+	* "DLR 1/2 uniqueid  smscname" (1 = success, 2 = failure).
+	* gw/smsc_http.c: if charset is specified 7 bit is assumed.
+	* make it work with kannel/kannel SMSC links so concatenation
+	* works again in that case.
+
+2001-08-28 Andreas Fink <andreas@fink.org>
+        * gw/smsc_emi2.c: fixed alphanumeric sender ID to
+        use GSM character set (added charset_latin1_to_gsm(str);)
+
+2001-08-21 Aarno Syvänen <aarno@wiral.com>
+
+	* gw/wap_push_ppg.c: Implement response-result
+	* wap/wap_events.def, gw/wap_push_pap_compiler.c: Corresponding
+	changes
+	* gw/wap_push_ppg.c, gw/wap_push_pap.c: Merge these modules
+	* gw/wapbox.c: Corresponding changes 
+
+2001-08-15 Aarno Syvänen <aarno@wiral.com>
+
+	* test/test_mime.c: Added a program for testing the mime parser
+	* test/test_si.c: Added a program to test the si compiler
+	* gw/wap_push_ppg.c: Send no X-Wap-Application-Id header, when 
+	push application id is wml.ua.
+	* gw/wap_push_pap_mime.c: Bugfixes. Return NULL instead of contents
+	when parsing not successfull.
+	* gw/wap_push_pap.c: Change code accordingly. Set ppg listening port
+	to 8080.
+
+2001-08-13 Bruno Rodrigues <bruno.rodrigues@litux.org>
+
+	* smsc_emi2.c: Added waiting for first alert command and fixed other 
+	small issue that, when using stop-and-wait flow-control, messages 
+	stayed on queue if received a message between a send and a ack wait.
+
+2001-08-13 Andreas Fink <andreas@fink.org>
+	* gw/smsc_at: added new modem type siemens-tc35
+	
+2001-08-08  Aarno Syvänen <aarno@wiral.com>
+
+	* test/test_ppg.c: Better help. Added option to set push application
+	id. Set content type default to si.
+	* gw/wml_definitions.h, gw/xml_definitions.h: Created a file for
+	definitions common to all xml compilers.
+	* gw/wap_push_pap_compiler.c: A bugfix
+	* gw/shared.[ch], gw/wap_push_pap_compiler.c: Transferred OSI date
+	validation. Made it more picky.
+	* gw/wap_push_si_compiler.[ch]: Wrote si tokenizer
+	* gw/wap_push_ppg.c: Added calling of the si compiler. Set push 
+	application id wml.ua, when this header is missing or unparsable.
+	* gw/xml_shared.[ch], gw/wml_compiler.c: Transferred function common
+	to xml compilers to a specific file.
+	* gw/wap_push_pap.c: Called push server listening port to 8080.
+
+2001-08-02  Tuomas Luttinen  <Tuomas.Luttinen@reach-u.com>
+
+	* gw/wml_compiler.c (parse_attribute): A bug reported by Bernard 
+	Valton fixed: unknown attribute is encoded with LITERAL and a string 
+	table reference.
+
+2001-08-01  Tuomas Luttinen  <Tuomas.Luttinen@reach-u.com>
+
+	* gwlib/charset.h: Updated the comments about the supported character 
+	sets.
+
+2001-07-31 Bruno Rodrigues <bruno.rodrigues@litux.org>
+
+	* bearerbox.c, smsbox.c: added alog_reopen to HUP signal handler.
+	* smsbox.c: removed "include <strings.h>" -> not needed anymore;
+	set sms_type to mt_push when receiving messages through http 
+	interface: When I restarted kannel, all messages on store were
+	returned to the default service instead of beeing retransmitted.
+	* smsc_at.c: added some ATI queries to modem; On the while loop
+	to retransmit PDU, added sending AT+CMGS; removed \n from AT:command;
+	Added "Read from modem" debug dump; 
+	* smsc_emi2.c: accept XSER 02 with DCS, but didn't yet convert it 
+	to other fields (flash, encoding, etc); Added wait-ack configuration
+	to define for how long to wait for (N)ACKs (default still 60 secongs).
+	* smsc_emi2.c: added flow-control configuration. If unset or 0, stays
+	in windowed mode (I'll do later the code to define the window value).
+	If 1, uses stop-and-wait flow control. 
+	
+2001-07-28 Bruno Rodrigues <bruno.rodrigues@litux.org>
+
+	* bb_http.c: There were two cgi-bin/status.xml.
+	* utils.c: if first parameter in unified-prefix is a -, 
+	that means to remove the other prefixes from number
+	
+2001-07-27 Jörg Pommnitz <jpo@condat.de>
+	* add X-Kannel-From header to HTTP GET requests from smsbox
+	  (configurable in the config file, use the send-sender=1 option).
+
+2001-07-23 Bruno Rodrigues <bruno.rodrigues@litux.org>
+
+	* userguide.xml: in emi2 section, username and password ain't
+	mandatory.
+	* smsbox.c, userguide.xml: There are at least two messages replied
+	back to user via SMS that should be configurable. I've activated
+	reply-couldnotfetch and reply-couldnotrepresent and added them to
+	smsbox group variables.
+
+2001-07-22 Bruno Rodrigues <bruno.rodrigues@litux.org>
+
+	* smsbox.c, smsc_emi2.c, userguide.xml: Added "validity" and
+	"deferred" SMS fields.
+
+2001-07-22 Bruno Rodrigues <bruno.rodrigues@litux.org>
+
+	* smsc_emi2.c, userguide.xml: receive-port now is optional
+
+2001-07-19 Bruno Rodrigues <bruno.rodrigues@litux.org>
+
+	* userguide.xml: removed some extra characters.
+	* smsbox.c, smsc_emi2.c: corrected some bugs.
+
+2001-07-19 Jörg Pommnitz <jpo@condat.de>
+	* add User-Agent header to HTTP requests from smsbox.
+
+2001-07-19 Jörg Pommnitz <jpo@condat.de>
+	* fix userguide.xml to get through Jade.
+
+2001-07-19 Bruno Rodrigues <bruno.rodrigues@litux.org>
+
+	* gw/msg-decl.h, gw/smsbox.c and gw/smsc_emi2.c: Changed "flash" 
+	to "flag_flash" and added flag_mwi, mwimessages and flag_unicode.
+	* gw/smsbox.c: Added code to process the mwi and unicode flags. 
+	Checked the flash code. Removed the "empty string from provider" 
+	to allow sending messages without text. Added some missing 
+	octstr_destroy in flags processing.
+	* gw/smsc_emi2.c: Added code to encode DCS using flash, mwi and
+	unicode flags. Corrected a typo :).
+	* doc/userguide/userguide.xml: Added description for flash, mwi
+	and unicode flags.
+	* Note: not testet yet the X-Kannel replies and concatenation. :(
+
+2001-07-19 Aarno Syvänen <aarno@wiral.com>
+
+	* test/test_ppg.c: Changed content type testing. Bug fixes.
+	* gw/wap_push_ppg.c: Fixed a memory leak.
+	* gw/wap_push_pap.c: Handle various push content type errors.
+	* gw/wap_push_pap_compiler.c: Handle an empty attribute. 
+
+2001-07-18 Bruno Rodrigues <bruno.rodrigues@litux.org>
+
+	* gw/smsc_emi2.c: Added the "keepalive" code. If you want to keep
+	your connection always opened, set "keepalive" in conf file and
+	kannel will send alert commands to keep it alive.
+	* doc/userguide/userguide.xml: added the "keepalive" description.
+
+2001-07-18 Yann Muller <ymuller@3glab.com>
+
+	* doc/userguide/user2.1.xml, wtls.xml: applied fix by Jörg Pommnitz
+	to generate HTML docs.
+	
+2001-07-17 Aarno Syvänen <aarno@wiral.com>
+
+	* test/test_ppg.c: Added parameter for content type. Some of these
+	(nil, multipart) are for testing. A bugfix.
+        * gw/wap_push_pap.c: Fixed a memory leak.
+	* gw/wap_push_ppg.c: Added handling of a SI source (this is not 
+	compiled yet). Accept all content types, compiling only wap related
+	ones. NOT_SPECIFIED is handled like UNCONFIRMED (suggestion by 
+	Bernard Valton). Regard the message non-transformable when we have
+	no content type. Fixed a memory leak. A bugfix. Committed bugfixes
+	by Bernard Valton.
+
+2001-07-16 Andreas Fink <andreas@fink.org
+	* gw/smsbox.c gw/smsc_http.c: fixed some uninitialized values for flash
+	* gw/bb_smscconn.c: changed status page to include SMSC name
+
+2001-07-16  Tuomas Luttinen  <Tuomas.Luttinen@reach-u.com>
+
+	* doc/userguide/userguide.xml: Updated the information about the 
+	libxml version requierd to 2.2.5.
+
+2001-07-11 Aarno Syvänen <aarno@wiral.com>
+
+	* test/test_ppg.c: Made help more helpful
+
+2001-07-11 Aarno Syvänen <aarno@wiral.com>
+
+	* gw/wap_push_ppg.c: Committed bug fixes made by Bernard Valton
+
+2001-07-10 Aarno Syvänen <aarno@wiral.com>
+
+	* gw/wap_push_ppg.c: Committed bug fixes made by Bernard Valton.
+	Fixed a memory leak.
+
+2001-07-10 Aarno Syvänen <aarno@wiral.com>
+
+	* test/test_ppg.c: Fixed a memory leak
+	* gw/wap_push_pap.c: Do not panic when the order of command line files
+	  is wrong. Tobias Seelig spotted this problem.
+	* gw/wap_push_pap_compiler.c: Fixed a memory leak.
+
+2001-07-09 Yann Muller <ymuller@3glab.com>
+
+	* doc/userguide/user2.1.xml,wtls.xml,images/*: Documentation for Alligata
+	  (3G Lab's version of Kannel) in XML format.
+
+2001-07-06 Yann Muller <ymuller@3glab.com>
+
+	* gw/wapbox.c, wap/wtls*.c, gwlib/pki.c: separated wtls specific code
+	with #defines.
+	
+2001-07-06 Andreas Fink <andreas@fink.org
+    * gw/smsbox.c, gw/smsc_emi2.c, gw/msg-decl.h, gw/smsc_http.c, smsc_smpp.c:
+      added support for flash.
+
+    * gw/smsc_emi2.c: forced maximum length for OAdC and AdC and set number type 
+      correctly for international numbers starting with a + instead of using
+      alphanumeric mode.
+
+2001-07-05 Yann Muller <ymuller@3glab.com>
+
+	* config.h.in, configure.in: added options for wtls.
+	
+	* wap/wtls*: all WTLS files (state machines, PDUs...)
+	
+	* wap/wap_event.*: added WTLSPDUS definitions and events.
+	
+	* gw/wapbox.c: load the certificates and keys for WTLS, inititialise,
+	  dispatch datagrams according to port in main().
+	  
+	* gw/bb_upd.c: add_services for WTLS ports.
+	
+	* gwlib/cfg.def: added certificates options to the wapbox config.
+	
+	* gwlib/pki.[ch]: support functions for keys (incomplete).
+
+2001-07-05 Aarno Syvänen <aarno@wiral.com>
+
+	* test/test_ppg.c: Added a simple pi for testing ppgs
+
+	* gw/wap_push_pap.c: Added communications with pi
+
+	* wap/wap_events.def: Added an event Bad_Message_Response. 
+	Corrected definitions of Push_response
+
+	* gw/wap_push_pap_compiler.c: Rewrote. Corrected bugs spotted by 
+	Bernard Walton
+
+	* gw/wap_push_ppg.h: Added x000 pap result codes to enumerations
+
+	* gw/wap_push_ppg.c: Added descriptions of aforementioned codes.
+	Corrected a bug spotted by Bernard Walton
+
+	* gw/wap_push_mime.c: Corrected handling of optional headers
+
+
+2001-06-22  Dave Holland <david.holland@3glab.com>
+
+	* configure.in, configure: added reference to html and tex
+	stylesheets for RH7.1 (and hopefully future versions)
+
+2001-06-11  Aarno Syvänen <aarno@wiral.com>
+
+	* gw/wap_push_pap.c: Testing normally disabled
+
+2001-06-11  Aarno Syvänen <aarno@wiral.com>
+
+	* gw/wap_push_pap_mime.[ch]: Added MIME parser for PAP module (no 
+	multipart push messages yet)
+
+	* gw/wap_push_pap.c: Added calling of MIME parser and header handl-
+	ing
+
+	* gw/wap_push_pap_compiler.c: Corrected erroneous logic in enumer-
+	ations checking.
+
+2001-06-04  Lars Wirzenius  <liw@iki.fi>
+
+	* gw/smsc_smpp.c: Check for smpp->receiver instead of
+	smpp->transmitter in smsc_smpp_create(). Pointed out by Le
+	Nhu Hai.
+
+2001-06-01  Jarkko Kovala  <jarkko.kovala@iki.fi>
+
+	* gwlib/http.c, gwlib/gwthread-pthread.c: Move the OpenSSL 
+        ERR_remove_state() from the http code to the gwthread code.
+

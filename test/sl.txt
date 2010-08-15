@@ -1,0 +1,7 @@
+<?xml version="1.0"?>
+    <!DOCTYPE sl PUBLIC "-//WAPFORUM//DTD SL 1.0//EN"
+                "http://www.wapforum.org/DTD/sl.dtd">
+<sl
+    href="http://wap.iobox.fi"
+    action="execute-high">
+</sl>

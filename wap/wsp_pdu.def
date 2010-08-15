@@ -1,0 +1,149 @@
+/* ==================================================================== 
+ * The Kannel Software License, Version 1.0 
+ * 
+ * Copyright (c) 2001-2009 Kannel Group  
+ * Copyright (c) 1998-2001 WapIT Ltd.   
+ * All rights reserved. 
+ * 
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions 
+ * are met: 
+ * 
+ * 1. Redistributions of source code must retain the above copyright 
+ *    notice, this list of conditions and the following disclaimer. 
+ * 
+ * 2. Redistributions in binary form must reproduce the above copyright 
+ *    notice, this list of conditions and the following disclaimer in 
+ *    the documentation and/or other materials provided with the 
+ *    distribution. 
+ * 
+ * 3. The end-user documentation included with the redistribution, 
+ *    if any, must include the following acknowledgment: 
+ *       "This product includes software developed by the 
+ *        Kannel Group (http://www.kannel.org/)." 
+ *    Alternately, this acknowledgment may appear in the software itself, 
+ *    if and wherever such third-party acknowledgments normally appear. 
+ * 
+ * 4. The names "Kannel" and "Kannel Group" must not be used to 
+ *    endorse or promote products derived from this software without 
+ *    prior written permission. For written permission, please  
+ *    contact org@kannel.org. 
+ * 
+ * 5. Products derived from this software may not be called "Kannel", 
+ *    nor may "Kannel" appear in their name, without prior written 
+ *    permission of the Kannel Group. 
+ * 
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED 
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES 
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+ * DISCLAIMED.  IN NO EVENT SHALL THE KANNEL GROUP OR ITS CONTRIBUTORS 
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,  
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT  
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR  
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,  
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE  
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,  
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * ==================================================================== 
+ * 
+ * This software consists of voluntary contributions made by many 
+ * individuals on behalf of the Kannel Group.  For more information on  
+ * the Kannel Group, please see <http://www.kannel.org/>. 
+ * 
+ * Portions of this software are based upon software originally written at  
+ * WapIT Ltd., Helsinki, Finland for the Kannel project.  
+ */ 
+
+PDU(Connect, "...",
+	TYPE(8, 1)
+	UINT(version, "WSP protocol version", 8)
+	UINTVAR(capabilities_len, "Length of capabilities")
+	UINTVAR(headers_len, "Length of session headers")
+	OCTSTR(capabilities, "Requested capabilities", capabilities_len)
+	OCTSTR(headers, "Session headers", headers_len)
+	, 1)
+
+PDU(ConnectReply, "...",
+	TYPE(8, 2)
+	UINTVAR(sessionid, "Session ID")
+	UINTVAR(capabilities_len, "Length of capabilities")
+	UINTVAR(headers_len, "Length of session headers")
+	OCTSTR(capabilities, "Accepted capabilities", capabilities_len)
+	OCTSTR(headers, "Session headers", headers_len)
+	, 1)
+
+PDU(Redirect, "Problem: need REPEAT structure to parse addresses",
+	TYPE(8, 3)
+	UINT(permanent, "Permanent Redirect flag", 1)
+	UINT(reuse_security, "Reuse Security Session flag", 1)
+	RESERVED(6)
+	REST(addresses, "Redirect addresses")
+	, 1)
+
+PDU(Disconnect, "...",
+	TYPE(8, 5)
+	UINTVAR(sessionid, "Session ID")
+	, 1)
+
+PDU(Get, "...",
+	TYPE(4, 0x4)
+	UINT(subtype, "GET, OPTIONS, HEAD, DELETE, or TRACE", 4)
+	UINTVAR(uri_len, "Length of URI")
+	OCTSTR(uri, "URI", uri_len)
+	REST(headers, "Request headers")
+	, p->subtype <= 4)
+
+PDU(Post, "...",
+	TYPE(4, 0x6)
+	UINT(subtype, "POST or PUT", 4)
+	UINTVAR(uri_len, "Length of URI")
+	UINTVAR(headers_len, "Length of headers")
+	OCTSTR(uri, "URI", uri_len)
+	OCTSTR(headers, "Content type and request headers", headers_len)
+	REST(data, "Request data")
+	, p->subtype <= 1)
+
+PDU(Reply, "...",
+	TYPE(8, 4)
+	UINT(status, "Status code", 8)
+	UINTVAR(headers_len, "Length of headers")
+	OCTSTR(headers, "Content type and reply headers", headers_len)
+	REST(data, "Reply data")
+	, 1)
+
+PDU(Push, "...",
+	TYPE(8, 6)
+	UINTVAR(headers_len, "Length of headers")
+	OCTSTR(headers, "Content type and headers", headers_len)
+	REST(data, "Push data")
+	, 1)
+
+PDU(ConfirmedPush, "...",
+	TYPE(8, 7)
+	UINTVAR(headers_len, "Length of headers")
+	OCTSTR(headers, "Content type and headers", headers_len)
+	REST(data, "Push data")
+	, 1)
+
+PDU(Suspend, "...",
+	TYPE(8, 8)
+	UINTVAR(sessionid, "Session ID")
+	, 1)
+
+PDU(Resume, "...",
+	TYPE(8, 9)
+	UINTVAR(sessionid, "Session ID")
+	UINTVAR(capabilities_len, "Length of capabilities")
+	OCTSTR(capabilities, "Reserved capabilities field", capabilities_len)
+	REST(headers, "Session headers")
+	, 1)
+
+PDU(sia, "...",
+    UINT(version, "sia version", 8)
+    UINTVAR(appidlist_len, "Length of application id list")
+    OCTSTR(application_id_list, "application id list", appidlist_len)
+    UINTVAR(contactpoints_len, "Length of contact point list")
+    OCTSTR(contactpoints, "list of contact points", contactpoints_len)
+    , 1)
+
+

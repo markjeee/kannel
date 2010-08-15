@@ -1,0 +1,47 @@
+#!/usr/bin/python
+
+import os, string, sys, urllib
+
+HOST = "localhost"
+PORT = 13013
+USERNAME = "tester"
+PASSWORD = "foobar"
+
+NUMBERS = "~/.sendsms.dat"
+
+def is_a_phone_number(str):
+    if not str:
+    	return 0
+    for c in str:
+    	if not c in "0123456789+- ":
+	    return 0
+    return 1
+
+def recipient(arg):
+    if is_a_phone_number(arg):
+    	return arg
+    f = open(os.path.expanduser(NUMBERS), "r")
+    arg = string.lower(arg)
+    number = None
+    for line in f.readlines():
+	parts = string.split(line)
+	if len(parts) == 2 and string.lower(parts[0]) == arg:
+	    number = parts[1]
+	    break
+    f.close()
+    if number:
+        return number
+    print "Unknown recipient", arg
+    sys.exit(1)
+
+def sendsms():
+    to = urllib.quote_plus(recipient(sys.argv[1]))
+    text = urllib.quote_plus(string.join(sys.argv[2:], " "))
+    url="http://%s:%d/cgi-bin/sendsms?username=%s&password=%s&to=%s&text=%s" \
+	% (HOST, PORT, USERNAME, PASSWORD, to, text)
+    f = urllib.urlopen(url)
+    print f.read()
+    f.close()
+
+if __name__ == "__main__":
+    sendsms()

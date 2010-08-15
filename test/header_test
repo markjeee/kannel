@@ -1,0 +1,276 @@
+| Accept: */*
+| Accept: text/*
+| Accept: text/html
+
+< Accept: */*; q=0.5, text/html; level =1; q=0.8 ;foo=bar
+> Accept: */*; q=0.5
+> Accept: text/html; level=1; q=0.8; foo="bar"
+
+< Accept: application/vnd.wap.something; charset = iso-8859-1; q=1.0
+> Accept: application/vnd.wap.something; charset=iso-8859-1
+
+# Test Constrained-charset
+| Accept-Charset: iso-8859-5
+# Test general form with unknown charset and q-value
+| Accept-Charset: unicode-1-1; q=0.8
+# Test general form with known charset > MAX_SHORT_INTEGER
+| Accept-Charset: big5
+< Accept-Charset: big5; q  =0.900
+> Accept-Charset: big5; q=0.9
+< Accept-Charset: big5; q  =1.000
+> Accept-Charset: big5
+# Test general form with known charset and q-value
+< Accept-Charset: us-ascii;q=0
+> Accept-Charset: us-ascii; q=0.0
+
+< Accept-encoding: compress, gzip
+> Accept-Encoding: compress
+> Accept-Encoding: gzip
+< Accept-encoding: 
+| Accept-Encoding: *
+< Accept-encoding: compress;q=0.5, gzip;q=1.0
+# WSP cannot encode q-values with accept-encoding.
+> Accept-Encoding: compress
+> Accept-Encoding: gzip
+< Accept-Encoding: gzip;q=1.0, identity; q=0.5, *;q=0
+> Accept-Encoding: gzip
+> Accept-Encoding: identity
+# Since WSP cannot encode q-values here, the *;q=0 entry is skipped.
+
+< Accept-language: da, en-gb;q=0.8, en;q=0.7
+> Accept-Language: da
+> Accept-Language: en-gb; q=0.8
+> Accept-Language: en; q=0.7
+| Accept-Language: zx
+| Accept-Language: *; q=0.0
+| Accept-Language: zx; q=0.6
+# Test language with code > MAX_SHORT_INTEGER
+| Accept-Language: vo
+| Accept-Language: vo; q=0.003
+
+| Accept-Ranges: bytes
+< Accept-Ranges: Bytes
+> Accept-Ranges: bytes
+| Accept-Ranges: none
+| Accept-Ranges: foo
+
+| Age: 5868
+| Age: 2147483647
+
+< Allow: GET, head, PUT
+> Allow: GET
+> Allow: HEAD
+> Allow: PUT
+| Allow: something
+
+< Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==, Digest username = "frank", uri= "http://somewhere.org/test;q=0.4", realm ="No, where; near", Digest username = "peter", opaque = "something else; see?", testing = "bla"
+> Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==
+> Authorization: Digest username="frank", uri="http://somewhere.org/test;q=0.4", realm="No, where; near"
+> Authorization: Digest username="peter", opaque="something else; see?", testing="bla"
+
+# Some entries are commented out, pending a query about the grammar.
+< Cache-Control: no-cache, no-store, max-age=5000, max-age=0, max-age=2147483647
+> Cache-Control: no-cache
+> Cache-Control: no-store
+> Cache-Control: max-age=5000
+> Cache-Control: max-age=0
+> Cache-Control: max-age=2147483647
+< Cache-Control: max-stale, max-stale=5000, max-stale=0, max-stale=2147483647
+> Cache-Control: max-stale
+> Cache-Control: max-stale=5000
+> Cache-Control: max-stale=0
+> Cache-Control: max-stale=2147483647
+< Cache-Control: min-fresh= 5000, min-fresh  =0, min-fresh=  2147483647
+> Cache-Control: min-fresh=5000
+> Cache-Control: min-fresh=0
+> Cache-Control: min-fresh=2147483647
+< Cache-Control: no-transform, only-if-cached
+> Cache-Control: no-transform
+> Cache-Control: only-if-cached
+#< Cache-Control: foo = bar
+#> Cache-Control: foo=bar
+#< Cache-Control: gnu = "Debian GNU/Linux; potato's revenge"
+#> Cache-Control: gnu="Debian GNU/Linux; potato's revenge"
+< Cache-Control: public, private = "Allow, Content-length", private = "foo"
+> Cache-Control: public
+> Cache-Control: private="Allow, Content-Length"
+> Cache-Control: private="foo"
+< Cache-Control: private="*", no-cache="Accept-Language, *", no-store
+> Cache-Control: private="*"
+> Cache-Control: no-cache="Accept-Language, *"
+> Cache-Control: no-store
+< Cache-Control: no-transform, must-revalidate, proxy-revalidate
+> Cache-Control: no-transform
+> Cache-Control: must-revalidate
+> Cache-Control: proxy-revalidate
+#< Cache-Control: s-maxage=5000, s-maxage=0, s-maxage=2147483647
+#> Cache-Control: s-maxage=5000
+#> Cache-Control: s-maxage=0
+#> Cache-Control: s-maxage=2147483647
+| Cache-Control: foo
+
+| Connection: close
+< Connection: X-WAP-TOD, content-length
+> Connection: X-WAP-TOD
+> Connection: content-length
+
+| Content-Base: http://foo.org/bar;foo,bar
+
+| Content-Encoding: gzip
+< Content-Encoding: compress;q=0.5, gzip;q=1.0
+> Content-Encoding: compress;q=0.5
+> Content-Encoding: gzip;q=1.0
+
+< Content-Language: mi, en
+> Content-Language: mi
+> Content-Language: en
+| Content-Language: zx
+
+| Content-Length: 5000
+
+| Content-Location: file://etc/passwd
+
+| Content-MD5: IgVS2+4DTgdCvoq1jRif1w==
+
+# We don't have decode support for Content-Range.
+#| Content-Range: bytes 50-100/2000
+# WSP grammar cannot encode the * entries anyway.
+#| Content-Range: bytes 50-100/*
+#| Content-Range: bytes */50
+#| Content-Range: bytes */*
+
+< Content-Type: text/html; charset=ISO-8859-4
+> Content-Type: text/html; charset=iso-8859-4
+
+| Date: Tue, 15 Nov 1994 08:12:31 GMT
+< Date: Sunday, 06-Nov-94 08:49:37 GMT
+> Date: Sun, 06 Nov 1994 08:49:37 GMT
+< Date: Sun Nov  6 08:49:37 1994
+> Date: Sun, 06 Nov 1994 08:49:37 GMT
+
+| Etag: "floop"
+| Etag: W/"xyzzy"
+| Etag: ""
+
+| Expires: Tue, 15 Nov 1994 08:12:31 GMT
+< Expires: Sunday, 06-Nov-94 08:49:37 GMT
+> Expires: Sun, 06 Nov 1994 08:49:37 GMT
+< Expires: Sun Nov  6 08:49:37 1994
+> Expires: Sun, 06 Nov 1994 08:49:37 GMT
+
+| From: devel@kannel.org
+
+| Host: www.kannel.org
+
+| If-Match: *
+| If-Match: W/"xyzzy"
+| If-Match: "foobar"
+
+| If-Modified-Since: Tue, 15 Nov 1994 08:12:31 GMT
+< If-Modified-Since: Sunday, 06-Nov-94 08:49:37 GMT
+> If-Modified-Since: Sun, 06 Nov 1994 08:49:37 GMT
+< If-Modified-Since: Sun Nov  6 08:49:37 1994
+> If-Modified-Since: Sun, 06 Nov 1994 08:49:37 GMT
+
+| If-None-Match: *
+| If-None-Match: W/"xyzzy"
+| If-None-Match: "foobar"
+
+| If-Range: W/"xyzzy"
+| If-Range: "foobar"
+| If-Range: Tue, 15 Nov 1994 08:12:31 GMT
+< If-Range: Sunday, 06-Nov-94 08:49:37 GMT
+> If-Range: Sun, 06 Nov 1994 08:49:37 GMT
+< If-Range: Sun Nov  6 08:49:37 1994
+> If-Range: Sun, 06 Nov 1994 08:49:37 GMT
+
+
+| If-Unmodified-Since: Tue, 15 Nov 1994 08:12:31 GMT
+< If-Unmodified-Since: Sunday, 06-Nov-94 08:49:37 GMT
+> If-Unmodified-Since: Sun, 06 Nov 1994 08:49:37 GMT
+< If-Unmodified-Since: Sun Nov  6 08:49:37 1994
+> If-Unmodified-Since: Sun, 06 Nov 1994 08:49:37 GMT
+
+| Last-Modified: Tue, 15 Nov 1994 08:12:31 GMT
+< Last-Modified: Sunday, 06-Nov-94 08:49:37 GMT
+> Last-Modified: Sun, 06 Nov 1994 08:49:37 GMT
+< Last-Modified: Sun Nov  6 08:49:37 1994
+> Last-Modified: Sun, 06 Nov 1994 08:49:37 GMT
+
+| Location: http://www.kannel.org/status.shtml
+
+| Max-Forwards: 50
+
+| Pragma: no-cache
+| Pragma: foo="bar"
+< Pragma: gnu="nasty; string, \"tester", bar=foo
+> Pragma: gnu="nasty; string, \"tester"
+> Pragma: bar="foo"
+
+< Proxy-Authenticate: Basic realm="WallyWorld", Digest uri= "http://somewhere.org/test;q=0.4", realm ="No, where; near", Digest username = "peter", opaque = "something else; see?", testing = "bla", realm = "need one"
+> Proxy-Authenticate: Basic realm="WallyWorld"
+> Proxy-Authenticate: Digest realm="No, where; near", uri="http://somewhere.org/test;q=0.4"
+> Proxy-Authenticate: Digest realm="need one", username="peter", opaque="something else; see?", testing="bla"
+
+< Range: bytes=15-100, 23-42
+> Range: bytes = 15-100
+> Range: bytes = 23-42
+< Range: bytes = -500, -20,-1,0-10
+> Range: bytes = -500
+> Range: bytes = -20
+> Range: bytes = -1
+> Range: bytes = 0-10
+| Range: bytes = 50-
+< Range: bytes = 50-,10-20
+> Range: bytes = 50-
+> Range: bytes = 10-20
+
+| Referer: foo/bar
+
+| Retry-After: Tue, 15 Nov 1994 08:12:31 GMT
+< Retry-After: Sunday, 06-Nov-94 08:49:37 GMT
+> Retry-After: Sun, 06 Nov 1994 08:49:37 GMT
+< Retry-After: Sun Nov  6 08:49:37 1994
+> Retry-After: Sun, 06 Nov 1994 08:49:37 GMT
+| Retry-After: 5000
+
+| Server: kannel/2.0
+
+| Transfer-Encoding: chunked
+< Transfer-Encoding: foo; level=3; gnu=bar, Chunked, somethingelse
+> Transfer-Encoding: foo; level=3; gnu=bar
+> Transfer-Encoding: chunked
+> Transfer-Encoding: somethingelse
+
+| Upgrade: IRC/6.9
+
+| User-Agent: UP/1.0.1, Mozilla 7.0
+
+< Vary: content-type, content-language
+> Vary: Content-Type
+> Vary: Content-Language
+| Vary: *
+
+< Via: 1.0 ricky, 1.1 ethel, 1.1 fred, 1.0 lucy
+> Via: 1.0 ricky
+> Via: 1.1 ethel
+> Via: 1.1 fred
+> Via: 1.0 lucy
+| Via: WAP/1.1 localhost
+
+# Warnings are translated from 3-digit codes to 2-digit codes because
+# WSP only encodes 2 digits.
+< Warning: 110 www.kannel.org "Response is stale" "Tue, 15 Nov 1994 08:12:31 GMT"
+> Warning: 10 www.kannel.org "Response is stale"
+< Warning: 112 www.kannel.org "Disconnected operation", 299 www.kannel.org "something else"
+> Warning: 12 www.kannel.org "Disconnected operation"
+> Warning: 99 www.kannel.org "something else"
+
+< WWW-Authenticate: Basic realm="WallyWorld", Digest uri= "http://somewhere.org/test;q=0.4", realm ="No, where; near", Digest username = "peter", opaque = "something else; see?", testing = "bla", realm = "need one"
+> WWW-Authenticate: Basic realm="WallyWorld"
+> WWW-Authenticate: Digest realm="No, where; near", uri="http://somewhere.org/test;q=0.4"
+> WWW-Authenticate: Digest realm="need one", username="peter", opaque="something else; see?", testing="bla"
+
+| Content-Disposition: attachment; name="foo"; filename="foo.jpg"
+< Content-Disposition: form-data; differences=content-length; padding=9
+> Content-Disposition: form-data; differences=Content-Length; padding=9

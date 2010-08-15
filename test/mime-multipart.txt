@@ -1,0 +1,37 @@
+Content-Type: multipart/related; start=<AAA>; boundary=my_boundary
+X-Some-Header: Some-Value
+MIME-Version: 1.0
+
+
+--my_boundary
+Content-Type: text/plain
+
+this is the text in this entity
+
+--my_boundary
+Content-Type: multipart/mixed; boundary=mms_boundary
+MIME-Version: 1.0
+
+
+--mms_boundary
+Content-Type: text/plain
+
+this is the mms message text
+
+--mms_boundary
+Content-Type: application/xml
+
+<?xml version="1.0"?>
+<!DOCTYPE pap PUBLIC "-//WAPFORUM//DTD PAP 2.0//EN"
+  "http://www.wapforum.org/DTD/pap_2.0.dtd">
+<pap>
+  <push-message push-id="4879683648">
+    <address address-value="user1@domain.com"/>
+    <address address-value="user2@domain.com"/>
+    <address address-value="user3@domain.com"/>
+  </push-message>
+</pap>
+
+--mms_boundary--
+
+--my_boundary--

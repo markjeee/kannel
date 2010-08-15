@@ -1,0 +1,106 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<html> <head> 
+<title>Gateway control form</title> 
+</head> 
+<body bgcolor=white text=black link=blue vlink=navy alink=red>
+<base target="submit">
+<h1>Gateway control form</h1> 
+
+<p><B>Note:</B> This form is a simple example of how to control a Kannel 
+gateway </p>
+
+<script>
+  function update_status() {
+    if ( adminaction.value == "status" ) {
+      admin.action = "http://" + adminhostname.value + ":" + adminport.value + "/status" + adminstatusformat.value;
+    } else {
+      admin.action = "http://" + adminhostname.value + ":" + adminport.value + "/" + adminaction.value;
+    }
+    admin.password.value = adminpassword.value;
+    actiongo.value = "GO GET " +admin.action;
+  }
+</script>
+
+<table>
+<tr> <td>Hostname</td><td><input type=text name="adminhostname" value="localhost" onKeyUp="update_status();" onChange="update_status();"></td> </tr>
+<tr> <td>Port</td><td><input type=text name="adminport" value="13000" onKeyUp="update_status();" onChange="update_status();"></td> </tr>
+<tr> <td>Password</td><td><input type=password name="adminpassword" value="" onKeyUp="update_status();" onChange="update_status();"></td> </tr>
+<tr> <td>Action</td><td><select name="adminaction" onChange="update_status();">
+  <option value="status">Status</option>
+  <option value="suspend">Suspend</option>
+  <option value="isolate">Isolate</option>
+  <option value="shutdown">Shutdown</option>
+  <option value="resume">Resume</option>
+</select></td> </tr>
+<tr> <td>Status Format</td><td><select name="adminstatusformat" onChange="update_status();">
+  <option value="">html</option><option value=".txt">txt</option><option value=".xml">xml</option></select></td> </tr>
+
+<form name="admin" method=get action="http://localhost:13000/status" encoding="application/x-www-form">
+<input type=hidden name=password value="">
+<tr>
+<td>Go</td>
+</form>
+<td><input type=submit value="go" name="actiongo" onClick="document.admin.submit();"></td>
+</tr>
+</table>
+
+<HR>
+ 
+<p><B>Note:</B> This form is a simple example of how to send SMS</p>
+<script>
+  function update_send() {
+    send.action = "http://" + sendhostname.value + ":" + sendport.value + "/sendsms";
+    send.method = sendmethod.value;
+    sendgo.value = "GO " + send.method + " " + send.action;
+  }
+</script>
+
+<table>
+<tr> <td>Hostname</td><td><input type=text name="sendhostname" value="localhost" onKeyUp="update_send();" onChange="update_send();"></td> </tr>
+<tr> <td>Port</td><td><input type=text name="sendport" value="13013" onKeyUp="update_send();" onChange="update_send();"></td> </tr>
+<tr> <td>Method</td><td><select disabled name="sendmethod" onChange="update_send();">
+  <option value="GET">GET</option>
+  <option value="POST">POST</option>
+</select></td> </tr>
+
+<form name=send method=GET action="http://localhost:13013/sendsms">
+<tr><td>User:</td> <td><input size=15 name=user value=sms></td></tr>
+<tr><td>Pass:</td> <td><input size=15 name=pass value=sms></td></tr>
+<tr><td>From:</td> <td><input size=15 name=from></td></tr>
+<tr><td>To:</td> <td><input size=60 name=to></td></tr>
+<tr><td>Text:</td> <td><input size=60 name=text value="hello world"></td></tr>
+<tr><td>Charset:</td><td><input type=text name=charset value=""></td></tr>
+<tr><td>UDH:</td><td><input type=text name=udh value=""></td></tr>
+<tr><td>Class (Message Class):</td><td><select name="mclass">
+  <option value="0">Undefined</option>
+  <option value="1">Visor</option>
+  <option value="2">Mobile</option>
+  <option value="3">SIM</option>
+  <option value="4">SIM Toolkit</option>
+</select></td></tr>
+<tr><td>Coding (Data Coding):</td><td><select name="coding">
+  <option value="0">Undefined</option>
+  <option value="1">7 bits</option>
+  <option value="2">8 bits</option>
+  <option value="3">UCS2</option>
+</select></td></tr>
+<tr><td>MWI (Message Waiting Indicator):</td><td><select name="mwi">
+  <option value="0">Undefined</option>
+  <option value="1">Voice Mail, active</option>
+  <option value="2">Fax, active</option>
+  <option value="3">E-Mail, active</option>
+  <option value="4">Other, active</option>
+  <option value="5">Voice Mail, inactive</option>
+  <option value="6">Fax, inactive</option>
+  <option value="7">E-Mail, inactive</option>
+  <option value="8">Other, inactive</option>
+</select></td></tr>
+<tr><td>Validity (mins):</td><td><input type=text name=validity value=""></td></tr>
+<tr><td>Deferred (mins):</td><td><input type=text name=deferred value=""></td></tr>
+</form>
+<tr><td>Go!</td><td><input name=sendgo type=submit value="Go" onClick="document.send.submit();"></td></tr>
+</table>
+
+</body>
+</html>
+

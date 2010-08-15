@@ -1,0 +1,133 @@
+/* ==================================================================== 
+ * The Kannel Software License, Version 1.0 
+ * 
+ * Copyright (c) 2001-2009 Kannel Group  
+ * Copyright (c) 1998-2001 WapIT Ltd.   
+ * All rights reserved. 
+ * 
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions 
+ * are met: 
+ * 
+ * 1. Redistributions of source code must retain the above copyright 
+ *    notice, this list of conditions and the following disclaimer. 
+ * 
+ * 2. Redistributions in binary form must reproduce the above copyright 
+ *    notice, this list of conditions and the following disclaimer in 
+ *    the documentation and/or other materials provided with the 
+ *    distribution. 
+ * 
+ * 3. The end-user documentation included with the redistribution, 
+ *    if any, must include the following acknowledgment: 
+ *       "This product includes software developed by the 
+ *        Kannel Group (http://www.kannel.org/)." 
+ *    Alternately, this acknowledgment may appear in the software itself, 
+ *    if and wherever such third-party acknowledgments normally appear. 
+ * 
+ * 4. The names "Kannel" and "Kannel Group" must not be used to 
+ *    endorse or promote products derived from this software without 
+ *    prior written permission. For written permission, please  
+ *    contact org@kannel.org. 
+ * 
+ * 5. Products derived from this software may not be called "Kannel", 
+ *    nor may "Kannel" appear in their name, without prior written 
+ *    permission of the Kannel Group. 
+ * 
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED 
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES 
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+ * DISCLAIMED.  IN NO EVENT SHALL THE KANNEL GROUP OR ITS CONTRIBUTORS 
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,  
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT  
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR  
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,  
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE  
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,  
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * ==================================================================== 
+ * 
+ * This software consists of voluntary contributions made by many 
+ * individuals on behalf of the Kannel Group.  For more information on  
+ * the Kannel Group, please see <http://www.kannel.org/>. 
+ * 
+ * Portions of this software are based upon software originally written at  
+ * WapIT Ltd., Helsinki, Finland for the Kannel project.  
+ */ 
+
+/****  Preprocessor magic ****/
+
+/* Entry in a LINEAR table.  Default is to do nothing for it. */
+#if !defined(STRING)
+#define STRING
+#endif
+
+/* String table where entries have assigned numbers.  Multiple
+ * entries can have the same number (the first listed entry is used
+ * when looking up by number). */
+#if !defined(NUMBERED)
+#define NUMBERED LINEAR
+#endif
+
+/* Entry in a NUMBERED table */
+#if !defined(ASSIGN)
+#define ASSIGN(string, number) STRING(string)
+#endif
+
+/**** End of preprocessor magic.  Tables start here. ****/
+
+/* Registered WSP Content Type Codes Assignments. 
+ * Now they are maintained by OMNA, see URL
+ * 
+ * http://www.openmobilealliance.org/tech/omna/index.htm (depricated)
+ * http://www.openmobilealliance.org/Technical/omna/omna-wbxml-public-docid.aspx
+ */
+NUMBERED(public_ids,
+/* Well-Known Values */
+ASSIGN("-//WAPFORUM//DTD WML 1.0//EN", 0x02)			
+ASSIGN("-//WAPFORUM//DTD WTA 1.0//EN", 0x03)           	
+ASSIGN("-//WAPFORUM//DTD WML 1.1//EN", 0x04)           
+ASSIGN("-//WAPFORUM//DTD SI 1.0//EN", 0x05)            
+ASSIGN("-//WAPFORUM//DTD SL 1.0//EN", 0x06)            
+ASSIGN("-//WAPFORUM//DTD CO 1.0//EN", 0x07)            
+ASSIGN("-//WAPFORUM//DTD CHANNEL 1.1//EN", 0x08)       
+ASSIGN("-//WAPFORUM//DTD WML 1.2//EN", 0x09)           
+ASSIGN("-//WAPFORUM//DTD WML 1.3//EN", 0x0A)           
+ASSIGN("-//WAPFORUM//DTD PROV 1.0//EN", 0x0B)          
+ASSIGN("-//WAPFORUM//DTD WTA-WML 1.2//EN", 0x0C)       
+ASSIGN("-//WAPFORUM//DTD EMN 1.0//EN", 0x0D)           
+ASSIGN("-//OMA//DTD DRMREL 1.0//EN", 0x0E)             
+ASSIGN("-//WIRELESSVILLAGE//DTD CSP 1.0//EN", 0x0F)    
+ASSIGN("-//WIRELESSVILLAGE//DTD CSP 1.1//EN", 0x10)    
+ASSIGN("-//OMA//DTD WV-CSP 1.2//EN", 0x11)             
+ASSIGN("-//OMA//DTD IMPS-CSP 1.3//EN", 0x12)           
+ASSIGN("-//OMA//DRM 2.1//EN", 0x13)           
+ASSIGN("-//OMA//SRM 1.0//EN", 0x14)           
+/* Registered Values */
+ASSIGN("-//PHONE.COM//DTD ALERT 1.0//EN", 0x1100)
+ASSIGN("-//PHONE.COM//DTD CACHE-OPERATION 1.0//EN", 0x1101)
+ASSIGN("-//PHONE.COM//DTD SIGNAL 1.0//EN", 0x1102)
+ASSIGN("-//PHONE.COM//DTD LIST 1.0//EN", 0x1103)
+ASSIGN("-//PHONE.COM//DTD LISTCMD 1.0//EN", 0x1104)
+ASSIGN("-//PHONE.COM//DTD CHANNEL 1.0//EN", 0x1105)
+ASSIGN("-//PHONE.COM//DTD MMC 1.0//EN", 0x1106)
+ASSIGN("-//PHONE.COM//DTD BEARER-CHOICE 1.0//EN", 0x1107)
+ASSIGN("-//PHONE.COM//DTD WML 1.1//EN", 0x1108)
+ASSIGN("-//PHONE.COM//DTD CHANNEL 1.1//EN", 0x1109)
+ASSIGN("-//PHONE.COM//DTD LIST 1.1//EN", 0x110A)
+ASSIGN("-//PHONE.COM//DTD LISTCMD 1.1//EN", 0x110B)
+ASSIGN("-//PHONE.COM//DTD MMC 1.1//EN", 0x110C)
+ASSIGN("-//PHONE.COM//DTD WML 1.3//EN", 0x110D)
+ASSIGN("-//PHONE.COM//DTD MMC 2.0//EN", 0x110E)
+ASSIGN("-//3GPP2.COM//DTD IOTA 1.0//EN", 0x1200)
+ASSIGN("-//SYNCML//DTD SyncML 1.2//EN", 0x1201)
+ASSIGN("-//SYNCML//DTD MetaInf 1.2//EN", 0x1202)
+ASSIGN("-//SYNCML//DTD DevInf 1.2//EN", 0x1203)
+ASSIGN("-//NOKIA//DTD LANDMARKS 1.0//EN", 0x1204)
+)                                                      
+                                                        
+/**** More preprocessor magic ****/
+
+#undef STRING
+#undef NUMBERED
+#undef ASSIGN
+

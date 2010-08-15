@@ -1,0 +1,48 @@
+#!/bin/sh
+#
+# daily-patch - generate and e-mail the daily patch for Kannel
+#
+# DO NOT RUN THIS SCRIPT, unless you know the recipient and the CVS maintainer
+# want you to.
+#
+# Make a "daily patch", or actually just a patch from the previous time
+# this script was run.
+#
+# Lars Wirzenius <liw@wapit.com>
+#
+
+set -e
+
+addr=""
+CVSROOT=":pserver:anonymoua@cvs.kannel.org:/home/cvs"
+
+tagsuffix="debug"
+newtag="new_daily_patch_tag$tagsuffix"
+tag="daily_patch_tag$tagsuffix"
+
+temp=/tmp/daily-patch.$$
+
+for module in "$@"
+do
+	cvs -Q -d$CVSROOT rtag -F -a -D now $newtag $module
+	rm -f $temp
+	cvs -Q -d$CVSROOT rdiff -s -r $tag -r $newtag -u $module >> $temp
+	if [ -s "$temp" ]
+	then
+		echo "" >> $temp
+		echo "" >> $temp
+		echo "" >> $temp
+		cvs -Q -d$CVSROOT rdiff -r $tag -r $newtag -u $module |
+		awk '/^Index: / {
+			if ($2 == "gateway/configure") hide = 1
+			else hide = 0
+		}
+		!hide { print $0 }' >> $temp
+		cat $temp
+	else
+		echo "No changes in $module since yesterday."
+	fi | mail -s "Daily patch: $module" $addr
+	rm -f $temp
+
+	cvs -Q -d$CVSROOT rtag -F -a -r $newtag $tag $module
+done

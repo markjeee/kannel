@@ -1,0 +1,31 @@
+.\" Hey, Emacs!  This is an -*- nroff -*- source file.
+.TH MTBATCH 1 "22th January 2004" "Kannel Project" "Kannel Project"
+.SH NAME
+mtbatch \- Sends SMS in batch mode
+.SH SYNOPSIS
+.B mtbatch
+.IR "" [options] content-file receivers-file ...
+.SH DESCRIPTION
+.B mtbatch
+-v number
+    set log level for stderr logging
+-b host
+    defines the host of bearerbox (default: localhost)
+-p port
+    the smsbox port to connect to (default: 13002)
+-s
+    inidicatr to use SSL for bearerbox connection (default: no)
+-i smsbox-id
+    defines the smsbox-id to be used for bearerbox connection (default: none)
+-f sender
+    which sender address should be used
+-n service
+    defines which service name should be logged (default: none)
+-a account
+    defines which account name should be logged (default: none)
+-d seconds
+    delay between message sending to bearerbox (default: 0)
+-r smsc-id
+    use a specific route for the MT traffic
+.SH "SEE ALSO"
+.BR kannel (8)

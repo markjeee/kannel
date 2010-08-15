@@ -1,0 +1,298 @@
+2001-02-01  Richard Braakman  <dark@wapit.com>
+
+	* Making release 1.1.1.
+
+2001-02-01  Uoti Urpala  <uau@wapit.com>
+
+	* gw/urltrans.c: Bugfix, find_default_translation() now returns
+	NULL if no default was given.
+
+2001-02-01  Richard Braakman  <dark@wapit.com>
+
+	* gw/smsbox.c: cleanup.  send_message does not destroy its msg
+	anymore, leaves that to caller (fixes memory leaks). 
+	obey_request always destroys the pattern it creates.
+	obey_request_thread actually sends "Requests failed" messages
+	and is simplified a little.
+
+2001-02-01  Richard Braakman  <dark@wapit.com>
+
+	* gw/smsc_cimd2.c: Update to version 2-0 en.
+	Added definitions for new parameter numbers 26, 28, 44, and 62.
+	Corrected range of "status report request" parameter from 0..32
+	to 0..63.
+
+2001-01-31  Uoti Urpala  <uau@wapit.com>
+
+	* gw/wap-appl.c: Fixed an uninitialized variable.
+
+	* test/test_http_server.c: Fixed double octstr_destroy().
+
+2001-01-31  Richard Braakman  <dark@wapit.com>
+
+	* gwlib/octstr.c: Made octstr_destroy() call seems_valid even
+	if the octstr is immutable.  This should catch double destroy
+	calls in the future.
+
+	* gwlib/gwthread-pthread.c: In gwthread_wakeup() and gwthread_join(),
+	assert that the thread number >= 0.
+
+2001-01-31  Uoti Urpala  <uau@wapit.com>
+
+	* gw/bb_udp.c, gw/wap_push_ota.c: Fixed double octstr_destroy() calls.
+
+2001-01-31  Uoti Urpala  <uau@wapit.com>
+
+	* gwlib/http.c: Don't try to wake up the server thread at shutdown
+	if it was never created.
+
+2001-01-31  Peter Grönholm  <peter@wapit.com>
+
+	* doc/userguide/userguide.xml: Wrote section 'Using pre-compiled
+	binary packages'.
+
+2001-01-31  Lars Wirzenius  <liw@iki.fi>
+
+	* gwlib/utils.c: Rewrote the is_allowed_ip implementation to
+	use Octstr instead of C strings. Removed the now-unused check_ip
+	function.
+
+	* checks/check_ipcheck.c: Wrote.
+
+2001-01-30  Lars Wirzenius  <liw@iki.fi>
+
+	* gwlib/utils.[ch]: Made is_allowed_ip accept Octstr arguments
+	instead of char *. Dies, cstr, die.
+	
+	* gw/bb_boxc.c, gw/bb_http.c, gw/bb_udp.c, gw/smsbox.c,
+	gw/smsc_emi.c, gw/smsc_fake.c: Fixed the calls to is_allowed_ip
+	to follow new calling convention.
+
+2001-01-30  Lars Wirzenius  <liw@iki.fi>
+
+	* Makefile.in: Moved the wildcard patterns to the beginning, where
+	they are more visible. Should've done this when I first wrote them.
+	
+	* gw/smsbox.c: Fix memory leak.
+	
+	* gw/smsc_fake.c: don't call octstr_get_cstr with NULL argument.
+	(Should fix is_allowed_ip instead.)
+	
+	* gw/urltrans.c: Look up the keyword in a case insensitive manner.
+	Thanks to Peter for pointing this out.
+	
+	* gwlib/gwmem.h: Introduced the gw_claim_area_for macro. It is the
+	same as gw_claim_area, except it gets the position as arguments,
+	instead of figuring it out itself.
+
+	* gwlib/cfg.[ch]: Used gw_claim_area_for to claim the return
+	value of cfg_get.
+
+2001-01-29  Richard Braakman  <dark@wapit.com>
+
+	* gwlib/dict.c: Make dict_keys() lock its dictionary.
+
+2001-01-29  Kalle Marjola  <rpr@wapit.com>
+
+	* Makefile.in: clean now deletes */*.o, too. 
+
+2001-01-29  Lars Wirzenius  <liw@iki.fi>
+
+	* gwlib/protected.h: Undefine the protection macros before
+	defining them, to avoid problems with multiple definitions on
+	platforms that define them as macros instead of (or in addition
+	to) functions.
+
+2001-01-26  Lars Wirzenius  <liw@iki.fi>
+
+	* gwlib/octstr.[ch], gw/smsbox.c: Killed the almost-unused
+	function octstr_replace and converted the only place it was
+	being used anymore to create a new Octstr instead.
+
+2001-01-26  Lars Wirzenius  <liw@iki.fi>
+
+	* AUTHORS, ChangeLog, NEWS, checks/check_fakesmsc.sh,
+	checks/check_fakewap.sh, checks/check_sendsms.sh,
+	checks/check_smpp.sh, doc/arch/arch.xml, gw/bb_smscconn.c,
+	gw/bearerbox,.c gw/smsbox.c, gw/smsc.c gw/urltrans.[ch],
+	gw/wapbox.c, gwlib/http.c, gwlib/octstr. test/drive_smpp.c,
+	test/test_http.c, test/test_octstr_format.c: Edited some long
+	lines to be shorter than 80 characters. There's still lots
+	more, find them with utils/find-long-lines.
+
+2001-01-26  Lars Wirzenius  <liw@iki.fi>
+
+	* gw/alt_charsets.h, gw/bb.h, gwlib/accesslog.h, gwlib/gwlib.h,
+	gwlib/gwmem.h, gwlib/socket.h, gwlib/utils.h, test/decompile.h,
+	utils/OTAbitmap.h, utils/wbmp.h: Removed leading underscore from
+	symbols. It is reserved to the C implementation and is not to
+	be used by application code.
+	
+	* gwlib/socket.[ch]: Removed unused functions socket_query_blocking,
+	read_line, and read_to_eof.
+	
+	* gwlib/utils.[ch]: Removed unused function print_std_args_usage.
+	
+	* gwlib/gw_inet.[ch], gw/wap_push_ota.c: Removed the (unused)
+	gw_inet_ntop wrapper.
+
+2001-01-26  Lars Wirzenius  <liw@iki.fi>
+
+	* doc/userguide/userguide.xml: Documented the "phone" option in
+	EMI over modem.
+
+2001-01-26  Lars Wirzenius  <liw@iki.fi>
+
+	* The standard library function inet_ntoa is not thread safe.
+	Instead of writing a wrapper, I decided it's better to convert
+	to using the gw_netaddr_to_octstr implementation Derek Hamilton
+	wrote for us.
+	
+    	* gwlib/protected.h: Added a macro to trap inet_ntoa calls.
+	
+	* gw/smsc_ois.c, gwlib/socket.c, test/test_cimd2.c: Converted
+	use of inet_ntoa to gw_netaddr_to_octstr.
+	
+	* gwlib/socket.[ch]: Removed the unused function
+	socket_get_peer_ip and slighly change the use of whitespace in
+	the gw_netaddr_to_octstr to follow project coding style.
+
+2001-01-26  Uoti Urpala  <uau@wapit.com>
+
+	* gw/urltrans.c: Converted to use octstr_create_urlcoded instead
+	of file-specific function.
+
+2001-01-25  Uoti Urpala  <uau@wapit.com>
+
+	* gw/smsc.c, gw/smsc_p.h, gw/smsc_fake.c, gw/smsc_fake2.c,
+	gw/smscconn.c, gw/smscconn_p.h, test/fakesmsc.c, test/fakesmsc2.c:
+	Removed the old fakesmsc and replaced it with the new one.
+	Note that the new version is used differently from the old one!
+
+	* gw/smskannel.conf, checks/check_fakesmsc.sh,
+	checks/check_sendsms.sh: Changed the examples and checks to use
+	new fakesmsc.
+
+	* doc/userguide/userguide.xml: Changed the documentation to
+	describe the new fakesmsc.
+
+	* gw/smsc_cimd.c: Fixed a possible NULL reference.
+
+	* gw/smsc_cimd2.c: Added a missing #include <string.h>.
+
+2001-01-25  Lars Wirzenius  <liw@iki.fi>
+
+    	* gw/bb_udp.c, gwlib/cfg.def: Applied and adapted patch from
+	Laurent Foulonneau to implement UDP packet filtering based on
+	sender IP number.
+
+	* doc/userguide/userguide.xml: Documented the new options.
+
+2001-01-25  Lars Wirzenius  <liw@iki.fi>
+
+	* gw/smsc.c, gw/smsc_at.c, gw/smsc_p.h, gwlib/cfg.def: Applied
+	and slightly adapted patch from Bjarne Saltbæk for implementing
+	a validity period option for the GSM phone driver.
+
+	* doc/userguide/userguide.xml: Documented the new option.
+
+2001-01-24  Lars Wirzenius  <liw@iki.fi>
+
+	* doc/arch/arch.xml: Added missing </sect1>.
+	
+	* gwlib/http.c: Added creation of http exceptions list.
+
+2001-01-24  Uoti Urpala  <uau@wapit.com>
+
+	* gw/smsbox.c, gw/smsc.c, gw/smsc_p.h: Fixed memory leaks.
+
+2001-01-24  Uoti Urpala  <uau@wapit.com>
+
+	* gw/smscconn.c, gw/bb_smscconn.c: Fixed memory leaks
+
+2001-01-24  Lars Wirzenius  <liw@iki.fi>
+
+	* gw/bb_boxc.c, gw/bb_http.c, gw/bb_udp.c, gw/bearerbox.[ch]:
+	Killed memory leaks due to unfreed configuration data.
+
+2001-01-24  Uoti Urpala <uau@wapit.com>
+
+	* test/fakesmsc2.c, gw/smsc_fake2.c: Several fake2 changes, added
+	send/receive udh, possibility to restrict connections based on IP.
+	Messages on command line need to be written differently.
+
+	* gwlib/octstr.[ch]: Added octstr_create_urlcoded() function.
+
+2001-01-23  Lars Wirzenius  <liw@iki.fi>
+
+	* Ran some compiles with stricter warning options than -Wall.
+	This resulted in a few minor changes.
+	
+	* gw/bb_smscconn.c: Removed the function smsc2_addwdp, since it is
+	unused and the wapbox is the better place to do WAP-on-SMS anyway.
+	
+	* gw/smpp_pdu.c: Cast the return value of octstr_len in an assert
+	that compares it to an unsigned long. This is a bit ugly, but -
+	in my humble opinion - better than a warning about comparing signed
+	and unsigned. Reasonable minds differ.
+	
+	* gwlib/gwthread.h: Removed duplicate prototype for
+	gwthread_dumpsigmask.
+	
+	* gwlib/socket.c: Made gw_netaddr_to_octstr4 and
+	gw_netaddr_to_octstr6 static, since they're not to be used from
+	outside socket.c.
+	
+	* test/decompile.c: Made a number of functions static. I don't
+	understand why some functions are declared in decompile.h (or
+	why decompile.h exists in the first place), but presumably there
+	is a good reason for this. Removed the Read_zero_index function,
+	since it was unused.
+	
+	* test/test_cimd2.c, test/test_headers.c, test/test_pdu.c,
+	test/test_wakeup.c, test/udpfeed.c, utils/seewbmp.c: Use a return
+	statement instead of calling exit. Stylistic change.
+	
+	* utils/run_kannel_box.c: Make main_loop return instead of
+	calling exit directly. Stylistic change.
+
+2001-01-23  Lars Wirzenius  <liw@iki.fi>
+
+	* doc/arch/arch.xml: Fixed references to figures.
+
+2001-01-23  Lars Wirzenius  <liw@iki.fi>
+
+	* gw/bb_boxc.c, gw/bb_smscconn.c, gw/bb_udp.c, gw/bearerbox.[ch],
+	gw/smsc.[ch], gw/smsc_emi.c, gw/smsc_fake2.c, gw/smsc_p.h,
+	gw/smsc_wrapper.c, gw/smscconn.[ch], gw/smscconn_p.h: Converted
+	the bearerbox to use the new configuration file interface. This
+	resulted in large, but simple changes in many files.
+
+	* gwlib/cfg.def: Added variable 'phone' to an smsc group. Not
+	documented anywhere, it seems.
+	
+	* gwlib/gwlib.h, gwlib/conffile.[ch]: Removed the old
+	configuration file interface.
+
+2001-01-23  Lars Wirzenius  <liw@iki.fi>
+
+	* gwlib/cfg.c: Implemented a check that makes sure a CfgGroup is
+	only queried for variables that it can legally contain. This 
+	showed some bugs, which have been corrected by the changes below.
+	
+	* gwlib/cfg.[ch]: Wrote function cfg_get_group_name, needed by
+	urltrans.c changes.
+	
+	* gw/urltrans.c: Fixed the code so it doesn't try to get the value
+	of every variable from every group. The resulting code should be
+	somewhat cleaner and easier to follow, as well.
+	
+	* gw/wapbox.c: Don't query the variable "heartbeat-freq",
+	because it isn't documented anywhere, no other box uses it,
+	and there is no need to make the value configurable.
+
+2001-01-23  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/bearerbox.c: switched smsbox/smsc startup to avoid hangup
+	with bad luck
+

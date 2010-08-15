@@ -1,0 +1,29 @@
+#!/usr/bin/awk -f
+#
+# Compute some simple statistics from a ChangeLog file. Output has several
+# columns:
+#
+#   1) number of changelog entries
+#   2) total lines in changelog entries
+#   3) average lines per entry
+#   4) username
+#
+# Output is not sorted. Use "sort -n" to sort.
+#
+# Lars Wirzenius
+
+/^[a-zA-Z0-9]/ {
+    match($NF, /<.*@/)
+    who = substr($NF, RSTART+1, RLENGTH-2)
+    if (who == "") who = $NF
+    entries[who]++
+    next
+}
+
+/[^ 	]/ { lines[who]++ }
+
+END {
+    for (who in entries)
+	printf "%4d %4d %.1f %s\n", entries[who], lines[who], 
+	    	    lines[who]/entries[who], who
+}

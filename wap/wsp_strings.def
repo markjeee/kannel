@@ -1,0 +1,736 @@
+/* ==================================================================== 
+ * The Kannel Software License, Version 1.0 
+ * 
+ * Copyright (c) 2001-2009 Kannel Group  
+ * Copyright (c) 1998-2001 WapIT Ltd.   
+ * All rights reserved. 
+ * 
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions 
+ * are met: 
+ * 
+ * 1. Redistributions of source code must retain the above copyright 
+ *    notice, this list of conditions and the following disclaimer. 
+ * 
+ * 2. Redistributions in binary form must reproduce the above copyright 
+ *    notice, this list of conditions and the following disclaimer in 
+ *    the documentation and/or other materials provided with the 
+ *    distribution. 
+ * 
+ * 3. The end-user documentation included with the redistribution, 
+ *    if any, must include the following acknowledgment: 
+ *       "This product includes software developed by the 
+ *        Kannel Group (http://www.kannel.org/)." 
+ *    Alternately, this acknowledgment may appear in the software itself, 
+ *    if and wherever such third-party acknowledgments normally appear. 
+ * 
+ * 4. The names "Kannel" and "Kannel Group" must not be used to 
+ *    endorse or promote products derived from this software without 
+ *    prior written permission. For written permission, please  
+ *    contact org@kannel.org. 
+ * 
+ * 5. Products derived from this software may not be called "Kannel", 
+ *    nor may "Kannel" appear in their name, without prior written 
+ *    permission of the Kannel Group. 
+ * 
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED 
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES 
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+ * DISCLAIMED.  IN NO EVENT SHALL THE KANNEL GROUP OR ITS CONTRIBUTORS 
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,  
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT  
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR  
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,  
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE  
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,  
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * ==================================================================== 
+ * 
+ * This software consists of voluntary contributions made by many 
+ * individuals on behalf of the Kannel Group.  For more information on  
+ * the Kannel Group, please see <http://www.kannel.org/>. 
+ * 
+ * Portions of this software are based upon software originally written at  
+ * WapIT Ltd., Helsinki, Finland for the Kannel project.  
+ */ 
+
+/****  Preprocessor magic ****/
+
+/* String table with entries starting at 0 and numbered upwards. */
+#if !defined(LINEAR)
+#error "Required macro LINEAR is missing."
+#endif
+
+/* Entry in a LINEAR table.  Default is to do nothing for it. */
+#if !defined(STRING)
+#define STRING
+#endif
+
+/* String table where entries have assigned numbers.  Multiple
+ * entries can have the same number (the first listed entry is used
+ * when looking up by number). */
+#if !defined(NUMBERED)
+#define NUMBERED LINEAR
+#endif
+
+/* Entry in a NUMBERED table */
+#if !defined(ASSIGN)
+#define ASSIGN(string, number) STRING(string)
+#endif
+
+/* Entry in a versioned NUMBERED table */
+#if !defined(VASSIGN)
+#define VASSIGN(version, string, number) VSTRING(version, string)
+#endif
+
+/* Just like LINEAR, but an enumerated type name##_enum is defined for
+ * the entries. */
+#if !defined(NAMED)
+#define NAMED LINEAR
+#endif
+
+/* Entry in a NAMED table */
+#if !defined(NSTRING)
+#define NSTRING(string, name) STRING(string)
+#endif
+
+/* Entry in a versioned NAMED table */
+#if !defined(VNSTRING)
+#define VNSTRING(version, string, name) VSTRING(version, string)
+#endif
+
+/**** End of preprocessor magic.  Tables start here. ****/
+
+/* Table 39. Header Field Name Assignments. Note that headers Accept-Charset, Accept-Encoding,
+ * Cache-Control and Content-Range are defined twice. First ones should be used only for com-
+ * pability reasons. */
+NAMED(header,
+VNSTRING(WSP_1_1, "Accept", WSP_HEADER_ACCEPT)
+VNSTRING(WSP_1_1, "Accept-Charset", WSP_HEADER_ACCEPT_CHARSET)
+VNSTRING(WSP_1_1, "Accept-Encoding", WSP_HEADER_ACCEPT_ENCODING)
+VNSTRING(WSP_1_1, "Accept-Language", WSP_HEADER_ACCEPT_LANGUAGE)
+VNSTRING(WSP_1_1, "Accept-Ranges", WSP_HEADER_ACCEPT_RANGES)
+VNSTRING(WSP_1_1, "Age", WSP_HEADER_AGE)
+VNSTRING(WSP_1_1, "Allow", WSP_HEADER_ALLOW)
+VNSTRING(WSP_1_1, "Authorization", WSP_HEADER_AUTHORIZATION)
+VNSTRING(WSP_1_1, "Cache-Control", WSP_HEADER_CACHE_CONTROL)
+VNSTRING(WSP_1_1, "Connection", WSP_HEADER_CONNECTION)
+VNSTRING(WSP_1_1, "Content-Base", WSP_HEADER_CONTENT_BASE)
+VNSTRING(WSP_1_1, "Content-Encoding", WSP_HEADER_CONTENT_ENCODING)
+VNSTRING(WSP_1_1, "Content-Language", WSP_HEADER_CONTENT_LANGUAGE)
+VNSTRING(WSP_1_1, "Content-Length", WSP_HEADER_CONTENT_LENGTH)
+VNSTRING(WSP_1_1, "Content-Location", WSP_HEADER_CONTENT_LOCATION)
+VNSTRING(WSP_1_1, "Content-MD5", WSP_HEADER_CONTENT_MD5)
+VNSTRING(WSP_1_1, "Content-Range", WSP_HEADER_CONTENT_RANGE)
+VNSTRING(WSP_1_1, "Content-Type", WSP_HEADER_CONTENT_TYPE)
+VNSTRING(WSP_1_1, "Date", WSP_HEADER_DATE)
+VNSTRING(WSP_1_1, "Etag", WSP_HEADER_ETAG)
+VNSTRING(WSP_1_1, "Expires", WSP_HEADER_EXPIRES)
+VNSTRING(WSP_1_1, "From", WSP_HEADER_FROM)
+VNSTRING(WSP_1_1, "Host", WSP_HEADER_HOST)
+VNSTRING(WSP_1_1, "If-Modified-Since", WSP_HEADER_IF_MODIFIED_SINCE)
+VNSTRING(WSP_1_1, "If-Match", WSP_HEADER_IF_MATCH)
+VNSTRING(WSP_1_1, "If-None-Match", WSP_HEADER_IF_NONE_MATCH)
+VNSTRING(WSP_1_1, "If-Range", WSP_HEADER_IF_RANGE)
+VNSTRING(WSP_1_1, "If-Unmodified-Since", WSP_HEADER_IF_UNMODIFIED_SINCE)
+VNSTRING(WSP_1_1, "Location", WSP_HEADER_LOCATION)
+VNSTRING(WSP_1_1, "Last-Modified", WSP_HEADER_LAST_MODIFIED)
+VNSTRING(WSP_1_1, "Max-Forwards", WSP_HEADER_MAX_FORWARDS)
+VNSTRING(WSP_1_1, "Pragma", WSP_HEADER_PRAGMA)
+VNSTRING(WSP_1_1, "Proxy-Authenticate", WSP_HEADER_PROXY_AUTHENTICATE)
+VNSTRING(WSP_1_1, "Proxy-Authorization", WSP_HEADER_PROXY_AUTHORIZATION)
+VNSTRING(WSP_1_1, "Public", WSP_HEADER_PUBLIC)
+VNSTRING(WSP_1_1, "Range", WSP_HEADER_RANGE)
+VNSTRING(WSP_1_1, "Referer", WSP_HEADER_REFERER)
+VNSTRING(WSP_1_1, "Retry-After", WSP_HEADER_RETRY_AFTER)
+VNSTRING(WSP_1_1, "Server", WSP_HEADER_SERVER)
+VNSTRING(WSP_1_1, "Transfer-Encoding", WSP_HEADER_TRANSFER_ENCODING)
+VNSTRING(WSP_1_1, "Upgrade", WSP_HEADER_UPGRADE)
+VNSTRING(WSP_1_1, "User-Agent", WSP_HEADER_USER_AGENT)
+VNSTRING(WSP_1_1, "Vary", WSP_HEADER_VARY)
+VNSTRING(WSP_1_1, "Via", WSP_HEADER_VIA)
+VNSTRING(WSP_1_1, "Warning", WSP_HEADER_WARNING)
+VNSTRING(WSP_1_1, "WWW-Authenticate", WSP_HEADER_WWW_AUTHENTICATE)
+VNSTRING(WSP_1_1, "Content-Disposition", WSP_HEADER_CONTENT_DISPOSITION)
+VNSTRING(WSP_1_2, "X-Wap-Application-Id", WSP_HEADER_X_WAP_APPLICATION_ID)
+VNSTRING(WSP_1_2, "X-Wap-Content-URI", WSP_HEADER_X_WAP_CONTENT_URI)
+VNSTRING(WSP_1_2, "X-Wap-Initiator-URI", WSP_HEADER_X_WAP_INITIATOR_URI)
+VNSTRING(WSP_1_2, "Accept-Application", WSP_HEADER_ACCEPT_APPLICATION)
+VNSTRING(WSP_1_2, "Bearer-Indication", WSP_HEADER_BEARER_INDICATION)
+VNSTRING(WSP_1_2, "Push-Flag", WSP_HEADER_PUSH_FLAG)
+VNSTRING(WSP_1_2, "Profile", WSP_HEADER_PROFILE)
+VNSTRING(WSP_1_2, "Profile-Diff", WSP_HEADER_PROFILE_DIFF)
+VNSTRING(WSP_1_2, "Profile-Warning", WSP_HEADER_PROFILE_WARNING)
+VNSTRING(WSP_1_3, "Expect", WSP_HEADER_EXPECT)
+VNSTRING(WSP_1_3, "TE", WSP_HEADER_TE)
+VNSTRING(WSP_1_3, "Trailer", WSP_HEADER_TRAILER)
+VNSTRING(WSP_1_3, "Accept-Charset", WSP_HEADER_ACCEPT_CHARSET_V13)
+VNSTRING(WSP_1_3, "Accept-Encoding", WSP_HEADER_ACCEPT_ENCODING_V13)
+VNSTRING(WSP_1_3, "Cache-Control", WSP_HEADER_CACHE_CONTROL_V13)
+VNSTRING(WSP_1_3, "Content-Range", WSP_HEADER_CONTENT_RANGE_V13)
+VNSTRING(WSP_1_3, "X-WAP-Tod", WSP_HEADER_X_WAP_TOD)
+VNSTRING(WSP_1_3, "Content-ID", WSP_HEADER_CONTENT_ID)
+VNSTRING(WSP_1_3, "Set-Cookie", WSP_HEADER_SET_COOKIE)
+VNSTRING(WSP_1_3, "Cookie", WSP_HEADER_COOKIE)
+VNSTRING(WSP_1_3, "Encoding-Version", WSP_HEADER_ENCODING_VERSION)
+VNSTRING(WSP_1_4, "Profile-Warning", WSP_HEADER_PROFILE_WARNING_V14)
+VNSTRING(WSP_1_4, "Content-Disposition", WSP_HEADER_CONTENT_DISPOSITION_V14)
+VNSTRING(WSP_1_4, "X-WAP-Security", WSP_HEADER_X_WAP_SECURITY)
+VNSTRING(WSP_1_4, "Cache-Control", WSP_HEADER_CACHE_CONTROL_V14)
+VNSTRING(WSP_1_5, "X-Wap-Loc-Invocation", WSP_HEADER_X_WAP_LOC_INVOCATION)
+VNSTRING(WSP_1_5, "X-Wap-Loc-Delivery", WSP_HEADER_X_WAP_LOC_DELIVERY)
+)
+
+/* Table 40. Well Known WSP Content Type Codes Assignments. 
+ * These have been defined by WINA, 
+ * see http://www.wapforum.org/wina/wsp-content-type.htm
+ * Now they are maintained by OMNA, see URL
+ * 
+ * http://www.openmobilealliance.org/tech/omna/index.htm (depricated)
+ * http://www.openmobilealliance.org/Technical/omna/omna-wsp-content-type.aspx
+ */
+LINEAR(content_type,
+VSTRING(WSP_1_1, "*/*")
+VSTRING(WSP_1_1, "text/*")
+VSTRING(WSP_1_1, "text/html")
+VSTRING(WSP_1_1, "text/plain")
+VSTRING(WSP_1_1, "text/x-hdml")
+VSTRING(WSP_1_1, "text/x-ttml")
+VSTRING(WSP_1_1, "text/x-vCalendar")
+VSTRING(WSP_1_1, "text/x-vCard")
+VSTRING(WSP_1_1, "text/vnd.wap.wml")
+VSTRING(WSP_1_1, "text/vnd.wap.wmlscript")
+VSTRING(WSP_1_1, "application/vnd.wap.catc")
+VSTRING(WSP_1_1, "multipart/*")
+VSTRING(WSP_1_1, "multipart/mixed")
+VSTRING(WSP_1_1, "multipart/form-data")
+VSTRING(WSP_1_1, "multipart/byteranges")
+VSTRING(WSP_1_1, "multipart/alternative")
+VSTRING(WSP_1_1, "application/*")
+VSTRING(WSP_1_1, "application/java-vm")
+VSTRING(WSP_1_1, "application/x-www-form-urlencoded")
+VSTRING(WSP_1_1, "application/x-hdmlc")
+VSTRING(WSP_1_1, "application/vnd.wap.wmlc")
+VSTRING(WSP_1_1, "application/vnd.wap.wmlscriptc")
+VSTRING(WSP_1_1, "application/vnd.wap.wsic")
+VSTRING(WSP_1_1, "application/vnd.wap.uaprof")
+VSTRING(WSP_1_1, "application/vnd.wap.wtls-ca-certificate")
+VSTRING(WSP_1_1, "application/vnd.wap.wtls-user-certificate")
+VSTRING(WSP_1_1, "application/x-x509-ca-cert")
+VSTRING(WSP_1_1, "application/x-x509-user-cert")
+VSTRING(WSP_1_1, "image/*")
+VSTRING(WSP_1_1, "image/gif")
+VSTRING(WSP_1_1, "image/jpeg")
+VSTRING(WSP_1_1, "image/tiff")
+VSTRING(WSP_1_1, "image/png")
+VSTRING(WSP_1_1, "image/vnd.wap.wbmp")
+VSTRING(WSP_1_1, "application/vnd.wap.multipart.*")
+VSTRING(WSP_1_1, "application/vnd.wap.multipart.mixed")
+VSTRING(WSP_1_1, "application/vnd.wap.multipart.form-data")
+VSTRING(WSP_1_1, "application/vnd.wap.multipart.byteranges")
+VSTRING(WSP_1_1, "application/vnd.wap.multipart.alternative")
+VSTRING(WSP_1_1, "application/xml")
+VSTRING(WSP_1_1, "text/xml")
+VSTRING(WSP_1_1, "application/vnd.wap.wbxml")
+VSTRING(WSP_1_1, "application/x-x968-cross-cert")
+VSTRING(WSP_1_1, "application/x-x968-ca-cert")
+VSTRING(WSP_1_1, "application/x-x968-user-cert")
+VSTRING(WSP_1_1, "text/vnd.wap.si")
+VSTRING(WSP_1_2, "application/vnd.wap.sic")
+VSTRING(WSP_1_2, "text/vnd.wap.sl")
+VSTRING(WSP_1_2, "application/vnd.wap.slc")
+VSTRING(WSP_1_2, "text/vnd.wap.co")
+VSTRING(WSP_1_2, "application/vnd.wap.coc")
+VSTRING(WSP_1_2, "application/vnd.wap.multipart.related")
+VSTRING(WSP_1_2, "application/vnd.wap.sia")
+VSTRING(WSP_1_3, "text/vnd.wap.connectivity-xml")
+VSTRING(WSP_1_3, "application/vnd.wap.connectivity-wbxml")
+VSTRING(WSP_1_4, "application/pkcs7-mime")
+VSTRING(WSP_1_4, "application/vnd.wap.hashed-certificate")
+VSTRING(WSP_1_4, "application/vnd.wap.signed-certificate")
+VSTRING(WSP_1_4, "application/vnd.wap.cert-response")
+VSTRING(WSP_1_4, "application/xhtml+xml")
+VSTRING(WSP_1_4, "application/wml+xml")
+VSTRING(WSP_1_4, "text/css")
+VSTRING(WSP_1_4, "application/vnd.wap.mms-message")
+VSTRING(WSP_1_4, "application/vnd.wap.rollover-certificate")
+VSTRING(WSP_1_5, "application/vnd.wap.locc+wbxml") 
+VSTRING(WSP_1_5, "application/vnd.wap.loc+xml")
+VSTRING(WSP_1_5, "application/vnd.syncml.dm+wbxml") 
+VSTRING(WSP_1_5, "application/vnd.syncml.dm+xml") 
+VSTRING(WSP_1_5, "application/vnd.syncml.notification") 
+VSTRING(WSP_1_5, "application/vnd.wap.xhtml+xml") 
+VSTRING(WSP_1_5, "application/vnd.wv.csp.cir") 
+VSTRING(WSP_1_5, "application/vnd.oma.dd+xml") 
+VSTRING(WSP_1_5, "application/vnd.oma.drm.message") 
+VSTRING(WSP_1_5, "application/vnd.oma.drm.content")
+VSTRING(WSP_1_5, "application/vnd.oma.drm.rights+xml") 
+VSTRING(WSP_1_5, "application/vnd.oma.drm.rights+wbxml")
+VSTRING(WSP_1_5, "application/vnd.wv.csp+xml")
+VSTRING(WSP_1_5, "application/vnd.wv.csp+wbxml")
+VSTRING(WSP_1_5, "application/vnd.syncml.ds.notification")
+VSTRING(WSP_1_6, "audio/*")
+VSTRING(WSP_1_6, "video/*") 
+VSTRING(WSP_1_6, "application/vnd.oma.dd2+xml")
+VSTRING(WSP_1_6, "application/mikey") 
+)
+
+/* Registered WSP Content Type Codes Assignments. 
+ * Now they are maintained by OMNA, see URL
+ * 
+ * http://www.openmobilealliance.org/tech/omna/index.htm (depricated)
+ * http://www.openmobilealliance.org/Technical/omna/omna-wsp-content-type.aspx
+ */
+NUMBERED(content_type_registered,
+ASSIGN("application/vnd.uplanet.cacheop-wbxml", 0x0201)
+ASSIGN("application/vnd.uplanet.signal", 0x0202)
+ASSIGN("application/vnd.uplanet.alert-wbxml", 0x0203)
+ASSIGN("application/vnd.uplanet.list-wbxml", 0x0204)
+ASSIGN("application/vnd.uplanet.listcmd-wbxml", 0x0205)
+ASSIGN("application/vnd.uplanet.channel-wbxml", 0x0206)
+ASSIGN("application/vnd.uplanet.provisioning-status-uri", 0x0207)
+ASSIGN("x-wap.multipart/vnd.uplanet.header-set", 0x0208)
+ASSIGN("application/vnd.uplanet.bearer-choice-wbxml", 0x0209)
+ASSIGN("application/vnd.phonecom.mmc-wbxml", 0x020A)
+ASSIGN("application/vnd.nokia.syncset+wbxml", 0x020B)
+ASSIGN("image/x-up-wpng", 0x020C)
+ASSIGN("application/iota.mmc-wbxml", 0x0300)
+ASSIGN("application/iota.mmc-xml", 0x0301)
+ASSIGN("application/vnd.syncml+xml", 0x0302)
+ASSIGN("application/vnd.syncml+wbxml", 0x0303)
+ASSIGN("text/vnd.wap.emn+xml", 0x0304)
+ASSIGN("text/calendar", 0x0305)
+ASSIGN("application/vnd.omads-email+xml", 0x0306)
+ASSIGN("application/vnd.omads-file+xml", 0x0307)
+ASSIGN("application/vnd.omads-folder+xml", 0x0308)
+ASSIGN("text/directory;profile=vCard", 0x0309)
+ASSIGN("application/vnd.wap.emn+wbxml", 0x030A)
+ASSIGN("application/vnd.nokia.ipdc-purchase-response", 0x030B)
+ASSIGN("application/vnd.motorola.screen3+xml", 0x030C)
+ASSIGN("application/vnd.motorola.screen3+gzip", 0x030D)
+ASSIGN("application/vnd.cmcc.setting+wbxml", 0x030E)
+ASSIGN("application/vnd.cmcc.bombing+wbxml", 0x030F)
+ASSIGN("application/vnd.docomo.pf", 0x0310)
+ASSIGN("application/vnd.docomo.ub", 0x0311)
+ASSIGN("application/vnd.omaloc-supl-init", 0x0312)
+ASSIGN("application/vnd.oma.group-usage-list+xml", 0x0313)
+ASSIGN("application/oma-directory+xml", 0x0314)
+ASSIGN("application/vnd.docomo.pf2", 0x0315)
+)
+
+/* Table 42, Character Set Assignment (partial) */
+/* The full list is at
+ *   ftp://ftp.isi.edu/in-notes/iana/assignments/character-sets
+ * but the WSP standard lists these values explicitly.
+ */
+NUMBERED(charset,
+ASSIGN("big5", 2026)
+ASSIGN("iso-10646-ucs-2", 1000)
+ASSIGN("iso-8859-1", 4)
+ASSIGN("iso-8859-2", 5)
+ASSIGN("iso-8859-3", 6)
+ASSIGN("iso-8859-4", 7)
+ASSIGN("iso-8859-5", 8)
+ASSIGN("iso-8859-6", 9)
+ASSIGN("iso-8859-7", 10)
+ASSIGN("iso-8859-8", 11)
+ASSIGN("iso-8859-9", 12)
+ASSIGN("shift_JIS", 17)
+ASSIGN("us-ascii", 3)
+ASSIGN("utf-8", 106)
+ASSIGN("utf-16", 1015)
+)
+
+/* Table 38, Well-Known Parameter Assignments 
+ * Now defined by OMNA, see
+ * http://www.openmobilealliance.org/tech/omna/omna-wsp-header-param.htm
+ */
+NUMBERED(parameter,
+VASSIGN(WSP_1_1, "q", 0)
+VASSIGN(WSP_1_1, "charset", 1)
+VASSIGN(WSP_1_1, "level", 2)
+VASSIGN(WSP_1_1, "type", 3)
+VASSIGN(WSP_1_1, "uaprof", 4)
+VASSIGN(WSP_1_1, "name", 5)
+VASSIGN(WSP_1_1, "filename", 6)
+VASSIGN(WSP_1_1, "differences", 7)
+VASSIGN(WSP_1_1, "padding", 8)
+VASSIGN(WSP_1_2, "type", 9)
+VASSIGN(WSP_1_2, "start", 10)
+VASSIGN(WSP_1_2, "start-info", 11)
+VASSIGN(WSP_1_3, "comment", 12)
+VASSIGN(WSP_1_3, "domain", 13)
+VASSIGN(WSP_1_3, "max-age", 14)
+VASSIGN(WSP_1_3, "path", 15)
+VASSIGN(WSP_1_3, "secure", 16)
+VASSIGN(WSP_1_4, "sec", 17)
+VASSIGN(WSP_1_4, "mac", 18)
+VASSIGN(WSP_1_4, "creation-date", 19)
+VASSIGN(WSP_1_4, "modification-date", 20)
+VASSIGN(WSP_1_4, "read-date", 21)
+VASSIGN(WSP_1_4, "size", 22)
+VASSIGN(WSP_1_4, "name", 23)
+VASSIGN(WSP_1_4, "filename", 24)
+VASSIGN(WSP_1_4, "start", 25)
+VASSIGN(WSP_1_4, "start-info", 26)
+VASSIGN(WSP_1_4, "comment", 27)
+VASSIGN(WSP_1_4, "domain", 28)
+VASSIGN(WSP_1_4, "path", 29)
+)
+
+/* 8.4.2.18, Content encoding field */
+LINEAR(encoding,
+STRING("gzip")
+STRING("compress")
+STRING("deflate")
+)
+
+/* 8.4.2.11, Accept ranges field */
+LINEAR(ranges,
+STRING("none")
+STRING("bytes")
+)
+
+/* 8.4.2.15, Cache-control field */
+NAMED(cache_control,
+NSTRING("no-cache", WSP_CACHE_CONTROL_NO_CACHE)
+NSTRING("no-store", WSP_CACHE_CONTROL_NO_STORE)
+NSTRING("max-age", WSP_CACHE_CONTROL_MAX_AGE)
+NSTRING("max-stale", WSP_CACHE_CONTROL_MAX_STALE)
+NSTRING("min-fresh", WSP_CACHE_CONTROL_MIN_FRESH)
+NSTRING("only-if-cached", WSP_CACHE_CONTROL_ONLY_IF_CACHED)
+NSTRING("public", WSP_CACHE_CONTROL_PUBLIC)
+NSTRING("private", WSP_CACHE_CONTROL_PRIVATE)
+NSTRING("no-transform", WSP_CACHE_CONTROL_NO_TRANSFORM)
+NSTRING("must-revalidate", WSP_CACHE_CONTROL_MUST_REVALIDATE)
+NSTRING("proxy-revalidate", WSP_CACHE_CONTROL_PROXY_REVALIDATE)
+NSTRING("s-maxage", WSP_CACHE_CONTROL_S_MAXAGE)
+)
+
+/* 8.4.2.53, Content-disposition field */
+LINEAR(disposition,
+STRING("form-data")
+STRING("attachment")
+STRING("inline")
+)
+
+/* Table 41, ISO 639 Language Assignments */
+/* For some reason this table was incomplete in the spec.  The languages
+ * were listed, but not their abbreviations. */
+NUMBERED(language,
+ASSIGN("*", 0) /* Special any-language value */
+ASSIGN("aa", 0x01)  /* Afar */
+ASSIGN("ab", 0x02)  /* Abkhazian */
+ASSIGN("af", 0x03)  /* Afrikaans */
+ASSIGN("am", 0x04)  /* Amharic */
+ASSIGN("ar", 0x05)  /* Arabic */
+ASSIGN("as", 0x06)  /* Assamese */
+ASSIGN("ay", 0x07)  /* Aymara */
+ASSIGN("az", 0x08)  /* Azerbaijani */
+ASSIGN("ba", 0x09)  /* Bashkir */
+ASSIGN("be", 0x0a)  /* Byelorussian */
+ASSIGN("bg", 0x0b)  /* Bulgarian */
+ASSIGN("bh", 0x0c)  /* Bihari */
+ASSIGN("bi", 0x0d)  /* Bislama */
+ASSIGN("bn", 0x0e)  /* Bengali; Bangla */
+ASSIGN("bo", 0x0f)  /* Tibetan */
+ASSIGN("br", 0x10)  /* Breton */
+ASSIGN("ca", 0x11)  /* Catalan */
+ASSIGN("co", 0x12)  /* Corsican */
+ASSIGN("cs", 0x13)  /* Czech */
+ASSIGN("cy", 0x14)  /* Welsh */
+ASSIGN("da", 0x15)  /* Danish */
+ASSIGN("de", 0x16)  /* German */
+ASSIGN("dz", 0x17)  /* Bhutani */
+ASSIGN("el", 0x18)  /* Greek */
+ASSIGN("en", 0x19)  /* English */
+ASSIGN("eo", 0x1a)  /* Esperanto */
+ASSIGN("es", 0x1b)  /* Spanish */
+ASSIGN("et", 0x1c)  /* Estonian */
+ASSIGN("eu", 0x1d)  /* Basque */
+ASSIGN("fa", 0x1e)  /* Persian */
+ASSIGN("fi", 0x1f)  /* Finnish */
+ASSIGN("fj", 0x20)  /* Fiji */
+ASSIGN("fo", 0x82)  /* Faroese */
+ASSIGN("fr", 0x22)  /* French */
+ASSIGN("fy", 0x83)  /* Frisian */
+ASSIGN("ga", 0x24)  /* Irish */
+ASSIGN("gd", 0x25)  /* Scots Gaelic */
+ASSIGN("gl", 0x26)  /* Galician */
+ASSIGN("gn", 0x27)  /* Guarani */
+ASSIGN("gu", 0x28)  /* Gujarati */
+ASSIGN("ha", 0x29)  /* Hausa */
+ASSIGN("he", 0x2a)  /* Hebrew (formerly iw) */
+ASSIGN("hi", 0x2b)  /* Hindi */
+ASSIGN("hr", 0x2c)  /* Croatian */
+ASSIGN("hu", 0x2d)  /* Hungarian */
+ASSIGN("hy", 0x2e)  /* Armenian */
+ASSIGN("ia", 0x84)  /* Interlingua */
+ASSIGN("id", 0x30)  /* Indonesian (formerly in) */
+ASSIGN("ie", 0x86)  /* Interlingue */
+ASSIGN("ik", 0x87)  /* Inupiak */
+ASSIGN("is", 0x33)  /* Icelandic */
+ASSIGN("it", 0x34)  /* Italian */
+ASSIGN("iu", 0x89)  /* Inuktitut */
+ASSIGN("ja", 0x36)  /* Japanese */
+ASSIGN("jw", 0x37)  /* Javanese */
+ASSIGN("ka", 0x38)  /* Georgian */
+ASSIGN("kk", 0x39)  /* Kazakh */
+ASSIGN("kl", 0x8a)  /* Greenlandic */
+ASSIGN("km", 0x3b)  /* Cambodian */
+ASSIGN("kn", 0x3c)  /* Kannada */
+ASSIGN("ko", 0x3d)  /* Korean */
+ASSIGN("ks", 0x3e)  /* Kashmiri */
+ASSIGN("ku", 0x3f)  /* Kurdish */
+ASSIGN("ky", 0x40)  /* Kirghiz */
+ASSIGN("la", 0x8b)  /* Latin */
+ASSIGN("ln", 0x42)  /* Lingala */
+ASSIGN("lo", 0x43)  /* Laothian */
+ASSIGN("lt", 0x44)  /* Lithuanian */
+ASSIGN("lv", 0x45)  /* Latvian, Lettish */
+ASSIGN("mg", 0x46)  /* Malagasy */
+ASSIGN("mi", 0x47)  /* Maori */
+ASSIGN("mk", 0x48)  /* Macedonian */
+ASSIGN("ml", 0x49)  /* Malayalam */
+ASSIGN("mn", 0x4a)  /* Mongolian */
+ASSIGN("mo", 0x4b)  /* Moldavian */
+ASSIGN("mr", 0x4c)  /* Marathi */
+ASSIGN("ms", 0x4d)  /* Malay */
+ASSIGN("mt", 0x4e)  /* Maltese */
+ASSIGN("my", 0x4f)  /* Burmese */
+ASSIGN("na", 0x81)  /* Nauru */
+ASSIGN("ne", 0x51)  /* Nepali */
+ASSIGN("nl", 0x52)  /* Dutch */
+ASSIGN("no", 0x53)  /* Norwegian */
+ASSIGN("oc", 0x54)  /* Occitan */
+ASSIGN("om", 0x55)  /* (Afan) Oromo */
+ASSIGN("or", 0x56)  /* Oriya */
+ASSIGN("pa", 0x57)  /* Punjabi */
+ASSIGN("pl", 0x58)  /* Polish */
+ASSIGN("ps", 0x59)  /* Pashto, Pushto */
+ASSIGN("pt", 0x5a)  /* Portuguese */
+ASSIGN("qu", 0x5b)  /* Quechua */
+ASSIGN("rm", 0x8c)  /* Rhaeto-Romance */
+ASSIGN("rn", 0x5d)  /* Kirundi */
+ASSIGN("ro", 0x5e)  /* Romanian */
+ASSIGN("ru", 0x5f)  /* Russian */
+ASSIGN("rw", 0x60)  /* Kinyarwanda */
+ASSIGN("sa", 0x61)  /* Sanskrit */
+ASSIGN("sd", 0x62)  /* Sindhi */
+ASSIGN("sg", 0x63)  /* Sangro (Sangho) */
+ASSIGN("sh", 0x64)  /* Serbo-Croatian */
+ASSIGN("si", 0x65)  /* Sinhalese */
+ASSIGN("sk", 0x66)  /* Slovak */
+ASSIGN("sl", 0x67)  /* Slovenian */
+ASSIGN("sm", 0x68)  /* Samoan */
+ASSIGN("sn", 0x69)  /* Shona */
+ASSIGN("so", 0x6a)  /* Somali */
+ASSIGN("sq", 0x6b)  /* Albanian */
+ASSIGN("sr", 0x6c)  /* Serbian */
+ASSIGN("ss", 0x6d)  /* Siswati */
+ASSIGN("st", 0x6e)  /* Sesotho */
+ASSIGN("su", 0x6f)  /* Sundanese */
+ASSIGN("sv", 0x70)  /* Swedish */
+ASSIGN("sw", 0x71)  /* Swahili */
+ASSIGN("ta", 0x72)  /* Tamil */
+ASSIGN("te", 0x73)  /* Telugu */
+ASSIGN("tg", 0x74)  /* Tajik */
+ASSIGN("th", 0x75)  /* Thai */
+ASSIGN("ti", 0x76)  /* Tigrinya */
+ASSIGN("tk", 0x77)  /* Turkmen */
+ASSIGN("tl", 0x78)  /* Tagalog */
+ASSIGN("tn", 0x79)  /* Setswana */
+ASSIGN("to", 0x7a)  /* Tonga */
+ASSIGN("tr", 0x7b)  /* Turkish */
+ASSIGN("ts", 0x7c)  /* Tsonga */
+ASSIGN("tt", 0x7d)  /* Tatar */
+ASSIGN("tw", 0x7e)  /* Twi */
+ASSIGN("ug", 0x7f)  /* Uighur */
+ASSIGN("uk", 0x50)  /* Ukrainian */
+ASSIGN("ur", 0x21)  /* Urdu */
+ASSIGN("uz", 0x23)  /* Uzbek */
+ASSIGN("vi", 0x2f)  /* Vietnamese */
+ASSIGN("vo", 0x85)  /* Volapuk */
+ASSIGN("wo", 0x31)  /* Wolof */
+ASSIGN("xh", 0x32)  /* Xhosa */
+ASSIGN("yi", 0x88)  /* Yiddish (formerly ji) */
+ASSIGN("yo", 0x35)  /* Yoruba */
+ASSIGN("za", 0x3a)  /* Zhuang */
+ASSIGN("zh", 0x41)  /* Chinese */
+ASSIGN("zu", 0x5c)  /* Zulu */
+)
+
+/* Well known methods, from table 34. */
+NUMBERED(method,
+ASSIGN("GET", 0x40)
+ASSIGN("OPTIONS", 0x41)
+ASSIGN("HEAD", 0x42)
+ASSIGN("DELETE", 0x43)
+ASSIGN("TRACE", 0x44)
+ASSIGN("POST", 0x60)
+ASSIGN("PUT", 0x61)
+ASSIGN("DATA", 0x80)
+)
+
+/* Connection-value tokens, from section 8.4.2.16 */
+LINEAR(connection,
+STRING("close")
+)
+
+/* Transfer-encoding values, from section 8.4.2.46 */
+LINEAR(transfer_encoding,
+STRING("chunked")
+)
+
+/* Well-known bearer type codes, from WDP Appendix C */
+LINEAR(bearer_indication,
+STRING("any_ipv4")
+STRING("any_ipv6")
+STRING("gsm_usd_any")
+STRING("gsm_sms_gsmmsisdn")
+STRING("ansi-136_guts/r-data_ansi_136_msisdn")
+STRING("is-95_cdma_sms_is_637_msisdn")
+STRING("is-95_cdma_csd_ipv4")
+STRING("is-95_packet_data_ipv4")
+STRING("ansi-136_csd_ipv4")
+STRING("ansi-136_packet_data_ipv4")
+STRING("gsm_csd_ipv4")
+STRING("gsm_gprs_ipv4")
+STRING("gsm_ussd_ipv4")
+STRING("amps_cdpd_ipv4")
+STRING("pdc_csd_ipv4")
+STRING("pdc_packet_data_ipv4")
+STRING("iden_sms_iden_msisdn")
+STRING("iden_csd_ipv4")
+STRING("iden_packet_data_ipv4")
+STRING("paging_network_flex_flex_msisdn")
+STRING("phs_sms_phs_msisdn")
+STRING("phs_csd_ipv4")
+STRING("gsm_ussd_gsm_service_code")
+STRING("tetra_sds_tetra_itsi")
+STRING("tetra_sds_tetra_msisdn")
+STRING("tetra_packet_data_ipv4")
+STRING("paging_network_reflex_reflex_isdn")
+STRING("gsm_ussd_gsm_msisdn")
+STRING("mobitex_mpak_man")
+STRING("ansi-136_ghost/r_data_gsm_isdn")
+)
+
+/*
+ * Well known and registered push application ids, see URL
+ * 
+ * http://www.openmobilealliance.org/tech/omna/omna-push-app-id.htm (depricated)
+ * http://www.openmobilealliance.org/Technical/omna/omna-push-app-id.aspx
+ * 
+ * Note that generic id strings do not contain the "x-wap-application" prefix,
+ * it's the default, otherwise an alternate is given.
+ */
+NUMBERED(application_id,
+ASSIGN("*", 0x00)
+ASSIGN("push.sia", 0x01)
+ASSIGN("wml.ua", 0x02)
+ASSIGN("wta.ua", 0x03) 
+ASSIGN("mms.ua", 0x04) 
+ASSIGN("push.syncml", 0x05) 
+ASSIGN("loc.ua", 0x06) 
+ASSIGN("syncml.dm", 0x07)
+ASSIGN("drm.ua", 0x08)
+ASSIGN("emn.ua", 0x09)
+ASSIGN("wv.ua", 0x0A)
+ASSIGN("x-oma-application:ulp.ua", 0x10)
+ASSIGN("x-oma-application:dlota.ua", 0x11)
+ASSIGN("x-oma-application:java-ams", 0x12)
+ASSIGN("x-oma-application:bcast.ua", 0x13)
+ASSIGN("x-wap-microsoft:localcontent.ua", 0x8000)
+ASSIGN("x-wap-microsoft:IMclient.ua", 0x8001)
+ASSIGN("x-wap-docomo:imode.mail.ua", 0x8002)
+ASSIGN("x-wap-docomo:imode.mr.ua", 0x8003)
+ASSIGN("x-wap-docomo:imode.mf.ua", 0x8004)
+ASSIGN("x-motorola:location.ua", 0x8005)
+ASSIGN("x-motorola:now.ua", 0x8006)
+ASSIGN("x-motorola:otaprov.ua", 0x8007)
+ASSIGN("x-motorola:browser.ua", 0x8008)
+ASSIGN("x-motorola:splash.ua", 0x8009)
+ASSIGN("x-wap-nai:mvsw.command", 0x800B)
+ASSIGN("x-wap-openvawe:iota.ua", 0x8010)
+ASSIGN("x-wap-docomo:imode.mail2.ua", 0x9000)
+ASSIGN("x-oma-nec:otaprov.ua", 0x9001)
+ASSIGN("x-oma-nokia:call.ua", 0x9002)
+ASSIGN("x-oma-coremobility:sqa.ua", 0x9003)
+ASSIGN("x-oma-docomo:doja.jam.ua", 0x9004)
+ASSIGN("x-oma-nokia:sip.ua", 0x9010)
+ASSIGN("x-oma-vodafone:otaprov.ua", 0x9011)
+ASSIGN("x-hutchison:ad.ua", 0x9012)
+ASSIGN("x-oma-nokia:voip.ua", 0x9013)
+ASSIGN("x-oma-docomo:voice.ua", 0x9014)
+ASSIGN("x-oma-docomo:browser.ctl", 0x9015)
+ASSIGN("x-oma-docomo:dan.ua", 0x9016)
+ASSIGN("x-oma-nokia:vs.ua", 0x9017)
+ASSIGN("x-oma-nokia:voip.ext1.ua", 0x9018)
+ASSIGN("x-wap-vodafone:casting.ua", 0x9019)
+ASSIGN("x-oma-docomo:imode.data.ua", 0x901A)
+ASSIGN("x-oma-snapin:otaprov.ctl", 0x901B)
+ASSIGN("x-oma-nokia:vrs.ua", 0x901C)
+ASSIGN("x-oma-nokia:vrpg.ua", 0x901D)
+ASSIGN("x-oma-motorola:screen3.ua", 0x901E)
+ASSIGN("x-oma-docomo:device.ctl", 0x901F)
+ASSIGN("x-oma-nokia:msc.ua", 0x9020)
+ASSIGN("x-3gpp2:lcs.ua", 0x9021)
+ASSIGN("x-wap-vodafone:dcd.ua", 0x9022)
+ASSIGN("x-3gpp:mbms.service.announcement.ua", 0x9023)
+ASSIGN("x-oma-vodafone:dltmtbl.ua", 0x9024)
+ASSIGN("x-oma-vodafone:dvcctl.ua", 0x9025)
+ASSIGN("x-oma-cmcc:mail.ua", 0x9026)
+ASSIGN("x-oma-nokia:vmb.ua", 0x9027)
+ASSIGN("x-oma-nokia:ldapss.ua", 0x9028)
+ASSIGN("x-hutchison:al.ua", 0x9029)
+ASSIGN("x-oma-nokia:uma.ua", 0x902A)
+ASSIGN("x-oma-nokia:news.ua", 0x902B)
+ASSIGN("x-oma-docomo:pf", 0x902C)
+ASSIGN("x-oma-docomo:ub", 0x902D)
+ASSIGN("x-oma-nokia:nat.traversal.ua", 0x902E)
+ASSIGN("x-oma-intromobile:intropad.ua", 0x902F)
+ASSIGN("x-oma-docomo:uin.ua", 0x9030)
+ASSIGN("x-oma-nokia:iptv.ua", 0x9031)
+ASSIGN("x-hutchison:il.ua", 0x9032)
+ASSIGN("x-oma-nokia:voip.general.ua", 0x9033)
+ASSIGN("x-microsoft:drm.meter", 0x9034)
+ASSIGN("x-microsoft:drm.license", 0x9035)
+ASSIGN("x-oma-docomo:ic.ctl", 0x9036)
+ASSIGN("x-oma-slingmedia:SPM.ua", 0x9037)
+ASSIGN("x-cibenix:odp.ua", 0x9038)
+ASSIGN("x-oma-motorola:voip.ua", 0x9039)
+ASSIGN("x-oma-motorola:ims", 0x903A)
+ASSIGN("x-oma-docomo:imode.remote.ctl", 0x903B)
+ASSIGN("x-oma-docomo:device.ctl.um", 0x903C)
+ASSIGN("x-microsoft:playready.drm.initiator", 0x903D)
+ASSIGN("x-microsoft:playready.drm", 0x903E)
+ASSIGN("x-oma-sbm:ms.mexa.ua", 0x903F)
+ASSIGN("urn:oma:drms:org-LGE:L650V", 0x9040)
+ASSIGN("x-oma-docomo:um", 0x9041)
+ASSIGN("x-oma-docomo:uin.um", 0x9042)
+ASSIGN("urn:oma:drms:org-LGE:KU450", 0x9043)
+ASSIGN("x-wap-microsoft:cfgmgr.ua", 0x9044)
+ASSIGN("x-3gpp:mbms.download.delivery.ua", 0x9045)
+ASSIGN("x-oma-docomo:star.ctl", 0x9046)
+ASSIGN("urn:oma:drms:org-LGE:KU380", 0x9047)
+ASSIGN("x-oma-docomo:pf2", 0x9048)
+ASSIGN("x-oma-motorola:blogcentral.ua", 0x9049)
+ASSIGN("x-oma-docomo:imode.agent.ua", 0x904A)
+ASSIGN("x-wap-application:push.sia", 0x904B)
+ASSIGN("x-oma-nokia:destination.network.ua", 0x904C)
+ASSIGN("x-oma-sbm:mid2.ua", 0x904D)
+)
+
+/**** More preprocessor magic ****/
+
+#undef LINEAR
+#undef STRING
+#undef VSTRING
+#undef NUMBERED
+#undef ASSIGN
+#undef VASSIGN
+#undef NAMED
+#undef NSTRING
+#undef VNSTRING
+

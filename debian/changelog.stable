@@ -1,0 +1,79 @@
+kannel (1.4.0-0) unstable; urgency=low
+
+  * New upstream version.
+  * Bumped standards version
+
+ -- Bruno Rodrigues <bruno.rodrigues@litux.org>  Sat,  7 Aug 2004 13:45:02 +0200
+
+kannel (1.2.1-5) unstable; urgency=low
+
+  * New maintainer (Closes: #185224)
+  * Fix bug in init script 
+
+ -- Bruno Rodrigues <bruno.rodrigues@litux.org>  Sun,  4 May 2003 18:54:43 +0000
+
+kannel (1.2.1-4) unstable; urgency=low
+
+  * Updated Standards-Version to 3.5.9 and other cleaning up
+  * Kannel-docs is now architecture independent. Updated control and rules
+
+ -- Bruno Rodrigues <bruno.rodrigues@litux.org>  Tue,  8 Apr 2003 20:08:40 +0000
+
+kannel (1.2.1-3) unstable; urgency=low
+
+  * Moved debian dir from orig to diff
+  * Added debian/compat
+  * Tidy up
+
+ -- Bruno Rodrigues <bruno.rodrigues@litux.org>  Mon, 17 Mar 2003 18:42:36 +0000
+
+kannel (1.2.1-2) unstable; urgency=low
+
+  * Updated Standards-Version to 3.5.8
+
+ -- Bruno Rodrigues <bruno.rodrigues@litux.org>  Sun, 26 Jan 2003 17:05:13 +0100
+
+kkannel (1.2.1-1) unstable; urgency=low
+
+  * New upstream version
+
+ -- Bruno Rodrigues <bruno.rodrigues@litux.org>  Sun, 26 Jan 2003 17:05:13 +0100
+
+kannel (1.2.0-1) unstable; urgency=low
+
+  * New upstream version
+
+ -- Bruno Rodrigues <bruno.rodrigues@litux.org>  Thu, 18 Jul 2002 10:30:39 +0100
+
+kannel (0.11.3.cvs-1) unstable; urgency=low
+
+  * New upstream version 0.11.3. This Debian package has a few additional
+    changes made in upstream CVS since the release:
+  * SMS timestamps are set by Kannel, if the SMS center did not set them.
+  * Bugfixes in assertions.
+  * Fixes to a couple of WMLScript compilation bugs.
+  * WTP protocol fix in cases when load is heavy and Ack packets are delayed.
+  * WTP state machine fix: if an event can't be handled, it is just ignored,
+    instead of the state machine being killed.
+  * Debian packaging: postinst creates user kannel, init.d/kannel runs
+    the boxes as that user.
+
+ -- Lars Wirzenius <liw@iki.fi>  Tue, 10 Oct 2000 15:54:01 +0300
+
+kannel (0.11.2.cvs-1) unstable; urgency=low
+
+  * Updated version of Debian packaging, for the CVS version. Also added
+    a Debian revision number to the version number: even though the debian/
+    directory is part of upstream sources, there may be several Debian
+    versions due to packaging etc per upstream release.
+
+ -- Lars Wirzenius <liw@iki.fi>  Tue,  3 Oct 2000 13:20:24 +0300
+
+kannel (0.7.9999) unstable; urgency=low
+
+  * Initial version of Debian package. This is not an upstream release
+    version. It is a CVS snapshot.
+
+ -- Lars Wirzenius <liw@iki.fi>  Wed, 29 Mar 2000 22:17:43 +0300
+
+

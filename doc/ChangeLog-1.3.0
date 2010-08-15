@@ -1,0 +1,251 @@
+2003-01-05  Stipe Tolj  <stolj@wapme.de>
+    * doc/userguide/userguide.xml: some credits for Aarno and me.
+
+2003-01-04  Stipe Tolj  <stolj@wapme.de>
+    * gw/bb_store.c: fixed possible race conditioning in store_save().
+      Thanks to Alexander for pointing this out and providing a patch.
+      [Msg-ID: <200301040008.44151.a.malysh@centrium.de>]
+    * gw/wapbox.c, gw/wap-appl.c: added device_home global to allow returning
+      to the device-home URL if smart-errors are activated.
+
+2003-01-02  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc/smsc_smpp.c: fixed typo from last commit.
+    * gwlib/charset.c: fixed compiler warning.
+
+2003-01-01  Stipe Tolj  <stolj@wapme.de>
+    * gw/bb_store.c: fixed a if statement clause. Thanks to Alexander.
+    * gw/smsc/smsc_smpp.c: applied Nisan's generick_nack changes.
+      [Msg-ID: <5.1.0.14.0.20021211132822.00ab3da0@amagoblin.ialien.co.za>]
+
+2003-01-01  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc/smsc_smpp.c: Added Alexander's patch to support clean suspend
+      mode for the SMPP module.
+      [Msg-ID: <200212111207.23455.a.malysh@centrium.de>]
+    * doc/userguide/userguide.xml: added 'wait-ack-expire' documentation for
+      the UCP/EMI section.
+    * gw/smsc/smsc_emi2.c: Added Nisan's wait-ack-expire patch to handle 
+      msg was not acked event.
+
+2002-12-31  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsbox.c: added account to fill_message(). Thanks to Paul.
+      [Msg-ID: <005701c2b0c0$4140cb50$0300a8c0@anam.com>]
+    * gw/heartbeat.c: fixed difftime calculation to make heartbeat work again.
+      Patch provided by Alexander Malysh <a.malysh@centrium.de>
+      [Msg-ID: <200212262253.18847.a.malysh@centrium.de>]
+
+2002-12-27  Stipe Tolj  <stolj@wapme.de>
+    * gw/bb_store.c: fixed assertion panic when admin URI /store-status is 
+      called while there is *no* store-file used. Bug has been reported by
+      Mauricio Ramos <mauricio.ramos@waura.com.br>. Patch based on submission
+      by Alexander Malysh <a.malysh@centrium.de>.
+      [Msg-ID: <200212261844.46127.a.malysh@centrium.de>]
+
+2002-12-26  Stipe Tolj  <stolj@wapme.de>
+    * gwlib/http.c: added some more debugging output and fixed missing NULLing
+      of reused trans->host for parse_url().
+    * gw/smsbox.c: fixed missing destruction of structures in http client retry
+      thread http_queue_thread().
+    * gw/wapkannel.conf: roll-back to previous revision. Veto against commited
+      changes from igor that don't make any sense here.
+    * test/test_http.c: made the whole thing more cleaner, in means of 
+      requesting and getting responses. Will now spread the load (-n switch) 
+      accross all threads that are defined with -t switch.
+
+2002-12-23 Aarno Syvänen <aarno@gni.ch>
+    * timer-freq patch:
+    * gw/wapbox.c: added reading of timer-freq values
+    * wap/wap.h: wtp_initiator_init and wtp_responder_init passes
+      timer-freq values
+    * wap/wtp_resp.c, wap/wtp_init.c: use timer-freq configuration
+      variable as a 'timer tick'.
+
+2002-12-13  Igor Ivoiov <igor@francoudi.com>
+	* wap/wtp_pack.c: fixed a bug in wtp_pack_sar_ack() with sprintf 
+	  into char that could cause a segfault.
+	  Thanks to Aarno Syvanen <as@gni.ch>
+	  [Message-Id: <A9D4ABF6-0E7F-11D7-9221-0003937AE746@gni.ch>]
+
+2002-12-10  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsbox.c: fixed a bug in url_result_thread() which caused no reply
+      if HTTP request queueing was used. Thanks to Paul for this.
+
+2002-12-07  Stipe Tolj  <stolj@wapme.de>
+    * config.h.in, configure[.in]: added iconv support and detection
+    * gwlib/charset.[ch]: added charset_convert() routine as wrapper
+      for iconv calls to convert from a known charset encoding to
+      an other.
+    * gw/smsc_smpp.c: uses iconv library to convert character encodings.
+      Orginal patch from Alan. Adds 'alt-charset' directive for the smpp
+      smsc group. Use iconv's type representation to define which charset
+      is used by a specific smsc.
+    * doc/userguide/userguide.xml: added 'alt-charset' documentation.
+
+2002-12-07  Stipe Tolj  <stolj@wapme.de>
+    * gwlib/conn.c: fixed reentrant bugs in conn_shutdown_ssl() and
+      server_shutdown_ssl(). Thanks to Paul for pointing this out.
+    * test/wapproxy.c: fixed a couple of compiler warnings.
+    * gw/sms.c, gw/smsbox.c: only minor coding style changes.
+
+2002-12-05 Andreas Fink <andreas@fink.org>
+   * gw/smsc/smsc_smpp.c: fixed throttling problem in SMPP
+     which was triggered by getting back a generic error instead of
+     a submit_response error. For incoming messages
+     the original ID is set (my-number problem) as a temporary fix
+     and if coding is not 1, then conversion to latin1 is not done
+     to allow incoming unicode and binary to work properly.
+
+2002-12-03  Igor Ivoilov <igor@francoudi.com>
+    * wap/wsp_server_session_states.def: fixed initial approach for
+      client SDU size to solve the problem with concatenated WSP requests.
+      Thanks to Vjacheslav Chekushin <slava@lmt.lv> for pointing out 
+      the problem with nokia 7210
+      [Message-ID: <3DD34FED.5010305@lmt.lv>]
+
+2002-12-03  Stipe Tolj  <stolj@wapme.de>
+    * gw/bb_smscconn.c: fixed memory leak in smsc2_restart_smsc(),
+      thanks to Nisan for spotting this.
+
+2002-12-02  Stipe Tolj  <stolj@wapme.de>
+    * gw/dlr.c: fixed race condition due to unlocked list. Thanks to
+      Alexander Malysh <a.malysh@centrium.de> for this patch
+      [Msg-ID: <200212021737.55308.a.malysh@centrium.de>]
+
+2002-12-02  Stipe Tolj  <stolj@wapme.de>
+    * gwlib/conn.c: added openssl free'ing stuff reported by Paul in 
+      conn_shutdown_ssl() and server_shutdown_ssl().
+
+2002-12-02  Stipe Tolj  <stolj@wapme.de>
+    * test/wapproxy.c: added our wap packet proxy debugging tool to kannel
+
+2002-12-02  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc/smsc_emi2.c, gwlib/http.h, gwlib/charset.h: fixed some minor
+      compiler warnings.
+
+2002-11-26  Oded Arbel  <odeda@m-wise.com>
+    * doc/examples/modems.conf: Fixed init string in Siemens TC35 configuration, 
+      thanks to Fogarasi Andras <fogarasi@fogarasi.com>. added Siemens SL45
+      configurations, don't remember who gave it to me, sorry.
+
+2002-11-25  Oded Arbel  <odeda@m-wise.com>
+    * gw/smsc/smsc_at2.c, gw/smsc/smsc_at2.h: patch to fix swap_nibbles to
+      use unsigned char. Patch provided by Sindunata Sudarmaji <software@dygsp.com>.
+
+2002-11-20  Stipe Tolj  <stolj@wapme.de>
+    * gw/bb_http.c, gw/smsbox.c, gwlib/cfg.def: patch to allow to bind to
+      a specific interface for smsbox's sendsms interface and bearerbox's 
+      admin HTTP server. Patch provided by Nisan Bloch <nisof@amagoblin.co.za>.
+      [Msg-ID: <5.1.0.14.0.20021118225946.024d51a0@amagoblin.ialien.co.za>]
+
+2002-11-20  Stipe Tolj  <stolj@wapme.de>
+    * gwlib/charset.c: fixing a compiler warning, thanks to 
+      Ignat Vassilev <ozzy@declera.com> for providing patch
+
+2002-11-18  Stipe Tolj  <stolj@wapme.de>
+    * gwlib/cfg.def: added missing 'field-boxc-id' field in 'dlr-db' grou.
+      Thanks to Ignat Vassilev <ozzy@declera.com> for pointing this out.
+
+2002-11-18  Stipe Tolj  <stolj@wapme.de>
+    * gwlib/http.c: added http_open_port_if() to bind to specific interface.
+      Thanks to Nisan for this patch.
+
+2002-11-18  Stipe Tolj  <stolj@wapme.de>
+    * gw/bb_smscconn.c: processing now number normalization on smsc basis first
+      and for the global define rules.
+    * gwlib/http.c: HTTP basic auth is supported, so fixed the comments.
+    * gw/alt_charsets.h, gw/smsc/smsc_emi2.c, gwlib/charset.c: added NCR
+      ISO 21 German for german umlauts to be used with 'alt-charset' directive.
+
+2002-11-15  Stipe Tolj  <stolj@wapme.de>
+    * doc/userguide/userguide.xml: added explanation about 'field-boxc-id'
+      directive in 'dlr-db' group.
+    * gw/wap-appl.c: fixed a bug if 'smart-errors' was on in wapbox group and 
+      the HTTP lookup failed, reported by Peter Löfman <petlof75@hotmail.com>.
+      
+2002-11-14  Stipe Tolj  <stolj@wapme.de>
+    * gw/shared.[ch]: added wrapper for connecting to bearerbox from external
+      boxes and return the connection itself if successfull.
+
+2002-11-14  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc/smpp_pdu.c, wap/wtp_resp.c: fixed compiler warnings.
+
+2002-11-14  Stipe Tolj  <stolj@wapme.de>
+    * doc/userguide/userguide.xml: added 'smsbox-id' directive and 'smsbox-route'
+      group documentation
+    * gw/bb_boxc.c, gw/bb_smscconn.c: added smsbox specific identified handling
+    * gw/dlr.[ch]: added smsbox instance identifier handling in DLR code. This is
+      necessary if you want to route the DLR message the same logical channel
+      back to the sending smsbox instance entity, like in EMI/UCP and SMPP 
+      proxying cases.
+    * gw/msg-dec.h, gw/msg.h: added admin message field that is used to transport
+      the identified while an smsbox instance is identifying itself at startup.
+    * gw/smsbox.c: added handling of 'smsbox-id' directive that allows an 
+      smsbox instance to identify itself to bearerbox for routing purposes.
+    * gw/smsc/smsc_*.c: changed function calling to dlr routines to fit new way.
+    * gwlib/cfg.def: added directive 'smsbox-id' to smsbox group and 
+      'smsbox-route' for setting routing rules for smsbox instances.
+    * test/fakesmsc.c: added 'route' message type to simulate an inbound message
+      that should be routed to an specific smsbox instance.
+    The whole block is mainly what we called the "smsbox routing patch". It 
+    allows routing based upon smsc-id or receiver number rules to specific
+    smsbox instances. This may be several real smsboxes or even own boxes that
+    act to bearerbox as if they are smsboxes by using the same message 
+    communication interface. This is useful for implementing own boxes that
+    act as EMI/UCP or SMPP proxies.
+    [Msg-ID: <3D790901.B126AAC9@wapme-systems.de>]
+
+2002-11-14  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc/smpp_pdu[ch,def], gw/smsc/smpp_pdu_opt.def, gw/smsc/smsc_smpp.c:
+      Added SMPP v3.4 optional field support. This is a first prelimiary 
+      version, but has been proven at Wapme to work in production.
+
+2002-11-13  Stipe Tolj  <stolj@wapme.de>
+    * gwlib/conn.[ch], gwlib/http.c, gwlib/socket.[ch]: applied non-blocking
+      patch for http connections, submited by Vjacheslav Chekushin <slava@lmt.lv>
+      [Msg-ID: <3DD1103B.7000405@lmt.lv>]
+
+2002-11-13  Stipe Tolj  <stolj@wapme.de>
+    * wap/wtp_resp_states.def: fixed compiler warning
+
+2002-11-12  Stipe Tolj  <stolj@wapme.de>
+    * gwlib/http.c: fixed a bug in basic auth userid and password handling,
+      reported by Vjacheslav Chekushin <slava@lmt.lv>
+
+2002-11-12  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc/smsc_at2.c: fixed a bug in date pdu deocding, patch 
+      submited by Sindunata Sudarmaji <software@dygsp.com>
+      [Msg-ID: <20021023132104.A4594@top4>]
+
+2002-11-12  Stipe Tolj  <stolj@wapme.de>
+    * gw/wapbox.c, gwlib/cfg.def, wap/wap_events.def, wap/wtp.[ch],
+      wap/wtp_pack.[ch], wap/wtp_pdu.c, wap/wtp_resp.[ch], 
+      wap/wtp_resp_machine.def, wap/wtp_resp_states.def:
+      long awaited WTP-SAR support, a huge special thanks goes out to 
+      Igor Ivoilov <igor@francoudi.com> for this.
+      [Msg-ID: <7AAE7951AE8F1C41902D5BBC4129D42701E5FD39@limex2k.francoudi.com>]
+
+2002-11-11  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc/smsc_smpp.c: fixing a thread handling bug, reported by Paul.
+
+2002-11-07  Oded Arbel  <odeda@m-wise.com>
+    * gw/smsc/smsc_at2.c: fixed compilation warning from last commit
+
+2002-11-06  Oded Arbel  <odeda@m-wise.com>
+    * gw/smsc/smsc_at2.c: added detection of invalid TP-OA address 
+      length in decode_deliver_sm(); added logging in case of 
+      decode_deliver_sm() failure.
+
+2002-11-06  Oded Arbel  <odeda@m-wise.com>
+    * gw/smsc/smsc_at2.c: added speed 115200 if system supports; added
+      simple protection against malformed PDUs in decode_deliver_sm.
+
+2002-10-22  Stipe Tolj  <stolj@wapme.de>
+    * Re-creating stable release 1.2.1.
+
+2002-10-22  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc/smsc_at2.c: fixed a major bug in 7bit encoding. Thanks a lot 
+      to "Rodrigo Sousa Coutinho" <rodrigo.coutinho@outsystems.com> for patch.
+      [Msg-ID: <004c01c279da$5d6a3c70$ca00a8c0@domain.outsystems.com>]
+
+2002-10-20  Stipe Tolj  <stolj@wapme.de>
+    * Making stable release 1.2.1.
+

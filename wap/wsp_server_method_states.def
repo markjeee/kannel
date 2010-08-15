@@ -1,0 +1,452 @@
+/* ==================================================================== 
+ * The Kannel Software License, Version 1.0 
+ * 
+ * Copyright (c) 2001-2009 Kannel Group  
+ * Copyright (c) 1998-2001 WapIT Ltd.   
+ * All rights reserved. 
+ * 
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions 
+ * are met: 
+ * 
+ * 1. Redistributions of source code must retain the above copyright 
+ *    notice, this list of conditions and the following disclaimer. 
+ * 
+ * 2. Redistributions in binary form must reproduce the above copyright 
+ *    notice, this list of conditions and the following disclaimer in 
+ *    the documentation and/or other materials provided with the 
+ *    distribution. 
+ * 
+ * 3. The end-user documentation included with the redistribution, 
+ *    if any, must include the following acknowledgment: 
+ *       "This product includes software developed by the 
+ *        Kannel Group (http://www.kannel.org/)." 
+ *    Alternately, this acknowledgment may appear in the software itself, 
+ *    if and wherever such third-party acknowledgments normally appear. 
+ * 
+ * 4. The names "Kannel" and "Kannel Group" must not be used to 
+ *    endorse or promote products derived from this software without 
+ *    prior written permission. For written permission, please  
+ *    contact org@kannel.org. 
+ * 
+ * 5. Products derived from this software may not be called "Kannel", 
+ *    nor may "Kannel" appear in their name, without prior written 
+ *    permission of the Kannel Group. 
+ * 
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED 
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES 
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+ * DISCLAIMED.  IN NO EVENT SHALL THE KANNEL GROUP OR ITS CONTRIBUTORS 
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,  
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT  
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR  
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,  
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE  
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,  
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * ==================================================================== 
+ * 
+ * This software consists of voluntary contributions made by many 
+ * individuals on behalf of the Kannel Group.  For more information on  
+ * the Kannel Group, please see <http://www.kannel.org/>. 
+ * 
+ * Portions of this software are based upon software originally written at  
+ * WapIT Ltd., Helsinki, Finland for the Kannel project.  
+ */ 
+
+/*
+ * wsp_server_method_states.def
+ *
+ * Macro calls to generate rows of the state table. See the documentation for
+ * guidance how to use and update these.
+ *
+ * Note that the `NULL' state has been renamed to `NULL_METHOD' because
+ * NULL is reserved by C.
+ */
+
+STATE_NAME(NULL_METHOD)
+STATE_NAME(HOLDING)
+STATE_NAME(REQUESTING)
+STATE_NAME(PROCESSING)
+STATE_NAME(REPLYING)
+
+/* MISSING: TR_Invoke.ind, N_Methods == MOM */
+
+ROW(NULL_METHOD,
+	TR_Invoke_Ind,
+	e->tcl == 2 && pdu->type == Get,
+	{
+		List *headers;
+		WAPEvent *invoke;
+		int method;
+		Octstr *method_name;
+
+		/* Prepare the MethodInvoke here, because we have all
+		 * the information nicely available. */
+
+		if (octstr_len(pdu->u.Get.headers) > 0)
+			headers = wsp_headers_unpack(pdu->u.Get.headers, 0);
+		else
+			headers = NULL;
+
+		invoke = wap_event_create(S_MethodInvoke_Ind);
+		invoke->u.S_MethodInvoke_Ind.server_transaction_id =
+			msm->transaction_id;
+		method = GET_METHODS + pdu->u.Get.subtype;
+		method_name = wsp_method_to_string(method);
+		if (method_name == NULL)
+			method_name = octstr_format("UNKNOWN%02X", method);
+		invoke->u.S_MethodInvoke_Ind.method = method_name;
+		invoke->u.S_MethodInvoke_Ind.request_uri =
+			octstr_duplicate(pdu->u.Get.uri);
+		invoke->u.S_MethodInvoke_Ind.request_headers = headers;
+		invoke->u.S_MethodInvoke_Ind.request_body = NULL;
+		invoke->u.S_MethodInvoke_Ind.session_headers =
+			http_header_duplicate(sm->http_headers);
+		invoke->u.S_MethodInvoke_Ind.addr_tuple =
+			wap_addr_tuple_duplicate(sm->addr_tuple);
+		invoke->u.S_MethodInvoke_Ind.client_SDU_size =
+			sm->client_SDU_size;
+		invoke->u.S_MethodInvoke_Ind.session_id =
+			msm->session_id;
+
+		msm->invoke = invoke;
+	},
+	HOLDING)
+
+ROW(NULL_METHOD,
+	TR_Invoke_Ind,
+	e->tcl == 2 && pdu->type == Post,
+	{
+		List *headers;
+		WAPEvent *invoke;
+		int method;
+		Octstr *method_name;
+
+		/* Prepare the MethodInvoke here, because we have all
+		 * the information nicely available. */
+
+		if (octstr_len(pdu->u.Post.headers) > 0)
+			headers = wsp_headers_unpack(pdu->u.Post.headers, 1);
+		else
+			headers = NULL;
+
+		invoke = wap_event_create(S_MethodInvoke_Ind);
+		invoke->u.S_MethodInvoke_Ind.server_transaction_id =
+			msm->transaction_id;
+		method = POST_METHODS + pdu->u.Get.subtype;
+		method_name = wsp_method_to_string(method);
+		if (method_name == NULL)
+			method_name = octstr_format("UNKNOWN%02X", method);
+		invoke->u.S_MethodInvoke_Ind.method = method_name;
+		invoke->u.S_MethodInvoke_Ind.request_uri =
+			octstr_duplicate(pdu->u.Post.uri);
+		invoke->u.S_MethodInvoke_Ind.request_headers = headers;
+
+		invoke->u.S_MethodInvoke_Ind.request_body = 
+			octstr_duplicate(pdu->u.Post.data);
+
+		invoke->u.S_MethodInvoke_Ind.session_headers =
+			http_header_duplicate(sm->http_headers);
+		invoke->u.S_MethodInvoke_Ind.addr_tuple =
+			wap_addr_tuple_duplicate(sm->addr_tuple);
+		invoke->u.S_MethodInvoke_Ind.client_SDU_size =
+			sm->client_SDU_size;
+		invoke->u.S_MethodInvoke_Ind.session_id =
+			msm->session_id;
+
+		msm->invoke = invoke;
+	},
+	HOLDING)
+		
+ROW(HOLDING,
+	Release_Event,
+	1,
+	{
+		/* S-MethodInvoke.ind */
+		dispatch_to_appl(msm->invoke);
+		msm->invoke = NULL;
+	},
+	REQUESTING)
+
+ROW(HOLDING,
+	Abort_Event,
+	1,
+	{
+		/* Decrement N_Methods */
+		/* we don't keep track of N_Methods because it's unlimited */
+
+		/* Tr-Abort.req(abort reason) the method */
+		method_abort(msm, e->reason);
+	},
+	NULL_METHOD)
+
+ROW(HOLDING,
+	TR_Abort_Ind,
+	e->abort_code == WSP_ABORT_DISCONNECT,
+	{
+		WAPEvent *wsp_event;
+
+		/* Disconnect the session */
+		wsp_event = wap_event_create(Disconnect_Event);
+		wsp_event->u.Disconnect_Event.session_handle = msm->session_id;
+		/* We put this on the queue instead of doing it right away,
+		 * because the session machine is currently our caller and
+		 * we don't want to recurse.  We put it in the front of
+		 * the queue because the state machine definitions expect
+		 * an event to be handled completely before the next is
+		 * started. */
+		gwlist_insert(queue, 0, wsp_event);
+	},
+	HOLDING)
+
+ROW(HOLDING,
+	TR_Abort_Ind,
+	e->abort_code == WSP_ABORT_SUSPEND,
+	{
+		WAPEvent *wsp_event;
+
+		/* Suspend the session */
+		wsp_event = wap_event_create(Suspend_Event);
+		wsp_event->u.Suspend_Event.session_handle = msm->session_id;
+		/* See story for Disconnect, above */
+		gwlist_insert(queue, 0, wsp_event);
+	},
+	HOLDING)
+
+ROW(HOLDING,
+	TR_Abort_Ind,
+	e->abort_code != WSP_ABORT_DISCONNECT
+	&& e->abort_code != WSP_ABORT_SUSPEND,
+	{
+		/* Decrement N_Methods */
+		/* we don't keep track of N_Methods because it's unlimited */
+	},
+	NULL_METHOD)
+
+ROW(REQUESTING,
+	S_MethodInvoke_Res,
+	1,
+	{
+		WAPEvent *wtp_event;
+		
+		/* Send TR-Invoke.res to WTP */
+		wtp_event = wap_event_create(TR_Invoke_Res);
+		wtp_event->u.TR_Invoke_Res.handle = msm->transaction_id;
+		dispatch_to_wtp_resp(wtp_event);
+	},
+	PROCESSING)
+
+/* MISSING: REQUESTING, S-MethodAbort.req */
+
+ROW(REQUESTING,
+	Abort_Event,
+	1,
+	{
+		/* Decrement N_Methods */
+		/* we don't keep track of N_Methods because it's unlimited */
+
+		/* TR-Abort.req(abort reason) the method */
+		method_abort(msm, e->reason);
+
+		/* S-MethodAbort.ind(abort reason) */
+		indicate_method_abort(msm, e->reason);
+	},
+	NULL_METHOD)
+
+ROW(REQUESTING,
+	TR_Abort_Ind,
+	e->abort_code == WSP_ABORT_DISCONNECT,
+	{
+		WAPEvent *wsp_event;
+
+		/* Disconnect the session */
+		wsp_event = wap_event_create(Disconnect_Event);
+		wsp_event->u.Disconnect_Event.session_handle = msm->session_id;
+		gwlist_insert(queue, 0, wsp_event);
+	},
+	REQUESTING)
+
+ROW(REQUESTING,
+	TR_Abort_Ind,
+	e->abort_code == WSP_ABORT_SUSPEND,
+	{
+		WAPEvent *wsp_event;
+
+		/* Suspend the session */
+		wsp_event = wap_event_create(Suspend_Event);
+		wsp_event->u.Suspend_Event.session_handle = msm->session_id;
+		gwlist_insert(queue, 0, wsp_event);
+	},
+	REQUESTING)
+
+ROW(REQUESTING,
+	TR_Abort_Ind,
+	e->abort_code != WSP_ABORT_DISCONNECT
+	&& e->abort_code != WSP_ABORT_SUSPEND,
+	{
+		/* Decrement N_Methods */
+		/* we don't keep track of N_Methods because it's unlimited */
+
+		/* S-MethodAbort.ind(abort reason) */
+		indicate_method_abort(msm, e->abort_code);
+	},
+	NULL_METHOD)
+
+ROW(PROCESSING,
+	S_MethodResult_Req,
+	1,
+	{
+		WAPEvent *wtp_event;
+		WSP_PDU *new_pdu;
+
+		/* TR-Result.req */
+		new_pdu = wsp_pdu_create(Reply);
+		new_pdu->u.Reply.status = 
+			wsp_convert_http_status_to_wsp_status(e->status);
+		new_pdu->u.Reply.headers = 
+			wsp_headers_pack(e->response_headers, 1, sm->encoding_version);
+		new_pdu->u.Reply.data = octstr_duplicate(e->response_body);
+
+		/* Send TR-Result.req to WTP */
+		wtp_event = wap_event_create(TR_Result_Req);
+		wtp_event->u.TR_Result_Req.user_data = wsp_pdu_pack(new_pdu);
+		wtp_event->u.TR_Result_Req.handle = msm->transaction_id;
+		dispatch_to_wtp_resp(wtp_event);
+		wsp_pdu_destroy(new_pdu);
+	},
+	REPLYING)
+
+/* MISSING: PROCESSING, S-MethodAbort.req */
+
+ROW(PROCESSING,
+	Abort_Event,
+	1,
+	{
+		/* Decrement N_Methods */
+		/* we don't keep track of N_Methods because it's unlimited */
+
+		/* TR-Abort.req(abort reason) the method */
+		method_abort(msm, e->reason);
+
+		/* S-MethodAbort.ind(abort reason) */
+		indicate_method_abort(msm, e->reason);
+	},
+	NULL_METHOD)
+
+ROW(PROCESSING,
+	TR_Abort_Ind,
+	e->abort_code == WSP_ABORT_DISCONNECT,
+	{
+		WAPEvent *wsp_event;
+
+		/* Disconnect the session */
+		wsp_event = wap_event_create(Disconnect_Event);
+		wsp_event->u.Disconnect_Event.session_handle = msm->session_id;
+		gwlist_insert(queue, 0, wsp_event);
+	},
+	PROCESSING)
+
+ROW(PROCESSING,
+	TR_Abort_Ind,
+	e->abort_code == WSP_ABORT_SUSPEND,
+	{
+		WAPEvent *wsp_event;
+
+		/* Suspend the session */
+		wsp_event = wap_event_create(Suspend_Event);
+		wsp_event->u.Suspend_Event.session_handle = msm->session_id;
+		gwlist_insert(queue, 0, wsp_event);
+	},
+	PROCESSING)
+
+ROW(PROCESSING,
+	TR_Abort_Ind,
+	e->abort_code != WSP_ABORT_DISCONNECT
+	&& e->abort_code != WSP_ABORT_SUSPEND,
+	{
+		/* Decrement N_Methods */
+		/* we don't keep track of N_Methods because it's unlimited */
+
+		/* S-MethodAbort.ind(abort reason) */
+		indicate_method_abort(msm, e->abort_code);
+	},
+	NULL_METHOD)
+
+/* MISSING: REPLYING, S-MethodAbort.req */
+
+ROW(REPLYING,
+	Abort_Event,
+	1,
+	{
+		/* Decrement N_Methods */
+		/* we don't keep track of N_Methods because it's unlimited */
+
+		/* TR-Abort.req(abort reason) the method */
+		method_abort(msm, e->reason);
+
+		/* S-MethodAbort.ind(abort reason) */
+		indicate_method_abort(msm, e->reason);
+	},
+	NULL_METHOD)
+
+ROW(REPLYING,
+	TR_Result_Cnf,
+	1,
+	{
+		WAPEvent *new_event;
+
+		/* Decrement N_Methods */
+		/* we don't keep track of N_Methods because it's unlimited */
+
+		/* S-MethodResult.cnf */
+		/* we don't do acknowledgement headers */
+		new_event = wap_event_create(S_MethodResult_Cnf);
+		new_event->u.S_MethodResult_Cnf.server_transaction_id =
+			msm->transaction_id;
+		new_event->u.S_MethodResult_Cnf.session_id = msm->session_id;
+		dispatch_to_appl(new_event);
+	},
+	NULL_METHOD)
+
+ROW(REPLYING,
+	TR_Abort_Ind,
+	e->abort_code == WSP_ABORT_DISCONNECT,
+	{
+		WAPEvent *wsp_event;
+
+		/* Disconnect the session */
+		wsp_event = wap_event_create(Disconnect_Event);
+		wsp_event->u.Disconnect_Event.session_handle = msm->session_id;
+		gwlist_insert(queue, 0, wsp_event);
+	},
+	REPLYING)
+
+ROW(REPLYING,
+	TR_Abort_Ind,
+	e->abort_code == WSP_ABORT_SUSPEND,
+	{
+		WAPEvent *wsp_event;
+
+		/* Suspend the session */
+		wsp_event = wap_event_create(Suspend_Event);
+		wsp_event->u.Suspend_Event.session_handle = msm->session_id;
+		gwlist_insert(queue, 0, wsp_event);
+	},
+	REPLYING)
+
+ROW(REPLYING,
+	TR_Abort_Ind,
+	e->abort_code != WSP_ABORT_DISCONNECT
+	&& e->abort_code != WSP_ABORT_SUSPEND,
+	{
+		/* Decrement N_Methods */
+		/* we don't keep track of N_Methods because it's unlimited */
+
+		/* S-MethodAbort.ind(abort reason) */
+		indicate_method_abort(msm, e->abort_code);
+	},
+	NULL_METHOD)
+
+#undef ROW
+#undef STATE_NAME

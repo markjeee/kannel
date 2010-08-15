@@ -1,0 +1,68 @@
+Kannel monitoring module for 'mon'
+==================================
+
+  This Perl script is a custom monitoring module for mon, the system monitoring
+  tool, see http://www.kernel.org/pub/software/admin/mon/. The module watchs for
+  availibility of the Kannel SMS gateway, basicaly it checks the state of the 
+  connected SMSC links. In case of an error it will returns the affected SMSC IDs
+  of the links.
+
+  2002-07-31 Ingo Brombach, <brombach@wapme-systems.de>
+
+
+USAGE:	$program [options] hosts...
+    
+  where options can be any of:
+
+  -h                this help message
+  -n "smsc-ids..."  a list of smsc-ids that should be ignored by the test
+  -s URI            the URI on the hosts containing the status-document (default: status.xml)
+  -p port           the port to connect to (default: 13000)
+  -S                use https:// scheme to access the URI (via SSLv3) (default: http://)
+  -P password       the status-password (default: )
+  -f file           local XML file to read (mainly for testing)
+  -v                verbose output
+  -i                info mode, displays the whole information to stdout
+
+  Examples: 
+
+    ./kannel.monitor -i -v -n "smpp_foo smpp_bar" kannel.foobar.com
+
+    Checks out the status page status.xml (default) on kannel.foobar.com, 
+    port 13000 (default) without password. It lookes for the general 
+    status as well as for the status of the smsc-connections but ignores 
+    error on the smsc-ids smpp_foo and smpp_bar. The whole status is displayed. 
+    The failure messages are verbose.
+
+    ./kannel.monitor -i -v -f status.xml -n "smpp_foo smpp_bar"
+
+    The same as above, but reading from a local status.xml file
+
+    ./kannel.monitor -p 13001 -P secret kannel.foobar.com
+	  
+    Looking for status on port 13001 with password "secret". Only failing 
+    smsc-ids are displayed.
+
+
+Installation
+============
+
+  You need the following Perl modules installed in order to run kannel.monitor 
+  on your system:
+
+    URI.pm
+    HTML/Tagset.pm
+    HTML/Parser.pm
+    LWP/UserAgent.pm
+    XML/Parser
+
+  They may be found on a CPAN mirror close to you, see http://www.cpan.org.
+
+
+Disclaimer
+==========
+
+THIS SOFTWARE IS DISTRIBUTED IN THE HOPE THAT IT WILL BE USEFUL, BUT WITHOUT ANY 
+WARRANTY; WITHOUT EVEN THE IMPLIED WARRANTY OF MERCHANTABILITY OR FITNESS FOR A 
+PARTICULAR PURPOSE. 
+

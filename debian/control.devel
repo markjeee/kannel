@@ -1,0 +1,58 @@
+Source: kannel-devel
+Section: net
+Priority: optional
+Maintainer: Bruno Rodrigues <bruno.rodrigues@litux.org>
+Build-Depends: debhelper (>> 4.0.0), libxml2-dev, libssl-dev, openssl, libmysqlclient10-dev, libpam0g-dev
+Build-Depends-Indep: debhelper (>> 4.0.0), docbook-dsssl, jadetex, transfig, imagemagick, gs
+Standards-Version: 3.5.9
+
+Package: kannel-devel
+Architecture: any
+Section: net
+Priority: optional
+Depends: ${shlibs:Depends}
+Conflicts: kannel, kannel-cvs
+Replaces: kannel, kannel-cvs
+Description: WAP and SMS gateway (development)
+ Kannel is a gateway for connecting WAP (Wireless Application Protocol)
+ phones to the Internet. It also works as an SMS gateway, for providing
+ SMS based services for GSM phones.
+ .
+ Compiled with ssl, mysql and native malloc.
+ .
+ Development and/or CVS versions are stable enough and encouraged to use
+ to enable constant testing. CVS bugs are usually fixed in one or to days
+ and a lot of developers use stable CVS versions in production.
+
+Package: kannel-devel-extras
+Architecture: any
+Section: net
+Priority: optional
+Suggests: kannel-devel, python
+Depends: ${shlibs:Depends}
+Description: WAP and SMS gateway extras (development)
+ Kannel is a gateway for connecting WAP (Wireless Application Protocol)
+ phones to the Internet. It also works as an SMS gateway, for providing
+ SMS based services for GSM phones.
+ .
+ Test utilities and contrib data.
+ .
+ Development and/or CVS versions are stable enough and encouraged to use
+ to enable constant testing. CVS bugs are usually fixed in one or to days
+ and a lot of developers use stable CVS versions in production.
+
+Package: kannel-devel-docs
+Architecture: all
+Section: net
+Suggests: kannel-devel
+Priority: optional
+Description: WAP and SMS gateway documentation
+ Kannel is a gateway for connecting WAP (Wireless Application Protocol)
+ phones to the Internet. It also works as an SMS gateway, for providing
+ SMS based services for GSM phones.
+ .
+ Documentation in html, rtf and pdf format.
+ .
+ Development and/or CVS versions are stable enough and encouraged to use
+ to enable constant testing. CVS bugs are usually fixed in one or to days
+ and a lot of developers use stable CVS versions in production.

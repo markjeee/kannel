@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<!DOCTYPE CHARACTERISTIC_LIST SYSTEM "file://gw/settings.dtd">
+<CHARACTERISTIC-LIST>
+    <CHARACTERISTIC TYPE="BOOKMARK">
+        <PARM NAME="NAME" VALUE="Matrix Login"/>
+        <PARM NAME="URL" VALUE="http://tim.wiral.com/wapwml/login.phtml?MID=aarno&amp;ID=2a07a77e6453b301d9d39e606e"/>
+    </CHARACTERISTIC>
+</CHARACTERISTIC-LIST>

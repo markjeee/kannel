@@ -1,0 +1,713 @@
+2001-01-22  Richard Braakman  <dark@wapit.com>
+
+	* Making release 1.1.
+
+2001-01-22  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/wapbox.c: fixed read-config and map_url_max which caused
+	wapbox to stuck and never start
+
+	* gw/smsc_wrapper.c: added one debug message
+
+2001-01-22  Richard Braakman  <dark@wapit.com>
+
+	* gwlib/gwthread-pthread.c: Split gwthread_create_real() into
+	four functions to separate the signal handling code from the
+	thread code.  This way the sigmask will also be restored if
+	thread creation fails.  (Spotted by Uoti)
+
+	* gw/smsbox.c: In obey_request(), handle TRANSTYPE_SENDSMS
+	as well, to avoid the rather cryptic default error message
+	if this error occurs.  Still investigating why it occurs at all.
+
+2001-01-22  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/smsc_wrapper.c: fixed startup-order, to avoid segmentation
+	fault if smsc startup fails
+
+2001-01-22  Lars Wirzenius  <liw@iki.fi>
+
+	* gw/wap-appl.c: Fixed memory leak (a Mutex was not being
+	destroyed) and related whitespace usage and made the Mutex static.
+	Also removed a spurious editorial comment with an "I" referring
+	to me, even though I didn't write it.
+	
+	* gw/wapbox.c: Made some global-but-static variables with
+	configuration information local to the function that reads and
+	processes the config.
+	
+2001-01-22  Richard Braakman  <dark@wapit.com>
+
+        * gwlib/gwthread-pthread.c: In function gwthread_create_real(),
+        applied Nick Clarey's patch to fix signal handling and restyled.
+        Then fixed signal handling some more by using pthread_sigmask
+        instead of sigprocmask, and SIG_BLOCK instead of SIG_SETMASK.
+        This way we won't interfere with signals used by the pthread
+	implementation.
+
+	* gw/bearerbox.c, gw/smsbox.c, gw/wapbox.c: Updated comment in
+	signal_handler() to reflect the new situation, and made them all
+	use gwthread_shouldhandlesignal().
+
+2001-01-22  Lars Wirzenius  <liw@iki.fi>
+
+	* gw/wapbox.c: Converted to use new config file module in gwlib.
+
+2001-01-22  Lars Wirzenius  <liw@iki.fi>
+
+	* gwlib/accesslog.c: Made the output buffer be allocated via
+	dynamic memory to avoid overflowing the stack with large local
+	variables.
+	
+	* gwlib/log.c: Made output buffer smaller, again because of stack
+	limitations. The new limit is one kilobyte, but since it is used
+	only for certain parts of the output (the prefix with dates etc,
+	and the format string), it should be plenty.
+
+2001-01-21  Lars Wirzenius  <liw@iki.fi>
+
+	* doc/userguide/userguide.xml: Changed SMPP version to 3.4.
+	
+	* gw/smsc_smpp.h: Removed. I thought I had removed it earlier
+	already.
+	
+	* test/fakewap.c: Fixed memory leaks.
+
+2001-01-19  Tuomas Luttinen  <tuo@wapit.com>
+
+	* gw/wml_compiler.c: Added function set_charset to fix bug with 
+	the character set read from the http-headers.
+
+2001-01-18  Lars Wirzenius  <liw@iki.fi>
+
+	* gwlib/octstr.[ch]: Renamed the horribly long name
+	octstr_create_immutable to octstr_imm. This should make it a
+	bit more palatable.
+
+	* gw/html.c, gw/smsbox.c, gw/smsc_at.c, gw/smscconn.c,
+	gw/urltrans.c, gw/wap-appl.c, gw/wap_push_ota.c,
+	gw/wml_compiler.c, gwlib/cfg.c, gwlib/http.c, test/test_dict.c,
+	test/test_headers.c, test/test_http_server.c,
+	test/test_octstr_immutables.c, test/wml_tester.c,
+	wap/wsp_headers.c, wap/wsp_strings.c: Related changes.
+
+2001-01-18  Lars Wirzenius  <liw@iki.fi>
+
+	* gwlib/cfg.[ch]: Wrote functions cfg_get_integer and cfg_get_list
+	to allow easier access to non-octet-string variables. No explicit
+	typing in cfg.def, though. That may come later.
+
+2001-01-18  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/bb_boxc.c: the current smsbox closes the connection properly,
+	so wait until that before exiting with boxc_receiver, thus
+	eliminating lost messages
+
+	* gw/bb_boxc.c: added alive-check to boxc_sender after
+	list_consume() as octstr_send does not notice that socket has been
+	closed
+	
+2001-01-18  Lars Wirzenius  <liw@iki.fi>
+
+	* gw/smsbox.c, gw/urltrans.[ch]: Converted to use cfg.c instead
+	of conffile.c. This revealed a need to simplify things so that
+	the caller does not have to manually check quite as many things.
+	Will update cfg.c accordingly before continuing with the other
+	programs.
+
+2001-01-18  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/smsbox.c: fixed 3 memory leaks some pointed out by Uoti, and
+	one logical error in failed requests
+
+2001-01-18  Lars Wirzenius  <liw@iki.fi>
+
+	* Wrote a replacement for the conffile.[ch] stuff. It does pretty
+	much the same thing as the old stuff, but does it with a better
+	interface and uses Octstr instead of C strings. It does not
+	(yet?)	support reloading and automatic notification of changes
+	to the configuration.
+	
+	* gwlib/cfg.[ch], gwlib/cfg.def, test/test_cfg.c: Wrote.
+	
+	* gwlib/gwlib.h: Include cfg.h.
+	
+	* test/.cvsignore: Ignore test_cfg.
+	
+	* test/fake.conf: Removed, since it was unused and followed an
+	ancient syntax.
+
+2001-01-17  Lars Wirzenius  <liw@iki.fi>
+
+	* gwlib/dict.[ch]: Wrote function dict_keys.
+	
+	* gwlib/socket.c: Bugfix. Destroy the official_ip octet string
+	at shutdown.
+
+2001-01-17  Derry Hamilton <rasilon@tardis.ed.ac.uk>
+
+	* gwlib/socket.c: Removed the ugly loop from gw_netaddr_to_octstr6
+	since octstr_format does support hex format after all.
+
+2001-01-17  Lars Wirzenius  <liw@iki.fi>
+
+	* configure.in, configure: Remove checking for -lz. Richard is
+	right: if libxml needs it, then xml-config --libs must report -lz,
+	so there is no point in checking for it for ourselves.
+
+2001-01-17  Lars Wirzenius  <liw@iki.fi>
+
+	* configure.in, configure, config.h.in: check for syslog.h.
+	
+	* gwlib/log.c: Use the result from configure (HAVE_SYSLOG_H) to
+	exclude the syslog stuff from compilation on platforms on which
+	it is not available, such as Windows when not using Cygwin.
+	
+    	* gwlib/socket.[ch]: Wrote get_official_ip, so that other modules
+	don't have to do it themselves.
+
+    	* gw/wap_push_ota.c: Rewrote the static name() function. The old
+	code was buggy (had a memory leak) and called non-portable functions
+	(inet_ntop, uname). The new one uses get_official_ip.
+
+	* gw/shared.c: Use get_official_name and get_official_ip to
+	report the host, in addition to what uname() returns.
+
+2001-01-17  Uoti Urpala  <uau@wapit.com>
+
+	* gw/smsc_fake2.c: Added missing #include, minor fixes.
+
+	* gw/smscconn.c: Added missing #include.
+
+2001-01-16  Uoti Urpala  <uau@wapit.com>
+
+	* gw/smsc_fake2.c: new fake SMSC connection module.
+	* test/fakesmsc2.c: client to use with the new module.
+	* gw/smscconn.c, gw/smscconn_p.h: Added references to the new
+	module.
+
+2001-01-15  Lars Wirzenius  <liw@iki.fi>
+
+	* wap/wtp_pdu.c: Bugfix from Aymerick Jéhanne. When unpacking
+	TPIs, append the correct data to the PDU.
+
+2001-01-15  Lars Wirzenius  <liw@iki.fi>
+
+	* gwlib/gw_inet.c: Added an include for <sys/types.h> to allow
+	compilation on FreeBSD. Thanks to vlm@smarts-gsm.ru for pointing
+	this out.
+
+2001-01-15  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/smscconn_p.h: modified so that 'start as stopped' is done
+	in protocol specific creator
+
+	* gw/smscconn.c: added missing settings to NULL, and removed call
+	for conn_stop (see above)
+
+	* gw/smsc_wrapper.c: added one protection mutex and fixed startup
+	to follow above interface
+
+2001-01-15  Lars Wirzenius  <liw@iki.fi>
+
+	* gw/urltrans.c: Implemented %k in URL translations, based on
+	suggestion from steveu@infowebtelecom.com.
+	
+	* doc/userguide/userguide.xml: Updated docs.
+
+2001-01-15  Aarno Syvänen <syvanen@wapit.com>
+
+	* gw/wap-appl.c: Wrote conformations and indications part of Push
+	OTA protocol.
+
+	* gw/wap_push_ppg.[ch]: Started writing test version of PPG main
+	module
+
+	* gw/wap_push_ota.c: Still streamlining and fixing bugs
+
+	* wap/wap_events.def: Added new push related events
+
+	* wap/wsp.h: Added push related error codes
+
+2001-01-12  Tuomas Luttinen  <tuo@wapit.com>
+
+	* gw/wml_compiler.c: Now compiler can handle a libxml compiled with 
+	-DXML_USE_BUFFER_CONTENT. The content of the node is converted into 
+	an octet string with a macro.
+
+2001-01-12  Richard Braakman  <dark@wapit.com>
+
+	* Updated NEWS file to prepare for 1.1.
+
+2001-01-12  Richard Braakman  <dark@wapit.com>
+
+	* gwlib/charset.c: Translate u-dieresis correctly from latin1 to GSM.
+	(It does exist in GSM Default, so it doesn't have to be approximated.)
+
+2001-01-12  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/smscconn.h, gw/smscconn_p.h, gw/bb_smscconn_cb.h: updated API
+	description
+	
+2001-01-12  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/smsc_wrapper.c: fixed deadlock in message sending
+
+	* gw/smsc_wrapper.c: modified reconnect so that it does not cause
+	bearerbox to wait in various functions, by adding new mutex
+	instead of using old flow_mutex
+
+2001-01-11  Derry Hamilton <rasilon@tardis.ed.ac.uk>
+
+	* gwlib/gw_inet.c: Fixed off by one errors.
+	* gwlib/socket.c, gwlib/socket.h: Implemnted a basic inet_ntop
+	using Octstrs.  IPv6 handling is basic, but appears to work.
+
+2001-01-11  Lars Wirzenius  <liw@iki.fi>
+
+	* gwlib/octstr.c: octstr_copy_real: Changed the code that checks
+	whether the length of the part to be copied is too long so that
+	it can deal with integer overflows (assuming they wrap around).
+
+2001-01-11  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/smscconn.c: modified so that flow_mutex is always locked in
+	functions using function pointers
+	
+	* gw/smscconn_p.h: added notes about mutex
+
+2001-01-11  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/bearerbox.c|h: added suspend for SMSCConn
+
+	* gw/smscconn*.c: fixed suspend in various parts
+	
+2001-01-11  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/*smscconn*.*: changed SMSCCONN_KILLED to SMSCCONN_DEAD, and
+	clarified some callbacks
+
+	* gw/smsc_wrapper.c: fixed so that _sender does not suspend
+
+2001-01-11  Lars Wirzenius  <liw@iki.fi>
+
+	* utils/chlog-stats: Wrote.
+
+2001-01-10  Lars Wirzenius  <liw@iki.fi>
+
+	* gwlib/gwassert.h, gwlib/gwmem-check.c, gwlib/gwmem-native.c,
+	gwlib/log.[ch], gwlib/octstr.c: Undid changes to make logging
+	functions use octstr_format instead of fprintf. The interactions
+	between debug(), gwmem, gwthread, and other low-level parts of
+	gwlib are too intricate and error prone. It is better to suffer
+	the use of octstr_get_cstr when logging things instead of making
+	logging error prone.
+
+2001-01-10  Lars Wirzenius  <liw@iki.fi>
+
+    	* gwlib/octstr.c: Implemented %p in octstr_format.
+
+	* test/test_octstr_format.c: Related changes.
+
+2001-01-10  Lars Wirzenius  <liw@iki.fi>
+
+	* gwlib/log.c: Made info() use octstr_format as well. All places
+	that call info() have been checked manually. In the process, found
+	a couple of bugs, see below.
+
+	* gw/bb_smscconn.c: Bugfix. octstr_get_cstr was called with a NULL
+	argument, reversed the test so that it is called only when the
+	argument will be non-NULL.
+	
+	* gwlib/log.c: Bugfix. Output needs to be flushed as soon as it
+	has been written.
+	
+	* gwlib/octstr.[ch]: Implemented %i for octstr_format, and made
+	octstr_get_cstr report the place it has been called from.
+	
+	* test/drive_smpp.c: Bugfix. Remember to quit from a loop within
+	the main loop of a thread, if the quitting signal has been given.
+	
+2001-01-09  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/smscconn*.*, gw/smsc_wrapper.c: updated start/stop interface,
+	moving list trick into wrapper, so that each connection
+	implementation can do it any way they like.
+
+2001-01-09  Lars Wirzenius  <liw@iki.fi>
+
+	* doc/CodingStyle: Add note that one should never include anything
+	except gwlib.h from gwlib.h
+
+2001-01-09  Derry Hamilton <rasilon@tardis.ed.ac.uk>
+
+	* gwlib/gw_inet.c: Included string.h to declare strncpy.
+
+2001-01-08  Derry Hamilton <rasilon@tardis.ed.ac.uk>
+
+	* gwlib/gw_inet.[ch]: Added initial implementation of
+	gw_inet_ntop and supporting code.
+	* gw/wap_push_ota.c: included gwlib/gw_inet.h.
+
+
+2001-01-08  Lars Wirzenius  <liw@iki.fi>
+
+	* gwlib/log.c: Made warning() use octstr_format. All usages have
+	been checked and should work.
+
+2001-01-08  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/*smscconn*.*: removed reason from killed-callback,
+	instead it is used in why_killed field (previous is_killed)
+
+	* gw/smscconn.*: infotable now has killing reason included
+
+2001-01-08 Aarno Syvänen <syvanen@wapit.com>
+
+	* gw/wap_push_ota.c: Streamlined the code somewhat
+
+2001-01-08  Kalle Marjola  <rpr@wapit.com>
+
+	* utils/kannel-init.d: changed binary names into variables so
+	that it is easier to change script to work with different versions
+
+2001-01-06  Lars Wirzenius  <liw@iki.fi>
+
+	* gwlib/log.c: Added a missing include for <limits.h> so that
+	CHAR_BIT is defined. The over-eagerness of Linux headers to
+	define everything strikes again.
+
+2001-01-05  Lars Wirzenius  <liw@iki.fi>
+
+	* Started to convert logging functions to use octstr_format instead
+	sprintf, to make them more powerful. Now, panic() and error() use
+	octstr_format, the others do not yet (each call needs to be
+	checked to make sure that octstr_format can deal with the format
+	string and I didn't have the time to do that yet).
+	
+	Also added the function panic_hard for those cases where calling
+	panic would call eternal recursion - panic uses octstr_format, which
+	can call panic itself (via gw_assert or gw_malloc, for example).
+	
+    	* gwlib/log.[ch]: Implemented panic_hard and made panic and error
+	use octstr_format.
+
+	* gwlib/gwassert.h, gwlib/gwmem-check.c, gwlib/gwmem-native.c,
+	gwlib/octstr.c: Changed to use panic_hard instead of panic.
+
+	* gw/wap-appl.c: Indentation fix.
+
+2000-01-04 Derry Hamilton <rasilon@tardis.ed.ac.uk>
+
+	* configure.in,configure: Added tests for the definition of 
+	INET_ADDRSTRLEN and finding libraries for inet_ntop.  Allows 
+	gw/wap_push_ota.c to compile and link under Solaris 7.
+
+2001-01-04  Lars Wirzenius  <liw@iki.fi>
+
+	* configure.in, Makefile.in: Added PDF conversion of docs.
+	
+	* doc/arch/*: Replaced the architecture document with a modified
+	version of the draft for my MSc thesis. The old document was
+	horribly out of date, the thesis draft is at least mostly current,
+	even if it is still missing a few bits.
+	
+2000-01-04 Aarno Syvänen <syvanen@wapit.com>
+
+	* wap/wap_events.def: Added Push OTA events
+
+	* wap/wsp_pdu.def: Added sia, a spesific content type for trans-
+	mitting data bearerbox addresses, etc.
+
+	* gw/wap_push_ppg.c|h: Added module to implement PPG main logic.
+	It does not do anything, yet.
+
+	* gw/wap_push_ota.c|h: Wrote requirements part of Push OTA 
+	protocol.
+
+	* gw/wapbox.c: Send bearerbox address to OTA module. Initialize 
+	and shutdown ppg.
+
+	* wap/wsp_strings.def: Added conversion tables for bearer types 
+	and push application ids.
+
+	* wap/wsp_headers.c: Added packing and unpacking of OTA headers
+
+2001-01-03  Lars Wirzenius  <liw@iki.fi>
+
+	* checks/check_fakesmsc.sh, checks/check_fakewap.sh: Modified to
+	work without network access to facilitate development on a laptop.
+	
+	* test/test_http_server.c: Added option -f, to allow a WML file
+	to be returned instead of a text/plain response. This is used
+	by check_fakewap.sh above.
+	
+	* gw/bb_smscconn.c: Initialized some local variables so that
+	the compiler won't warn that they are used before they are
+	initialized.
+	
+	* gwlib/octstr.[ch]: Removed octstr_search_cstr, which was no
+	longer used.
+
+2000-12-29  Tuomas Luttinen  <tuo@wapit.com>
+
+	* gw/wml_definitions.h: Added WBXML_ to every defined constant, 
+	so that there wouldn't be any more mixups with constants defined 
+	elsewhere.
+
+	* gw/wml_compiler.c: The code modified to use the new definitions.
+
+2000-12-29  Tuomas Luttinen  <tuo@wapit.com>
+
+	* gw/wml_compiler.c: The own hash table code is deleted and dict 
+	implementation is used instead. The wml_init builds up the dicts 
+	for the WML binary bytecode and wml_shutdown frees those dicts.
+	Also a bit of code renewing by deleting all octstr_*_cstr-functions.
+
+	* gw/wapbox.c: Added calls to wml_init and wml_shutdown when starting
+	and shutting down the wapbox.
+
+	* gwlib/octstr.c (octstr_hash_key): Now hash key for a NULL octet 
+	string is 0.
+
+	* test/wml_tester.c: The test program now has a command line argument 
+	-n number that does the compiling n times. Also all the wml files 
+	written in sequence in the command line will be compiled. Some other 
+	modifications to get rid of the octstr_*_cstr-functions.
+
+2000-12-29  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/bb_smscconn.c: shortened SMSCConn status output
+
+	* gw/bb_http.c: added full HTML header to HTML replies
+	
+2000-12-29  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/bb_smscconn.c: added load-based routing to outgoing SMS
+	messages, which takes into account reconnecting connections,
+	preferrations etc. (note that currently as all SMSC Connections
+	are used via smsc_wrapper their load is equal to internal queue
+	length, which is usually 0)
+
+	* gw/smsc_wrapper.c: a bit update to startup
+
+2000-12-28  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/bb_http.c: added that HTTP admin commands can be used without
+	cgi-bin/ in the URL, too.
+	
+	* doc/userguide/userguide.xml: documentation updated to reflect
+	that
+
+2000-12-28  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/bb_http.c, gw/bearerbox.c: modified so that every reply to
+	HTTP admin is formatted according to client Accept: -header, with
+	preference as WML > HTML > plain text.
+
+2000-12-28  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/bb_http.c: modified so that cgi-bin/status returns the reply
+	in format accepted by the client, preferring WML over HTML over
+	plain text.
+
+	* gw/bb_http.c: made admin-password mandatory in code, too. Set
+	that wrong password in admin commands causes delayed answer to
+	delay brute force password cracking
+
+	* gw/bb_http.c: added new configuration variable status-password -
+	if set, status inquiry must be supplied with either this or
+	general admin-password
+
+	* gw/*kannel.conf, doc/userguide/userguide.xml: updated to reflect
+	status-password
+
+2000-12-28  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/bearerbox.c, gw/bearerbox.h, gw/bb_boxc.c, gw/bb_smscconn.c:
+	updated to format status inquiry into HTML, WML or plain text.
+
+	* gw/bb_http.c: added new HTTP admin functions cgi-bin/status.wml,
+	cgi-bin/status.html and cgi-bin/status.txt if the client wants a 
+	specific type. Plain cgi-bin/status returns HTML currently,
+	updated to return whatever client requests via Accept -header in
+	near future (as would all other commands, too)
+
+	* gw/bb_http.c: removed cgi-bin/xmlstatus, replaced with
+	cgi-bin/status.xml which still does not return anything sensible.
+
+2000-12-27  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/smscconn.c, gw/smscconn_p.h: added new smsc configuration
+	group variable allowed-smsc-id
+
+	* doc/userguide/userguide.xml: added description
+
+2000-12-27  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/smscconn_p.h, gw/smsc_wrapper.c: a bit more commented code 
+
+2000-12-22  Derry Hamilton <rasilon@tardis.ed.ac.uk>
+
+	* config.sub,config.guess,configure.in,configure: added the host 
+	determination files and removed the dependancy on /usr/share/autoconf.
+	
+2000-12-22  Derry Hamilton <rasilon@tardis.ed.ac.uk>
+
+	* config.h.in,configure,configure.in,gwlib/gwthread-pthread.c:
+	Cleaned up host system determination and tests for broken pthreads.
+	
+2000-12-21  Lars Wirzenius  <liw@iki.fi>
+
+	* test/drive_smpp.c: Added includes for accept(2).
+
+2000-12-21  Lars Wirzenius  <liw@iki.fi>
+
+	* Rewrote the SMPP protocol implementation. The old one was
+	excessively verbose (lots of repetitive code), did not use Octstr,
+	or Connection, and needed much attention in order to fit into the
+	new SMSC interface anyway. The new code is about half the length
+	and much cleaner and should be functionally about as concrete
+	(but see comments at the top of gw/smsc_smpp.c), and happens to
+	be somewhat faster.
+	
+	* gw/smsc_smpp.h: Removed. It was only included by the old version
+	of gw/smsc_smpp.c anyway, and shouldn't have existed at all.
+	
+	* gw/smpp_pdu.[ch] and gw/smpp_pdu.def: Wrote. These parse and
+	generate the binary and struct versions of the SMPP PDUs. The
+	C preprocessor trick the WAP stack uses is used here as well to
+	keep code clean and short. They're used by drive_smpp as well,
+	so they're not made part of smsc_smpp.c itself.
+
+	* test/drive_smpp.c: Wrote. This is a server end implementation of
+	the SMPP protocol and is used to verify that the client end works.
+
+	* checks/check_smpp.sh, test/drive_smpp.conf: Wrote.
+	
+	* gwlib/semaphore.[ch]: Wrote. These are used by the SMPP code
+	to make sure not too many pending submit_sm requests are open.
+	The current implementation of Semaphore is quite simplistic
+	and wraps around List; native semaphores should probably be
+	used instead, but this is good enough for now.
+	
+	* gwlib/gwlib.h: Added include for semaphore.h.
+	
+	* gwlib/octstr.c: Ignore NULL arguments before calling
+	seems_valid, instead of afterwards, since seems_valid asserts
+	that the argument is not NULL.
+	
+	* utils/source-stats: Cound the `wap' subdirectory as well.
+
+2000-12-21  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/smsc_wrapper.c: added some mutex operations so that reconnect
+	should now work without segfault
+	
+2000-12-21  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/bearerbox.c, gw/bb_smscconn.c, gw/smsc_wrapper.c: updated
+	status output information 
+
+2000-12-21  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/smsc_wrapper.c: moved logistics of reconnect to this module,
+	instead than in smsc.c
+
+	* gw/smsc.*: removed lots of public functions (the old interface)
+
+	* gw/bb_smsc.c: remove depricated code
+	
+2000-12-21  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/bearerbox.*: use smsc2_ functions for new bb_smscconn,
+	renaming in a near future
+	
+	* gw/smsc.c: modified to use gwthread_sleep instead of plain
+	sleep, so that no need for 'semi-busy sleep' during reconnect
+
+	* gw/smscconn*.*: added missing functions, these should now work
+
+	* gw/smsc_wrapper.c: finished, including program flow etc.
+	
+2000-12-21  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/smsc.c: added missing breaks to _reopen
+
+2000-12-21  Derry Hamilton <rasilon@tardis.ed.ac.uk>
+	
+	* gw/wap-appl.c: Fixed race condition, between updating and
+	deleting stuff in id_to_request_data and caller simultaneously
+
+2000-12-20  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/bb_smscconn_cb.c: renamed as bb_smscconn.c and includes all
+	code in old bb_smsc.c - will replace the old system as soon as I
+	get last missing functions ready and the system tested
+
+	* gw/smscconn.* added that shutdown can either empty the internal
+	queue first or do a quick shutdown, putting all messages into
+	failed list
+
+2000-12-20  Derry Hamilton <rasilon@tardis.ed.ac.uk>
+	* gwlib/gwthread.h, gwlib/gwthread-pthread.c, gw/bearerbox.c,
+	config.h.in:  Combined patches from Nick Clarey and myself
+	that cope with POSIX-but-not-quite threads.  My head hurts.
+	
+2000-12-19  Richard Braakman  <dark@wapit.com>
+
+	* gwlib/dict.c: Improve description of Dict fields.
+
+2000-12-19  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/smsc_wrapper.c: it is ready - to be tested out. Next: new
+	bb_smsc.c, so the wrapper can be checked out
+
+2000-12-19  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/smsc_emi.c: fixed that NULL pointer is not tried to be
+	printed
+
+2000-12-18  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/bb_smscconn_cb.*, gw/smscconn*, gw/smsc_wrapper.c: updated,
+	almost ready now.
+
+2000-12-18  Peter Grönholm  <peter@wapit.com>
+
+	* gw/wml_definitions.h, fixed attribute name, "accept_charset"
+	is now "accept-charset".
+
+2000-12-15  Lars Wirzenius  <liw@iki.fi>
+
+	* gw/bb_smscconn_cb.c, gw/smsc_wrapper.c, gw/smscconn.c: Rudely
+	commented out things to shut compiler warnings off.
+
+2000-12-15  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/smscconn.c|h|_p.h, gw/smsc_wrapper.c: continued the work
+
+	* gw/bb_smscconn_cb.h|c: added. Callbacks to synchronize things
+
+2000-12-15  Richard Braakman  <dark@wapit.com>
+
+	* gwlib/dict.[ch]: Implement dict_key_count().  Implement behaviour
+	of dict_put when value is NULL.
+
+	* gw/smsbox.c: dict_key_count() now exists, so use it in
+	outstanding_requests().
+
+2000-12-15  Richard Braakman  <dark@wapit.com>
+
+	* gw/smsbox.c: smsbox_req_sendsms and smsbox_req_sendota made
+	static, they're not called from anywhere else.
+
+2000-12-13  Richard Braakman  <dark@wapit.com>
+
+	* test/fakewap.c: Indented gwlib_shutdown() call according to
+	our coding style.
+	
+2000-12-13 Paul Keogh <paul.keogh@anam.com>
+
+	* test/fakewap.c: Added gwlib_shutdown() call.
+

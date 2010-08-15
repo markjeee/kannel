@@ -1,0 +1,1456 @@
+NEWS about Kannel: Open Source WAP and SMS Gateway version 1.4.2
+
+This is a STABLE version. It should be usable for production systems.
+Please do report problems to the Kannel bug tracking system available at 
+http://bugs.kannel.org/ or send a mail to <devel@kannel.org> (the development 
+mailing list).
+
+
+Changes since version 1.4.1: 
+
+[*** Beware that the version move from 1.4.1 to 1.4.2 contains numerous 
+change sets, with major bug fixes and improvements. Following is a summary of the 
+main issues. For a complete and detailed set of changes please refer to the 
+specific ChangeLog in the doc/ directory of the distribution. ***]
+
+Compatibility breakers:
+
+  * Internal message payload encoding changed from LATIN1 to UTF-8, which 
+    means any 1.4.2 boxes are unable to communicate with older versions.
+  
+  * Re-defined logic for the 'smsbox-route' group that is used for MO 
+    routing to different (identified) smsbox connections. 
+  
+  * Changed main message structure to include foreign (SMSC) ID to it, 
+    breaking the access-log format and communication to older box versions.
+
+New features:
+
+  * Added service routing based on account field, which allows routing of
+    MO messages depending on the account set by an aggregating SMSC provider.
+  
+  * Added the new 'generic' system-type for HTTP SMSC, which allows the usage
+    of the escape code sequenced in send-url and regex parsing of HTTP
+    response.
+    
+  * Added 'interactive' mode via stdin and stdout to allow a more human like 
+    interaction with the fake smsc module.
+    
+  * Added support to pass the 'from' source addr via 'X-Kannel-From' HTTP 
+    header in the PPG request.
+    
+  * Added generic DLR handling for type 'kannel' (HTTP SMSC), which allows 
+    point-to-point DLR forwarding though the whole kannel instance chain. 
+
+  * Added support for store spool directory.
+
+  * Added concatenation MO support.
+  
+  * Added AT SMSC support for protocol 'type = telnet', which interprets telnet
+    escape sequenced compared to rawtcp.
+
+  * Added REGEX support for keyword matching.
+  
+  * Added support for IBM AIX 64bit builds.
+  
+  * Added SSL support for HTTP SMSC module server.
+  
+  * Added bearerbox HTTP admin command 'reload-lists' to allow re-loading of 
+    the '[white|black]-list' on the fly. 
+  
+  * Added support of concatenated, 8bit and Unicode messages over HTTP via 
+    Clickatell.
+     
+Bugfixes:
+
+  * Fixed alias support for sms-service in smsbox scope.
+
+  * Fixed various MIME type handling bugs.
+
+  * Fixed security and race condition issue in HTTP module for keep-alive 
+    connections.
+
+  * Fixed wrong length calculation for concatenated messages.
+  
+  * Fixed bug that AT SMSC put UDH without UDH len.
+  
+  * Fixed various memleaks, reported by valgrind.
+  
+  * Fixed HTTP proxy scheme interpretation for SSL-enabled connections.
+
+  * Fixed OTA compiler, within WBXML compilation.
+  
+  * Fixed encoding of 'Content-Id' WSP header.
+
+  * Fixed various segfaults in SMPP, logging modules.
+  
+  * Fixed various AT command handling in AT module.
+
+  * Fixed 7bit encoding in AT SMSC.
+  
+
+Changes since version 1.4.0: 
+
+[*** Beware that the version move from 1.4.0 to 1.4.1 contains more then 200 
+change sets, with major bug fixes and improvements. Following is a summary of the 
+main issues. For a complete and detailed set of changes please refer to the 
+specific ChangeLog in the doc/ directory of the distribution. ***]
+
+Compatibility breakers:
+
+  * Format for wapbox's access-log format changed to include the MSISDN of
+    a client as second argument after client IP and before method.
+
+  * fakesmsc uses now -r to specify the remote port on bearerbox side. Option
+    -p is generally reserved for pid file creation.
+
+  * sendsms now obeys bearerbox's reply before indicating result to HTTP 
+    caller. This breaks any application layer clients that rely on the HTTP
+    body response of sendsms. To enforce the old behaviour use config
+    directive 'immediate-sendsms-reply = true' in smsbox group.
+    
+  * DLR via MySQL uses now also 'username' and 'password' for the 
+    mysql-connection group in order to harmonize the config names.
+
+New features:
+
+  * Added config directive 'store-dump-freq' to core group to define the
+    fequency of the store-file dumping mechanism.
+    
+  * Added backtrace support for Linux. In case of PANIC, we get a backtrace
+    of the called routines to make debugging easier.
+    
+  * Added some new modem groups to doc/examples/modems.conf.
+  
+  * Added more WTAI functions to support.
+  
+  * Added RAW TCP support for remote termnial servers for AT modem devices.
+  
+  * Added 'config.nice' support while configure time, to allow "remembering" 
+    the used configure flags and options.
+    
+  * Added OMA ProvCont support via OTA messages.
+  
+  * Added SyncML support via OTA messages.
+  
+  * Added directive 'wml-strict' to wapbox group. 
+  
+  * SMPP data_sm PDUs are supported now for MO messages.
+  
+  * SMPP added config directives 'bind-addr-ton' and 'bind-addr-npi' to allow
+    setting values for bind_receiver and/or bind_transmitter PDUs.
+  
+  * Added support for WSP 1.6 headers.
+
+  * Added automatic support for large files, via compiler directives.      
+
+  * Added config line delimiter via \ (backslash). This allows wrapping config
+    lines to several lines.
+ 
+  * Added support for hooking config group definition files as our own 
+    gwlib/cfg.def from external add-on modules to the core. Main intention is 
+    to provide a installed Kannel without the need of patching the source for
+    any modules that use Kannel's gwlib and gw libs.
+    
+  * Added config directives 'bearerbox-port' and 'bearerbox-port-ssl' to 
+    smsbox group, in order to not need any core group reading of external
+    modules, ie. sqlbox.
+
+  * Added config directive 'max-pending-requests' for smsbox group to control 
+    the outbound requests stream generated from smsbox towards HTTP 
+    application servers.
+
+Bugfixes:
+
+  * Fixed several bugs in TCP connection handling.
+  
+  * Fixed several bugs in HTTP communication layer.
+  
+  * Fixed segfaults on x86_64 (Intel Xeon) platforms.
+  
+  * SMPP validity and defer time are set in UTC, several improvements and 
+    error checks added.
+  
+  * Fixed several 'make check' issues.
+  
+  * MySQL support fixed, where certain function prototype names clashed
+    with our own gwlist structure.
+    
+  * DLR support for PostgreSQL fixed for LIMIT clause usage.
+
+  * WSP empty header values fixed.
+
+  * WDP fix to discard truncated datagrams without PANIC.
+  
+  * WAP Cookie handling fixed, charset handling generalized.
+  
+  * AT driver fixes and improvements.
+  
+  * RADIUS bug fixed in MD5 computing for authentication towards NAS.
+
+  * MacOS X support improved for configure process.
+  
+  * store-file fixes and improvements.
+  
+  * WML compiler fix, causing sefault.
+  
+  * Fixed memory leaks for concat message handling.
+  
+  * MIME parsing and handling fixed.
+  
+  * FreeBSD AMD64 architecture support fixed.
+  
+  * Fixed wapbox signal handling for shutdown.
+  
+  * WTP SAR race condition and handling fixed.
+  
+  * Fixed memory leaks in smsbox.
+  
+  * sendsms POST XML handling fixed, where sender address was not parsed.
+  
+  * smsbox reply handling fixed, to copy the originating smsc-id value
+    in the reply messages.
+
+
+Changes since version 1.3.2: 
+
+Compatibility breakers:
+
+  * fakesmsc switching from -p to -r for port, since -p is used for pid-file 
+    creation. This broke fakesmsc to use an other port then the default 10000 
+    to connect to the smsc_fake module of bearerbox.
+
+New features:
+
+  * Added ability to start/stop/restart of all smscconn's that have equal 
+    smsc-id's instead of only one.
+
+  * Implemented very simple priority queue ala Robert Sedgewick for gwlib. 
+
+  * Implemented concatenation of large sms inside bearerbox and does care of 
+    sending all message parts over one smsc link. Now we have a problem with 
+    concatenated large sms that bearerbox will try to load balance those over 
+    different smsc links and such messages arrive as junk (all parts of 
+    concatenated large sms must go through the same smsc).
+
+  * SMPP added ESME dlr bit to DLR processing, added setting of sms priority 
+    flag in smsbox and smpp module. 
+    
+  * bruNET upgrading response parsing to comply with more recent interface 
+    version (v2.0+) where bruNET delivers 'MessageId' in the HTTP response 
+    body.
+    
+  * AT, EMI usage of the of priority queue and priority flag.
+
+  * URLTranslation added '%o' as escape code for MO msgs representing the 
+    msg->sms.account field. Which is interpreted as the operator ID for 
+    aggregator specific MO messages. ie. Xidris HTTP SMSC module.
+    
+  * test_ppg added support for X-WAP-Initiator-URI, use -I option.
+
+Bugfixes:
+
+  * SMPP fixed panic on NULLed source_addr/destination_addr, for nulterminated 
+    string length checking of PDU elements, bug that dlr lookup was made with 
+    source instead of destination address (in dlr source and destination 
+    switched), fixed incorrect handling of GSM_ADDR_TON_ALPHANUMERIC for 
+    destination address,
+    
+  * AT fixed segfault when modemtype is set to 'auto' or 'autodetect', 
+    fixed '+CPIN', some modem needs '"'.
+
+  * HTTP fixed a binary MT bug (when DC_8BIT has been set) and various 
+    improvements for passing parameters to the HTTP request, fixing 3united 
+    (formerly Xidris) HTTP interface for  binary MT messages. We passed 
+    URL-encoded binary string, but server side  expected HEX encoded (2 char
+    per byte) version.
+    
+  * WSP string coding bug fixed.
+
+  * WML compiler fixed panic for certain DOCTYPE definitions, memory leak fixed. 
+
+  * XMLRPC fixed memory leak.
+
+  * Fixed ISO date handling.
+
+  * Fixed double encoding in smsbox when trans coding from UCS2 to UTF-8 or 
+    ISO-8859-1.
+
+  * Improved pthread reader/writer-locks.
+
+  * Fixed usage of native semaphores on MacOS X to avoid a "not implemented" 
+    error.
+
+  * Fixed pthread lib settings for FreeBSD 5.2.1. 
+  
+  * Added check for 'sem_init' in librt. This needs on Solaris & HP-UX.
+
+  * Fixed Linux version of gw_gethostbyname when gethostbyname_r failed. 
+    Also free buffer on error.
+
+  * Fixed daemon mode (make sure stdin/stdout/sdterr are opened and do 
+    chdir("/")) and change user code (set supplementary group id's and 
+    don't destroy passwd struct).
+
+  * Bug work-around causing segfault on cygwin while using uninited 
+    rwlock functions.
+
+  * Various memory leak and double free fixes.
+
+
+Changes since version 1.3.1: 
+
+[*** Beware that the version move from 1.3.1 to 1.3.2 contains more then 400 
+changesets, with major bugfixes and improvemnts. Following is a summary of the 
+main issues. For a complete and detailed set of changes please refer to the 
+specific ChangeLog in the doc/ directory of the distribution. ***]
+
+Compatibility breakers:
+
+  * LICENSE changed to Kannel Software License v1.0. BSD-style as before with 
+    some more restrictions to the name "Kannel" and usage of it.
+ 
+  * SMPP changed recoding of source_addr and destination_addr on the MO side. 
+    We will pass a prefixed '+' to the smsbox side. Otherwise there is no 
+    chance for backend applicatins, like smsbox to decide what type of number 
+    it is. 
+
+  * EMI2 login operation 60 had a hard timeout of 30 sec. Some SMSC may need 
+    longer to ACK the login, so use the 'wait-ack' time value here too in case 
+    it's larger then 30 sec. 
+
+  * CIMD2 harmonized 'my-number' directive, this makes 'sender-prefix' 
+    absolete, interpretation of 'keepalive' is now in seconds instead of 
+    minutes. 
+
+  * HTTP SMSC changed 'dlrurl' to 'dlr-url', 'dlrmask' to 'dlr-mask' in order 
+    to reflect changes within smsbox's sendsms interface.
+ 
+  * Removed no more needed 'retry' smsc group directive. This is now handled 
+    via the more abstracted 'reconnect-delay' value. 
+
+  * WAP access.log file of wapbox has now some more elements, ie. remote IP of
+    client, HTTP method, length of content body, user agent string, HTTP 
+    server string, cookie support is enabled now by default, added new 
+    'wap-url-map' and 'wap-user-map groups to replace deprecated 'map-url' map.
+
+  * Renamed internal SMSC module identifiers for the smsc group directive 
+    'smsc', which identifies which SMSC module is to be used for the specific
+    link, according to these: <emi2> to <emi>, <at2> to <at>, <emi> to 
+    <emi_x25>. 
+
+  * The configure option switch --with-defaults default value is now "speed". 
+
+  * (!!!) smsbox's sendsms interface changed for values passed to various 
+    variables, according to this: pid=0 says that you want a pid value in pdu, 
+    with value 0; mclass is now 0-3; coding is 0-2; alt-dcs is 0-1; mwi is 0-7 
+    to comply with ETSI values; dlrmask and dlrurl query parameters are 
+    deprecated, but still functional; please use dlr-mask and dlr-url; flash 
+    was removed.
+ 
+  * Changed core group config option 'maximum-queue-length' to 
+    'sms-incoming-queue-limit' for the sake of semantics.
+
+  * Added 'binfo' billing identifier/information element to bearerbox's 
+    access.log log format.
+
+  * Changed the way how DLR storage is "defined" while configure time, according
+    to this: removes '--with-dlr', --with-mysql to --with-mysql-dir,
+    --enable-[mysql|oracle|sdb|sqlite] to --with-[mysql|oracle|sdb|sqlite].
+ 
+  * Account field is required in DLR tablespace and dlr config sections too.
+
+New features:
+
+  * SMPP added facility to specify SMSC service type with 
+    'service-type = foo', adding handling of invaid userid and/or passwd to  
+    shutdown SMSC connection rather than retrying to reconnect, a set of 
+    optional parameters (SMPP v3.4) have been added, UDH support for MOs,
+    handling of intermediately delivery notifications, added 'message_payload' 
+    handling, added enhanced DLR parsing and handling of DLR's optional
+    parameters, added "more messages to send" support.
+
+  * EMI added XSer $0c and $0d handling, OP/31 handling for the sake of EMI
+    implementations that use this construct as server-side initiated keep-alive
+    mechanism.
+
+  * CIMD2 has been rewriten to the new SMSCConn API layer, added additional 
+    support features 'our-host', 'our-port' and parameter 069 (service center 
+    address), harmonized log message formating, new 'no-dlr' config directive 
+    to indicate if DLR requests should be proceeded, added RPI 
+    (return-path-indication) support and binfo support via tariff class, allows
+    setting PID for MT messages, adds "more messages to send" support.
+
+  * HTTP SMSC added 'system-type = brunet' for an implemenation of bruNET's
+    specific HTTP interface (bruHTP 2.1), harmonized debug output, added 
+    'system-type = xidris' for an implementation of Xidris, 'dlrurl' and 
+    'dlrmask' handling for Kannel message proxying, added 'system-type = wapme'
+    for the Wapme SMS Proxy gateway interface.
+
+  * SOAP/XML over HTTP module added. Yet not bound to abstraction layer. Hence
+    this is yet experimental.
+
+  * FAKE added DLR handling for fake smsc type. Now you can test DLR handling 
+    even while unattached to real SMSC.
+
+  * AT added +CMTI support for MO messages, 2 new config options 
+    'max-error-count' and 'reset-string' for hard reset of the modem when modem 
+    crashes.
+    
+  * OISD has been rewriten to SMSCConn API, added validity support.
+    
+  * HTTP admin command 'restart' added to restart bearerbox, 'loglevel' to  
+    change log-level of log-files while bearerbox is running.
+
+  * Added 'our-host' interface support for binding to an explicit interface 
+    on SMSC connections. 
+
+  * Added smsc specific logging capability by handling open log files in 
+    exclusive or non-explusive mode, using 'log-file' and 'log-level' as smsc 
+    config directives. 
+
+  * Added --disable-wap and --disable-sms configure switches to disable parts 
+    in bearerbox. 
+
+  * Moved smsc group config directive 'reconnect-delay' into higher abstraction 
+    layer to provide this for all SMSC modules. Reconnect delay is defaulting 
+    to 10 sec.
+ 
+  * Added internal restarting msg command among boxes.
+
+  * Added new command line option ("-g" or "--generate") to bearerbox. This 
+    option just dumps all known config groups and options to stdout. 
+
+  * WAP added support for EFI inside WMLScript, added new application ids from 
+    OMNA web page, WSP encoding-version handling, logging of upstream HTTP server 
+    failures with HTTP response code 502 (bad gateway), new config option 
+    'http-interface-name' to wapbox configuration and allow selecting of interface 
+    for outgoing HTTP requests, allows to put semicolon-separated list of IP 
+    addresses in 'wdp-interfaces' statement in config file and kannel send 
+    responses from proper addresses.
+
+  * WAP Push added missing official WINA URIs, 'concatenation' and 
+    'max-messages' config directive support for wapbox group, handling of PPG 
+    related DLR reports. PPG sends SMS with DLR, but smsbox has to do the DLR 
+    signalization to the specified DLR-URL. The stored service name is read 
+    from PPG core group, added 'default-dlr-url', 'ppg-smsbox-id', 
+    'service-name' to ppg core group and 'dlr-url', 'smsbox-id' to 
+    wap-push-user group. 
+    
+  * RADIUS accounting proxy implemenation added for MSISDN provisioning within
+    WAP operations. 
+
+  * Added 'throughput' smsc group config directive for MT message per sec. 
+    limitation.
+
+  * Added bearerbox internal re-routing via config directives 'reroute', 
+    'reroute-smsc-id' and 'reroute-receiver' to multi-group 'smsc'. This allows
+    MOs to be directly turned into MTs within bearerbox.
+
+  * ORACLE 8i/9i support added for database polls and DLR handling.
+  
+  * PostgrSQL support added for database polls.
+  
+  * SQLITE added SQLite support for database polls. 
+  
+  * Added new escape code '%I' for URL translations to allow inclusion of the 
+    internal SMS ID into the processing, new escape code '%T' for sending the 
+    UNIX epoch timestamp in favor of '%t'.
+
+  * Added shell script 'gw-config' to allow 3rd party software to check for
+    CFLAGS, LIBS and version of the installed Kannel instance.
+
+  * Added 'binfo' to smsbox's sendsms interface to pass relevant billing 
+    identifier/information to smsc modules.
+
+  * Added POSIX regular expression support.
+  
+  * Added Perl compatible regular expression (PCRE) library support via 
+    --enable-pcre configure option.  
+
+  * Added backtrace support for specific architectures for better debugging
+    information on panics. Hint: use address within [] with addr2line or 
+    add -rdynamic to CFLAGS. 
+
+  * Added new config directives 'access-log-clean' and 'access-log-format' to
+    allow custom core access.log formatting, 'access-log-time' to indicate if
+    localtime or gmt should be used within access.log.
+
+  * Added new command line parameters for daemons (all boxes): 
+      -P/--parachute : start watcher father process that catch and restart  
+	                   crashed child process 
+      -X/--panic-script : execute this script if child process crashed 
+	  -u/--user : change process user-id (security) 
+	  -p/--pid-file : write PID into the given file 
+	  -d/--daemonize : daemonize the process 
+
+  * Added new config directive 'smsbox-max-pending'.
+
+Bugfixes:
+  
+  * SM/ASI fixed TON and NPI values, PDU decoding, decoding of binary MOs, 
+    enquire link pdu's were not sent within regular timeframe. 
+
+  * SMPP fixed generic_nack definition, sequence incrementation, charset 
+    encoding misbehaviour when msgs get split into multiple sms chunks, 
+    checking of esm_class for DLRs (only bits 2-5), PDU decoding bug for UDH
+    sequence, wrong esm_class checking for deliver_sm PDU, improved error
+    handling for wrong MO PDUs, shutdown sequence improvements, bug for 
+    re-encoding character set, bug that source-autodetect was 'false' if not
+    defined in the config although userguide mentioned 'true', race conditions 
+    amonst status and connect_time while set in various threads, optional 
+    parameters handling improved.
+    
+  * CIMD2 fixed for CPU load consume while idle, wrong time for messages, wrong 
+    parameter length for "service description" field.   
+
+  * AT fixed panic if UDHI in PDU is set but user data length = 0, bug in
+    non-blocking write to modem device, few race conditions.
+    
+  * HTTP SMSC fixed a number of bugs. Including bearerbox crash if smsc-id is 
+    stopped and /status page is called, don't 'fail' a MT message when the HTTP 
+    server can not be triggered, instead use 'reconnect-delay' to try again,
+    expected MO parameters to 'username' and 'password' instead of 'user' and 
+    'pass'.
+
+  * SSL fixed a serious pthread_mutex bug for call-back function to the 
+    openssl thread locking, non-blocking write mode, memory leak in SSL
+    handshake sequence, various improvements. 
+
+  * Fixed generic alt_dcs re-coding misbehaviour.
+
+  * HTTP fixed basic auth problem with the passwd, redirecting, serious bug 
+    in the HTTP client code causing smsbox to crash if the connection is 
+    closed directly by the HTTP server.
+  
+  * Fixed bearerbox behaviour while receiving SIGHUP (restart) signal, signal 
+    handling that may have caused deadlock. 
+
+  * Fixed ACK/NACK handling beween bearerbox and smsbox.
+
+  * WAP fixed and improved XML charset encoding handling, WSP header 
+    'Encoding-Version' handling, HTTP referer header removed due to breaking 
+    specific WAP Forum certification tests, various fixes in WML compiler 
+    character encoding handling, DOS bug within WML compiler, possible 
+    segfault if WML document doesn't contain DTD section, crashing wapbox
+    while comparing empty cookie strings, various memory leaks, WTP bug for 
+    abort PDU in speficic timeout events, fixed variable substitution within
+    WML compiler.
+
+  * WAP Push fixed malformed xml reponses for the PAP document, none accepted 
+    <pap> attribute 'product-name', case insesitive handling of constants 
+    "WAPPUSH" and "TYPE" for sake of interopertibility with existing PIs, 
+    handling of Push flag, PPG specifier and prologue parsing to support other 
+    PIs, including delimiter parsing, PAP MIME parsing, various memory leaks.
+    
+  * Fixed partially panics caused by too long UDH sequences.    
+
+  * DLR smsc-id is added now to DLR MOs from the temporary DB tablespace.
+
+  * Queue policies have been improved for internal bearerbox to smsbox 
+    message transmission.
+
+  * Fixed race conditions within store-file handling.
+
+  * Fixed serious poll() handling of POLLHUP and POLLERR.
+ 
+  * Fixed bug that config directive 'sendsms-chars' was not used at all in the 
+    logic, only the default remained. 
+    
+  * Fixed bug in smsbox that crashed if %A is used in get-url.
+                                                  
+
+Changes since version 1.3.0:
+
+Compatibility breakers:
+
+  * SMPP changed default behaviour of the 'source-addr-autodetect' to yes.
+    Now the module will try to set TON and NPI automatically by scanning the
+    given source adddress.
+
+  * Added proxying of the smsc-id value to attached smsbox instances via 
+    the HTTP SMSC module. This allows spreading load from one smsbox
+    to several bearerbox instances.
+
+New features:
+
+  * Additional debian packaging files.
+
+  * Documentation section about log file rotation.
+
+  * PPG now allows routing to explicite smsc-id's. New config directives
+    'default-smsc' for ppg group and 'forced-smsc' and 'default-smsc' for
+    wap-push-user group have been added.
+
+  * Added debug info about ammount of outstanding HTTP reqeusts in 
+    the smsbox retry queue.
+
+  * OIS added direct module.
+  
+  * CIMD2 added validity setting.
+
+Bugfixes:
+
+  * CIMD2 various fixes for correct urltrans()ing.
+
+  * AT2 fixed double-increment bug for outgoing messages counter.
+
+  * Fixed a keep-alive lookup problem when using a HTTP proxy.
+
+  * HTTP SMSC various fixes.
+
+  * Fixed infinite loop bug if /TYPE=xxx is missing in the PAP document.
+
+  * Fixed a bug in the smsbox routing behaviour of bearerbox. 
+
+  * SMPP various fixes for the optional fields decoding.
+
+  * EMI2 fixed MO counter bug and assignmend of non-existing fields bug.
+
+  * Various fixes in the WAP application layer.
+
+
+Changes since version 1.2.1:
+
+Compatibility breakers:
+
+  * Added initial SMPP v3.4 optional fields support. Still very experimental.
+    Use the 'interface-version = 33' config directive if you don't want to
+    rely on this new code.
+
+  * HTTP servers can bind to specific interfaces now.
+
+  * WTP timer frequence can be set now manually with 'timer-freq' value.
+
+  * EMI2 handling of un-acked msg can be configured via 'wait-ack-expire'
+    directive. See User Guide for more details.
+
+New features:
+
+  * WTP-SAR (segmentation and re-assembly) is now available for the 
+    WAP gateway part. This enables Kannel to function as MMS proxy.
+    This has been tested with several new MMS capable phones.
+
+  * smsbox inbound routing has been added. It allows routing based upon 
+    smsc-id or receiver number rules to specific smsbox instances. This may 
+    be several real smsboxes or even own boxes that act to bearerbox as if 
+    they are smsboxes by using the same message communication interface. This 
+    is useful for implementing own boxes that act as EMI/UCP or SMPP proxies.
+
+  * iconv support has been added for character encoding. Adds 'alt-charset' 
+    directive for the SMPP smsc group. Use iconv's type representation to 
+    define which charset is used by a specific smsc.
+
+  * HTTP connections are now established in non-blocking mode.
+
+  * Added speed 115200 for AT2 connections if system supports.
+
+  * Protection against malformed PDUs for AT2 has been increased.
+
+  * Added detection of invalid TP-OA address length and logging for AT2.
+
+  * Added National Replacement Codes (NCR) ISO 21 German for german umlauts 
+    to be used with 'alt-charset' directive.
+
+  * Added Siemens SL45 init strings for AT2.
+
+  * Added a WAP packet proxy application, test/wapproxy.c. This may be used
+    to act as a WDP, WTP proxy between WAP client and WAP gateway for 
+    packet analyzation purposes.
+
+  * Allows returning to the 'device-home' URL if 'smart-errors' are activated.
+    This can be used to let the phone go back to a pre-defined URL in case an
+    serious error happens, i.e. HTTP lookup of an URI fails.
+  
+Bugfixes:
+
+  * SMPP thread handling bug fixed.
+
+  * AT2 date encoding bug fixed.
+
+  * HTTP basic auth userid and password handling bug fixed. 
+
+  * Fixed WAP smart-error message bug, when HTTP lookup failed.
+
+  * AT2 init string in Siemens TC35 configuration fixed.
+
+  * Fixed various SSL connection related bugs.
+
+  * DLR race condition due to unlocked list fixed.
+
+  * Fixed memory leak in smsc abstraction layer for restarting smscs.
+
+  * Fixed initial approach for client SDU size to solve the problem with 
+    concatenated WSP requests.
+
+  * SMPP throttling problem fixed.
+
+  * Fixed HTTP queueing bug.
+
+  * Various improvements and fixes in the HTTP routine library.
+
+  * Fixed panics for /store-status calls if no store-file is used.
+  
+  * Fixed difftime calculation to make heartbeat work again.
+
+  * Fixed possible race condition in store file saving.
+
+Development news:
+
+  * We need to think about and rewrite the iconv() character encoding layer.
+    The character encoding should be done in the smsc module abstracted
+    layer and not in the smsc specific module layer. As a base encoding we
+    are going to use latin1.
+         
+
+Changes since version 1.2.0:
+
+Compatibility breakers:
+
+  * SMPP module users should note that the 'msg-id-type' default behaviour
+    has changed. The SMPP spec says that msg ids should be C strings and
+    hence we treat them as such per default. If your SMSC gives msg ids
+    in submit_sm and deliver_dm PDUs in different numbering basing, then
+    please use the 'msg-id-type' config directive to set it accordingly.
+
+New features:
+
+  * SMPP priority flag is now supported.
+
+  * SMPP unbind PDU handling added.
+
+  * SMPP throttling error code support added.
+
+  * MacOS X support has been improved.
+
+  * Added 'allowed-receiver-prefix' and 'denied-receiver-prefix' for 
+    sms-service groups. This is used to restrict access to service requests 
+    coming in on certain receiver numbers, i.e. shortcut numbers.
+  
+  * Added directives 'http-request-retry' and 'http-queue-delay' for HTTP
+    request queueing for sms-service 'get-url' and 'post-url' services.
+    This way a non reachable HTTP server will not cause to drop the request.
+    Instead smsbox will hold a queue and retry the HTTP request via the 
+    configurable settings 'http-request-retry' and 'http-queue-delay'.
+
+  * Added 'store-status' HTTP admin command to retrieve the messages 
+    currently in the main queue.
+
+  * Added a '--with-cflags=CFLAGS' and '--with-libs=LIBS' configuration
+    options. These are useful when Kannel is linked against additional
+    proprietary modules.
+
+  * Improvements in the Siemens M20 GSM modem support.
+ 
+  * Added EMI2 specific configuration directives 'notification-pid' and 
+    'notification-addr'. 
+
+  * Added Return Path Indicator (RPI) support for SMPP and EMI2 via boolean 
+    sendsms interface parameter 'rpi'
+
+  * LibSDB support for external storage has been added. libSDB is an abstraction
+    library for various DB system, including MySQL, PostgreSQL, Oracle, gdbm 
+    and some others.
+
+  * wapbox has an own access.log facility now.
+
+  * Added the new 'smasi' SMSC type for connecting to SM/ASI protocol SMSC, 
+    like the CriticalPath InVoke SMS Center.
+
+  * Added HEAD method support for HTTP client module.
+
+  * DLR support for the AT2 module has been added.
+
+  * Slight re-organization of the DLR module to make it easier in supporting 
+    other SMSC modules too.
+
+  * Added 'unified-prefix' configuration directive on a smsc basis to set 
+    number normalization rules. This may be used it SMSC connections handle 
+    prefix normalization differently.
+
+  * Added 'source-addr-autodetect' to smsc group for auto-detecting source 
+    addr in smpp module, if desired.
+  
+Bugfixes:
+
+  * Timezone issue fixed in SMPP module.
+ 
+  * Output of fakewap has been made more human-readable.
+
+  * Various fixes and improments in the wmlscript parsing routines.
+
+  * Fixed various other possible segmentation faulting bugs in handling
+    null'ed Octstr vars.
+
+  * Fixed various mutex problems that caused errors while accessing lists.
+
+  * Some fixes in HTTP keep-alive handling logic that causes our client to 
+    keep the connection up, even while the server has asked to drop it.
+
+  * Various fixes and improvements in the PPG (push proxy gateway) module.
+
+  * Fixed a bug in the prefix-match routine that caused to tread an number
+    match not to be a prefix match.
+
+
+Changes since version 1.1.6:
+
+Compatibility breakers:
+
+ * configure now uses the --enable-localtime as default. This will log
+   file stamps in local time, not GMT. Beware if you need other timezone 
+   date logging to switch this off.
+
+ * configure now uses the --with-malloc=native as default. This is more
+   suitable for production environments then the limited malloc checking
+   counterpart.
+
+ * Use the 'to' HTTP GET variable to specify the destination MSISDN of 
+   outbound messages for both sendsms and sendota HTTP interfaces.
+
+ * wapbox does not any longer start a PPG HTTP server thread if no ppg
+   group is specified in the configuration file.
+
+New features:
+
+ * Harmonized logging output for EMI2 and SMPP module.
+
+ * Added on-the-fly shutdown and re-start for specific smsc-ids via the
+   administrative HTTP interface URIs 'stop-smsc' and 'start-smsc'.
+
+ * Added traffic statistics of inbound and output SMS on the status page.
+
+ * Added 'interface-version' config directive for SMPP module.
+
+ * Added timing configuration directives for SMPP module to specify 
+   reconnect delays and timeout values.
+
+ * Added alternative DCS support for SMPP module to define alternative DCS
+   value via sendsms's alt-dcs flag.
+
+ * Added support for XML POSTs of SMS messages on the basis of the IETF
+   draft http://search.ietf.org/internet-drafts/draft-koponen-sms-xml-03.txt.
+
+ * Added transceiver mode for SMPP links.
+
+ * Added wapbox directive 'smart-errors' for smarter WSP error messages to
+   the handset device.
+
+ * Added wapbox directive 'force-sar' for forced processing of segmentation
+   and reassembly (WTP-SAR) packages.
+
+Bugfixes:
+
+ * Fixed compiler warning for gcc 3.x for compiler macros.
+
+ * Fixed a couple of memory leaks in various modules.
+
+ * Improved the output of the status page and fixed the status condition
+   if an SMPP link is only used as receiver.
+
+ * Fixed validity issues in the SMPP module.
+
+ * Fixed a possible segv bug in SSL connection opening call.
+
+ * Fixed handling of application ids in the PPG module.
+
+ * Implemented a queue limit for outbound messages. This should hold up the
+   situation that there are infinitely more messages injected to the queue
+   then there are outflowing to the SMSC connections.
+
+ * Further improvements in the AT2 module.
+
+ * Fixed some MySQL related problems while processing DLRs to databases.
+
+
+Changes since version 1.1.6:
+
+Compatibility breakers:
+
+ * GET method variable 'phonenumber' will be replaced by 'to' for the 
+   sendota HTTP interface. Currently we run both, to allow users to 
+   switch seamlessly.
+
+New features:
+
+ * sendota HTTP interface requests can be send in POST method mode
+   containing special X-Kannel HTTP headers for the control information
+   and the OTA XML document as body content.
+
+
+Changes since version 1.1.5:
+
+Compatibility breakers:
+
+ * Major restructuring of the AT2 module has been done. 
+   See the ChangeLog for more details.
+ 
+New features:
+
+ * PPG module has been introduced and works for both IPv4 and SMS based 
+   bearers. Supported document types are SL and SI. The PPG is an essential
+   item of the WAP Push architecture.
+
+ * WTLS support has been included, but yet not finished. 
+   Development in this area is still needed.
+
+ * Flash SMS support added.
+   Messages that arrive at mobile terminals are displayed directly to the
+   user interface and usually they can not be saved to the inbox.
+
+ * 3G Lab contributed the XML files for their Alligata.
+ 
+ * Added "keepalive" feature for EMI2 module.
+
+ * MWI (message waiting indicator) message support added.
+   These messages do cause the mobile terminal to indicate special events
+   on the user interface, i.e. showing that a new E-Mail has arrived.
+
+ * AT2 now supports Siemens TC35
+
+ * Added DLR (delivery report) support for SMSC modules.
+   Delivery reports are returned by SMSCs and can trigger a defined URL in 
+   order to inform the pushing application of a successful transmission of
+   the message. URLs can be set on a per-message request basis and hence 
+   semantics of the message ID is kept by the requesting application.
+
+ * AT2 now support autodetection of modem devices.
+
+ * HTTP basic authentication can be used now for sms-service groups.
+   This allows SMS services to access HTTP resources that need explicit
+   user authentication using the HTTP basic authentication scheme (RFC 2617).
+
+ * EMI2 windowing control has been added.
+   
+ * DLRs may be stored to external storage.
+   Using the --with-dlr configure flag external storage spaces may be used 
+   for the DLRs. This is useful in cases you take your boxes down and 
+   do not want to loose all pending DLR messages. 
+   Currently MySQL is supported as external storage.
+ 
+ * SSL-enabled HTTP servers are now available for any HTTP interface.
+   Users may rely now on secured HTTPS scheme communication between HTTP
+   clients and Kannel's HTTP servers. This is used for the sendsms and the
+   administration HTTP interface.
+
+ * Cygwin platform is now supported out-of-the-box without additional pthreads
+   libraries from 1.3.9.
+
+ * WAP OTA (over-the-air) has been improved.
+   OTA settings and bookmarks may be send via SMS bearer to capable mobile
+   terminals. Pre-defined sets from the configuration may be send or 
+   individual sets using a GET request parameter. 
+   This will change to allow POST of the OTA XML document.
+
+ * Several new phones are supported for the AT2 module.
+   See the doc/modems.conf file for their definitions.
+
+ * New sendsms HTTP interface field 'account' has been introduced.
+   This is mainly for accounting purposes.
+
+ * SSL-enabled inter-box TCP communication can be used.
+   In case boxes are running on different machines in different unreliable
+   networks this may be used to secure the TCP connection between them, i.e.
+   smsbox talking to a remote bearerbox and communication is SSL-enabled.
+
+ * URIs for the HTTP interfaces configurable.
+   The HTTP interface default URIs for the sendsms and sendota functions may 
+   be defined in the configuration to individual URIs.
+   
+ * Added SMSC interface implementation to Sonera ContentGateway. 
+
+ * Solaris packaging added.
+
+ * Added 'exec' translation type to sms-service.
+   This allows to execute arbitrary external code and pass the output as 
+   reply to the message sender.
+
+ * Include within configuration files added.
+   This makes 'include = "foobar.conf"' possible and hence segmenting the groups
+   to their own config files to make the setup more clean.
+
+ * Improved HTTP SMSC behaviour.
+
+ * SIM buffering for AT2 has been included.
+   This is a fail-safe mechanism to handle messages that pass the regular line
+   of processing to the SIM card.
+
+Bugfixes:
+
+ * Various fixes in all major SMSC modules.
+
+ * Fixed bugs in text concatenation.
+
+ * Fixed make process bug for Solaris 2.6
+
+ * Various memory leaks have been fixed.
+
+ * Fixed default DocBook detection for FreeBSD platform.
+
+ * Fixed forced-smsc bug for sendota HTTP interface.
+
+ * Fixed issues to support Linux on PowerPC and S390 again.
+
+Development news:
+
+ * WTLS is the next major challenge.
+   At least --with-wtls=openssl configure leads to a clean make process.
+   3ui's kwtls package seems to be good enough as sample for the missing
+   WTLS parts.
+
+ * Added general MySQL connection support.
+   This may be extended to have several groups reside in corresponding MySQL
+   tables and hence operation of highly dynamical environments gets easier, 
+   because there is no need to restart or -HUP the boxes.
+   
+
+Changes since version 1.1.4:
+
+Compatibility breakers:
+
+ * sendsms service now uses the HTTP status code in replies, instead of
+   always using 200.  Valid requests get 202 (Accepted), invalid requests
+   get an error code.
+
+New features:
+
+ * fakewap is better at testing high loads.
+
+ * Added sender-prefix configuration variable for CIMD2.
+
+ * A new sms-service escape sequence, %i, which expands to the smsc-id
+   of the message.
+
+ * Added a status.xml service to the administration interface.
+
+Bugfixes:
+
+ * Minor bugfix to emi2.
+
+ * Fixed handling of accept-x-kannel-headers and assume-plain-text
+   configuration fields.
+
+ * Phone-as-SMSC driver can handle text messages with UDH.
+
+ * Fixed a rare case that could cause a deadlock between the bearerbox
+   and smsbox.
+
+ * Fixed a bug that prevented having many smsc configuration blocks.
+
+ * HTTP: Correctly handle redirections to invalid URLs.
+
+ * Don't panic if there is no "default" sms-service.
+
+Development news:
+
+ * Beginnings of https support.  Not secure yet.
+
+
+Changes since version 1.1.3:
+
+Security:
+
+ * smsbox: X-Kannel-UDH headers in HTTP responses are no longer accepted,
+   unless accept-x-kannel-headers is configured for the service.  This
+   prevents possibly untrusted sites from setting strange UDH values.
+
+ * Bugfix: An empty POST request from a client could crash the wapbox.
+
+Compatibility breakers:
+
+ * smsbox: HTTP responses with content-type application/octet-stream (or
+   no content-type at all) will be sent as "octet data" instead of assumed
+   to be text/plain.  This makes it possible to send for example ring tones
+   in response to user messages.
+
+ * smsbox: The "user" field is now required in all sendsms services.
+
+ * Kannel now uses the same "data coding scheme" values in all SMSC
+   protocols that use them.  It is now used only to set the alphabet,
+   and leaves the message class alone.  This affects the Phone-as-SMSC,
+   CIMD2, OIS, and SMPP modules.
+
+ * Compiling Kannel now requires libxml 2.2.5 or later.
+
+New features:
+
+ * New sms-service type "posturl", which makes a POST request
+   containing the message in the body and other information in X-Kannel-
+   headers.  The sendsms interface also accepts POST requests in this format.
+   Not documented yet.
+
+ * Sendsms services also accept POST requests.
+
+ * smsbox: X-Kannel-From and X-Kannel-To headers can be used in HTTP
+   responses to set the sender and receiver numbers, if
+   accept-x-kannel-headers is configured for the service.
+
+ * New, improved module for UCP/EMI SMSC protocol, called "emi2".
+   It will replace the emi and emi_ip modules in the future, but coexists
+   with them in this release.
+
+ * New configuration variable catch-all in sms-service configuration
+   groups.  If this is set, the service will be used for all messages
+   that match its keyword, instead of only messages that have the right
+   number of words.  Useful for defining service-specific error replies.
+
+ * Configuration variables such as "concatenation" can now be set to
+   yes/no or true/false instead of just 0 or 1.
+
+ * Kannel can be configured to store incoming SMS messages in a file
+   until they have been processed, so that they can not be lost in a crash.
+
+ * Improved portability to MacOS X.
+
+ * SMPP SMSC module will send enquire_link packets at regular intervals.
+   This is needed to stay connected with some SMSCs.
+
+ * Significant improvements to the SMPP SMSC module.  It should now be
+   ready for serious use.
+
+ * Phone-as-SMSC module will retry a few times if sending a message fails.
+   This works around many temporary problems.
+
+Bugfixes:
+
+ * Support libxml versions that install xml2-config instead of xml-config.
+
+ * Several memory leaks fixed.
+
+ * Fixed panic if faked-sender configuration variable is used in a sendsms
+   service.
+
+ * Sendsms replies now have no-cache headers to prevent proxies from
+   trying to cache sendsms queries.
+
+ * Some PDU encoding errors in the Phone-as-SMSC module were fixed.
+
+ * CIMD2 SMSC module works around a bug in some SMSCs that could cause
+   messages to be received multiple times.
+
+ * HTTP module can (again) handle "100 Continue" responses from servers.
+
+ * Lots of minor bugfixes.
+
+Development news:
+
+ * More work on WAP Push.
+
+Known problems:
+
+ * New POST-based interface for SMS is not documented.
+
+ * The CIMD2 SMSC module can sometimes send multiple "alive" requests
+   at a time, which breaks the protocol and confuses the SMSC.
+
+ * Concatenated text messages don't work with all protocols.
+
+
+Changes since version 1.1.2:
+
+
+Security:
+
+ * A bug in the error handling code would make Kannel crash if a HTTP
+   request (for example to sendsms) contained literal spaces in the URL.
+   This has been fixed.  The problem was not present in the 1.0 series.
+
+New features:
+
+ * New "http" SMSC which allows Kannel to be used with HTTP-based
+   SMS interfaces (such as Kannel itself, so that you can chain them).
+
+ * WML compiler produces slightly smaller output.
+
+Bugfixes:
+
+ * Phone-as-SMSC module made more reliable under high load.  In particular,
+   reopening a broken connection works again.
+
+ * Bearerbox no longer treats any UDP errors as fatal, they are just
+   warnings now.
+
+ * Several memory leaks fixed.
+
+Development news:
+
+ * Started a benchmarking framework, activated with "make bench".
+
+ * Bearerbox now uses the conn module for box connections.
+
+ * octstr_format takes a new %E format which does http-url encoding.
+
+
+Changes since version 1.1.1:
+
+Compatibility breakers:
+
+ * Format of access log output has changed.
+
+New features:
+
+ * Support for Ericsson GSM modems.
+
+ * smsbox: HTTP responses can now send UDH messages by sending an
+   X-Kannel_UDH header in the reply.
+
+ * smsbox: Added "%b" translation for receiving binary data.
+
+ * Updated and expanded User's Guide.
+
+ * SMPP driver now responds to Enquire Link packets, which will help
+   keep Kannel connected to an SMS center when the connection is idle.
+
+ * Small perl script to read and summarize access log output.
+
+ * wapbox is better at dealing with HTTP responses that are too large
+   for the client, or in the wrong format.
+
+Bugfixes:
+
+ * WMLScript compiler avoids generating zero-length functions, so that
+   the result works on more clients.
+
+ * smsbox: Numerous fixes to the message splitting functions.
+
+ * smsbox: OTA configuration works again.
+
+ * WML compiler: Corrected encodings for "ordered true" and "ordered false".
+
+Development news:
+
+ * WML decompiler improved.
+
+
+Changes since version 1.1:
+
+
+Compatibility breakers:
+
+ * Kannel now complains about unknown configuration settings, rather than
+   silently ignoring them.
+
+
+New features:
+
+ * The SMS testing tool (fakesmsc) has been replaced with a better one.
+   It can be started and stopped while Kannel is running, which makes
+   it easier to use.  It also supports udh.
+
+ * validityperiod option for phone-as-SMSC, see user guide for details.
+
+ * User's Guide has section on how to use pre-compiled Kannel packages.
+
+ * Improved portability to FreeBSD.
+
+ * Updated CIMD2 code to version "2-0 en" of the specification.
+
+
+Bugfixes:
+
+ * http-proxy-exceptions works again.
+
+ * SMS service keywords are case-insensitive again.
+
+ * If SMS request has unknown keyword, and no default is specified,
+   reply "Request failed" instead of logging a confusing error message.
+
+ * Fixed possible deadlock in bearerbox startup.
+
+ * Fixed a number of memory leaks.
+
+ * Fixed some errors that only showed up with --with-malloc=native.
+
+
+Development news:
+
+ * All boxes now use the new configuration file interface.
+
+
+Changes since version 0.13.1:
+
+
+Compatibility breakers:
+
+ * Replies from the bearerbox admin interface are now formatted according
+   to the Accept: headers sent by the client, preferring WML over HTML
+   over plain text.  They used to always be plain text.
+
+ * Filling in admin-password is now mandatory in the configuration file.
+
+ * In the configuration for UCP/EMI SMSCs, username and password are
+   now used if they are set, and not used if they are not.
+   They used to be mandatory even though they were never used, so in
+   existing configurations they are likely to contain dummy values
+   that will not work.  (This was actually changed before 0.13.1, we
+   forgot to note it then.)
+
+
+New features:
+
+ * New SMPP module.  Written for SMPP 3.4 but should support 3.3 as well.
+
+ * smsbox reports load to the bearerbox.
+
+ * Added status.wml, status.html, and status.txt commands to the bearerbox
+   admin interface, to return status in a specific format.
+
+ * If admin commands are tried with the wrong password, the response is
+   delayed, in order to limit brute force password cracking.
+
+ * New configuration variable status-password, which protects the status
+   admin command if it is set.
+
+ * Admin commands can be used without a /cgi-bin part in the URL.
+   So http://localhost:13000/cgi-bin/status can now become just
+   http://localhost:13000/status.
+
+ * New smsc configuration group variable 'allowed-smsc-id', which lets
+   you limit which messages can be sent to a specific SMSC.
+
+ * New architecture documentation.
+
+ * New SMS testing tool called fake2.  It works like the old fakesmsc,
+   but can be started and stopped while Kannel is running, which makes
+   it easier to use.
+
+ * New URL translation %k in smsbox, which is replaced with the keyword
+   of the SMS request.
+
+ * Improved portability to FreeBSD by using less stack space per thread.
+
+
+Bugfixes:
+
+ * The u-dieresis (u with two dots) was translated incorrectly to the
+   GSM character set, in the AT, CIMD2, and SMPP drivers.  Fixed.
+
+ * The EMI used to crash if username was not set.  Fixed.
+
+ * WML compiler can handle a libxml that was compiled with
+   the -DXML_USE_BUFFER_CONTENT flag.
+
+ * WML compiler: If charset is not supplied in a WML file, the
+   one from the HTTP content-type header is used instead, if available.
+
+ * Fixed signal handling on Solaris and other systems with POSIX threads.
+
+
+Development news:
+
+ * New SMSC interface in the bearerbox, which should allow much faster
+   implementations and better error handling.  There is a wrapper for
+   the old interface, because no SMSC drivers have been converted yet.
+
+ * New configuration file interface that uses Octstrs.
+
+ * Work started on WAP Push.
+
+
+Changes since version 0.13:
+
+
+New features:
+
+ * WTP and WSP protocol stacks are now separate, so that other projects
+   than Kannel can make use of them.
+
+ * Redesigned smsbox to have a stable number of threads.  It is much
+   more stable now, handles more requests at a time, and shuts down
+   more cleanly.
+
+ * sendota interface accepts more than one OTA configuration.
+
+ * Driver for UCP/EMI SMSCs supports authenticated sessions.
+
+ * smsbox accepts WML responses as well as plain text and HTML responses.
+
+
+Bugfixes:
+
+ * Improved HTTP module's support for HTTP/1.0 clients and servers.
+
+ * Fixed UDH encoding in Phone-as-SMSC module.
+
+ * Fixed splitting of SMS messages that have UDH.
+
+ * HTML to SMS conversion now deals with entities like &#1234; correctly.
+   (Also fixed in 0.12.3)
+
+ * Several bugs and memory leaks fixed in SMPP module.
+
+ * Bearerbox detection of inactive SMSCs is less trigger-happy.
+   This greatly improves throughput if the roundtrip to the SMSC is
+   slower than 10 milliseconds.  (Also fixed in 0.12.3)
+
+ * Detect libxml 2.2.10 and above as part of the 2.2.x series.
+   (Also fixed in 0.12.3)
+
+ * Fixed some memory leaks.
+
+
+Development news:
+
+ * Checking malloc now displays some of the contents of the memory leaks
+   it finds, which makes it much easier to track them down.
+
+ * Started building support for WAP Push.
+
+
+Changes compared to version 0.12.3:
+
+
+New features:
+
+ * HTTP module restructured to use a fixed number of threads.  This makes
+   it able to handle many more requests at a time.
+
+ * Kannel boxes report version numbers of themselves and their components
+   (such as libxml) when starting up.
+
+ * Support for proxies that require basic authorization.
+
+ * Bearerbox "status" command reports lengths of internal queues.
+
+ * Phone-as-SMSC module now also supports Falcom A2D modem and Nokia 7110.
+
+ * Added configure option --with-defaults=speed for production systems.
+
+ * Updated documentation.
+
+ * Bearerbox starts up faster.
+
+ * sendsms interface can handle multiple requests over one HTTP/1.1
+   connection.
+
+ * Improved portability to HP/UX, FreeBSD and Cygwin, possibly others.
+
+ * Support magic URL "kannel:alive", to check if the gateway is still running.
+
+ * Support for PAM authentication of sendsms interface.
+
+ * Sendsms interface checks that UDH messages have a correct length indicator.
+
+
+Bugfixes:
+
+ * Fixed several bugs in Phone-as-SMSC module.
+
+ * Fixed the problem that switching malloc wrappers required a "make clean"
+   when recompiling.
+
+
+Development news:
+
+ * Many files have been reformatted to our new coding style.
+
+ * Renamed Msg type smart_sms to just sms.
+
+ * New Dict module in gwlib, for Octstr -> value hash tables.
+
+ * New FDSet module in gwlib, for efficient polling of large sets of
+   file descriptors.  Used by HTTP module.  Connection module has
+   extensions for it.
+
+
+See ChangeLog for detailed information.

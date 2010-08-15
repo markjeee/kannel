@@ -1,0 +1,127 @@
+
+			    Lexer entities
+			    ==============
+
+* Reserved Words
+
+  The `div=' is actually puctuation.
+
+access
+agent
+break
+case
+catch
+class
+const
+continue
+debugger
+default
+delete
+div
+div=
+do
+domain
+else
+enum
+equiv
+export
+extends
+extern
+false
+finally
+for
+function
+header
+http
+if
+import
+in
+invalid
+isvalid
+lib
+meta
+name
+new
+null
+path
+private
+public
+return
+sizeof
+struct
+super
+switch
+this
+throw
+true
+try
+typeof
+url
+use
+user
+var
+void
+while
+with
+
+* Punctuation (Plus comment starters)
+
+!
+!=
+#
+%
+%=
+&
+&&
+&=
+(
+)
+*
+*=
++
+++
++=
+,
+-
+--
+-=
+.		can be followed by [0-9] => DecimalFloatLiteral
+/
+/*		block comment
+//		single-line comment
+/=
+:
+;
+<
+<<
+<<=
+<=
+=
+==
+>
+>=
+>>
+>>=
+>>>
+>>>=
+?
+^
+^=
+{
+|
+|=
+||
+}
+~
+
+* Strings start with ' or "
+
+* Numbers:
+
+  0xHexDigit
+  0XHexDigit
+  0
+  [1-9][0-9]*
+  0[0-7]+
+
+  floats start with `DecimalIntegerLiteral' or '.'

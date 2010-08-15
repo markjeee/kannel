@@ -1,0 +1,525 @@
+/* ==================================================================== 
+ * The Kannel Software License, Version 1.0 
+ * 
+ * Copyright (c) 2001-2009 Kannel Group  
+ * Copyright (c) 1998-2001 WapIT Ltd.   
+ * All rights reserved. 
+ * 
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions 
+ * are met: 
+ * 
+ * 1. Redistributions of source code must retain the above copyright 
+ *    notice, this list of conditions and the following disclaimer. 
+ * 
+ * 2. Redistributions in binary form must reproduce the above copyright 
+ *    notice, this list of conditions and the following disclaimer in 
+ *    the documentation and/or other materials provided with the 
+ *    distribution. 
+ * 
+ * 3. The end-user documentation included with the redistribution, 
+ *    if any, must include the following acknowledgment: 
+ *       "This product includes software developed by the 
+ *        Kannel Group (http://www.kannel.org/)." 
+ *    Alternately, this acknowledgment may appear in the software itself, 
+ *    if and wherever such third-party acknowledgments normally appear. 
+ * 
+ * 4. The names "Kannel" and "Kannel Group" must not be used to 
+ *    endorse or promote products derived from this software without 
+ *    prior written permission. For written permission, please  
+ *    contact org@kannel.org. 
+ * 
+ * 5. Products derived from this software may not be called "Kannel", 
+ *    nor may "Kannel" appear in their name, without prior written 
+ *    permission of the Kannel Group. 
+ * 
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED 
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES 
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+ * DISCLAIMED.  IN NO EVENT SHALL THE KANNEL GROUP OR ITS CONTRIBUTORS 
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,  
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT  
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR  
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,  
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE  
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,  
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * ==================================================================== 
+ * 
+ * This software consists of voluntary contributions made by many 
+ * individuals on behalf of the Kannel Group.  For more information on  
+ * the Kannel Group, please see <http://www.kannel.org/>. 
+ * 
+ * Portions of this software are based upon software originally written at  
+ * WapIT Ltd., Helsinki, Finland for the Kannel project.  
+ */ 
+
+/*
+ * smpp_pdu.def - definitions of SMPP PDU structure
+ *
+ * Lars Wirzenius
+ * Daniel Lukic <lukic@vivatech.de>:
+ *     Initial optional parameters implementation.
+ * Alexander Malysh <a.malysh@centrium.de>:
+ *     Extended optional parameters implementation.
+ */
+
+
+#include "smpp_pdu_opt.def"
+
+
+#ifndef PDU
+#error Macro PDU not defined.
+#endif
+
+#ifndef INTEGER
+#error Macro INTEGER not defined.
+#endif
+
+#ifndef NULTERMINATED
+#error Macro NULTERMINATED not defined.
+#endif
+
+#ifndef OCTETS
+#error Macro OCTETS not defined.
+#endif
+
+#ifndef OPTIONAL_BEGIN
+#error Macro OPTIONAL_BEGIN not defined.
+#endif
+
+#ifndef TLV_INTEGER
+#error Macro TLV_INTEGER not defined.
+#endif
+
+#ifndef TLV_NULTERMINATED
+#error Macro TLV_NULTERMINATED not defined.
+#endif
+
+#ifndef TLV_OCTETS
+#error Macro TLV_OCTETS not defined.
+#endif
+
+#ifndef OPTIONAL_END
+#error Macro OPTIONAL_END not defined.
+#endif
+
+/*
+ * All SMPP PDUs have a common header consisting of four integers.
+ * The first integer, command_length, is dealt with implicitly by
+ * the I/O stuff, so we don't store it in the PDU data structure.
+ * The other three are defined in the HEADER macro.
+ */
+#ifdef HEADER
+#error Macro HEADER was already defined.
+#endif
+#define HEADER	\
+    INTEGER(command_id, 4) \
+    INTEGER(command_status, 4) \
+    INTEGER(sequence_number, 4)
+
+PDU(bind_transmitter,
+    0x00000002,
+    HEADER
+    NULTERMINATED(system_id, 16)
+    NULTERMINATED(password, 9)
+    NULTERMINATED(system_type, 13)
+    INTEGER(interface_version, 1)
+    INTEGER(addr_ton, 1)
+    INTEGER(addr_npi, 1)
+    NULTERMINATED(address_range, 41)
+)
+
+PDU(bind_transmitter_resp,
+    0x80000002,
+    HEADER
+    NULTERMINATED(system_id, 16)
+    OPTIONAL_BEGIN
+    TLV_INTEGER(sc_interface_version, 1)
+    OPTIONAL_END
+)
+
+PDU(bind_receiver,
+    0x00000001,
+    HEADER
+    NULTERMINATED(system_id, 16)
+    NULTERMINATED(password, 9)
+    NULTERMINATED(system_type, 13)
+    INTEGER(interface_version, 1)
+    INTEGER(addr_ton, 1)
+    INTEGER(addr_npi, 1)
+    NULTERMINATED(address_range, 41)
+)
+
+PDU(bind_receiver_resp,
+    0x80000001,
+    HEADER
+    NULTERMINATED(system_id, 16)
+    OPTIONAL_BEGIN
+    TLV_INTEGER(sc_interface_version, 1)
+    OPTIONAL_END
+)
+
+PDU(bind_transceiver,
+    0x00000009,
+    HEADER
+    NULTERMINATED(system_id, 16)
+    NULTERMINATED(password, 9)
+    NULTERMINATED(system_type, 13)
+    INTEGER(interface_version, 1)
+    INTEGER(addr_ton, 1)
+    INTEGER(addr_npi, 1)
+    NULTERMINATED(address_range, 41)
+)
+
+PDU(bind_transceiver_resp,
+    0x80000009,
+    HEADER
+    NULTERMINATED(system_id, 16)
+    OPTIONAL_BEGIN
+    TLV_INTEGER(sc_interface_version, 1)
+    OPTIONAL_END
+)
+
+PDU(outbind,
+    0x0000000B,
+    HEADER
+    NULTERMINATED(system_id, 16)
+    NULTERMINATED(password, 9)
+)
+
+PDU(unbind,
+    0x00000006,
+    HEADER
+)
+
+PDU(unbind_resp,
+    0x80000006,
+    HEADER
+)
+
+PDU(generic_nack,
+    0x80000000,
+    HEADER
+)
+
+PDU(submit_sm,
+    0x00000004,
+    HEADER
+    NULTERMINATED(service_type, 6)
+    INTEGER(source_addr_ton, 1)
+    INTEGER(source_addr_npi, 1)
+    NULTERMINATED(source_addr, 21)
+    INTEGER(dest_addr_ton, 1)
+    INTEGER(dest_addr_npi, 1)
+    NULTERMINATED(destination_addr, 21)
+    INTEGER(esm_class, 1)
+    INTEGER(protocol_id, 1)
+    INTEGER(priority_flag, 1)
+    NULTERMINATED(schedule_delivery_time, 17)
+    NULTERMINATED(validity_period, 17)
+    INTEGER(registered_delivery, 1)
+    INTEGER(replace_if_present_flag, 1)
+    INTEGER(data_coding, 1)
+    INTEGER(sm_default_msg_id, 1)
+    INTEGER(sm_length, 1)
+    OCTETS(short_message, sm_length)
+    OPTIONAL_BEGIN
+    TLV_INTEGER(user_message_reference, 2)
+    TLV_INTEGER(source_port, 2)
+    TLV_INTEGER(source_addr_subunit, 1)
+    TLV_INTEGER(destination_port, 2)
+    TLV_INTEGER(dest_addr_subunit, 1)
+    TLV_INTEGER(sar_msg_ref_num, 2)
+    TLV_INTEGER(sar_total_segments, 1)
+    TLV_INTEGER(sar_segment_seqnum, 1)
+    TLV_INTEGER(more_messages_to_send, 1)
+    TLV_INTEGER(payload_type, 1)
+    TLV_OCTETS(message_payload, 0, 65536)
+    TLV_INTEGER(privacy_indicator, 1)
+    TLV_OCTETS(callback_num, 4, 19)
+    TLV_INTEGER(callback_num_pres_ind, 1)
+    TLV_OCTETS(callback_num_atag, 0, 65)
+    TLV_OCTETS(source_subaddress, 2, 23)
+    TLV_OCTETS(dest_subaddress, 2, 23)
+    TLV_INTEGER(user_response_code, 1)
+    TLV_INTEGER(display_time, 1)
+    TLV_INTEGER(sms_signal, 2)
+    TLV_INTEGER(ms_validity, 1)
+    TLV_INTEGER(ms_msg_wait_facilities, 1)
+    TLV_INTEGER(number_of_messages, 1)
+    TLV_INTEGER(alert_on_message_delivery, 0)
+    TLV_INTEGER(language_indicator, 1)
+    TLV_INTEGER(its_reply_type, 1)
+    TLV_OCTETS(its_session_info, 2, 2)
+    TLV_OCTETS(ussd_service_op, 1, 1)
+    OPTIONAL_END
+)
+
+PDU(submit_sm_resp,
+    0x80000004,
+    HEADER
+    NULTERMINATED(message_id, 65)
+)
+
+PDU(submit_multi,
+    0x00000021,
+    HEADER
+    NULTERMINATED(service_type, 6)
+    INTEGER(source_addr_ton, 1)
+    INTEGER(source_addr_npi, 1)
+    NULTERMINATED(source_addr, 21)
+    INTEGER(number_of_dests, 1)
+    NULTERMINATED(dest_address_es, 254 * 24)
+    INTEGER(esm_class, 1)
+    INTEGER(protocol_id, 1)
+    INTEGER(priority_flag, 1)
+    NULTERMINATED(schedule_delivery_time, 17)
+    NULTERMINATED(validity_period, 17)
+    INTEGER(registered_delivery, 1)
+    INTEGER(replace_if_present_flag, 1)
+    INTEGER(data_coding, 1)
+    INTEGER(sm_default_msg_id, 1)
+    INTEGER(sm_length, 1)
+    OCTETS(short_message, sm_length)
+    OPTIONAL_BEGIN
+    TLV_INTEGER(user_message_reference, 2)
+    TLV_INTEGER(source_port, 2)
+    TLV_INTEGER(source_addr_subunit, 1)
+    TLV_INTEGER(destination_port, 2)
+    TLV_INTEGER(dest_addr_subunit, 1)
+    TLV_INTEGER(sar_msg_ref_num, 2)
+    TLV_INTEGER(sar_total_segments, 1)
+    TLV_INTEGER(sar_segment_seqnum, 1)
+    TLV_INTEGER(payload_type, 1)
+    TLV_OCTETS(message_payload, 0, 65536)
+    TLV_INTEGER(privacy_indicator, 1)
+    TLV_OCTETS(callback_num, 4, 19)
+    TLV_INTEGER(callback_num_pres_ind, 1)
+    TLV_OCTETS(callback_num_atag, 0, 65)
+    TLV_OCTETS(source_subaddress, 2, 23)
+    TLV_OCTETS(dest_subaddress, 2, 23)
+    TLV_INTEGER(display_time, 1)
+    TLV_INTEGER(sms_signal, 2)
+    TLV_INTEGER(ms_validity, 1)
+    TLV_INTEGER(ms_msg_wait_facilities, 1)
+    TLV_INTEGER(alert_on_message_delivery, 0)
+    TLV_INTEGER(language_indicator, 1)
+    OPTIONAL_END
+)
+
+PDU(submit_multi_resp,
+    0x80000021,
+    HEADER
+    NULTERMINATED(message_id, 65)
+    INTEGER(no_unsuccess, 1)
+)
+
+PDU(deliver_sm,
+    0x00000005,
+    HEADER
+    NULTERMINATED(service_type, 6)
+    INTEGER(source_addr_ton, 1)
+    INTEGER(source_addr_npi, 1)
+    NULTERMINATED(source_addr, 21)
+    INTEGER(dest_addr_ton, 1)
+    INTEGER(dest_addr_npi, 1)
+    NULTERMINATED(destination_addr, 21)
+    INTEGER(esm_class, 1)
+    INTEGER(protocol_id, 1)
+    INTEGER(priority_flag, 1)
+    NULTERMINATED(schedule_delivery_time, 17)
+    NULTERMINATED(validity_period, 17)
+    INTEGER(registered_delivery, 1)
+    INTEGER(replace_if_present_flag, 1)
+    INTEGER(data_coding, 1)
+    INTEGER(sm_default_msg_id, 1)
+    INTEGER(sm_length, 1)
+    OCTETS(short_message, sm_length)
+    OPTIONAL_BEGIN
+    TLV_INTEGER(user_message_reference, 2)
+    TLV_INTEGER(source_port, 2)
+    TLV_INTEGER(destination_port, 2)
+    TLV_INTEGER(sar_msg_ref_num, 2)
+    TLV_INTEGER(sar_total_segments, 1)
+    TLV_INTEGER(sar_segment_seqnum, 1)
+    TLV_INTEGER(user_response_code, 1)
+    TLV_INTEGER(privacy_indicator, 1)
+    TLV_INTEGER(payload_type, 1)
+    TLV_OCTETS(message_payload, 0, 65536)
+    TLV_OCTETS(callback_num, 4, 19)
+    TLV_OCTETS(source_subaddress, 2, 23)
+    TLV_OCTETS(dest_subaddress, 2, 23)
+    TLV_INTEGER(language_indicator, 1)
+    TLV_OCTETS(its_session_info, 2, 2)
+    TLV_OCTETS(network_error_code, 3, 3)
+    TLV_INTEGER(message_state, 1)
+    TLV_NULTERMINATED(receipted_message_id, 65)
+    OPTIONAL_END
+)
+
+PDU(deliver_sm_resp,
+    0x80000005,
+    HEADER
+    NULTERMINATED(message_id, 1)
+)
+
+PDU(data_sm,
+    0x00000103,
+    HEADER
+    NULTERMINATED(service_type, 6)
+    INTEGER(source_addr_ton, 1)
+    INTEGER(source_addr_npi, 1)
+    NULTERMINATED(source_addr, 65)
+    INTEGER(dest_addr_ton, 1)
+    INTEGER(dest_addr_npi, 1)
+    NULTERMINATED(destination_addr, 65)
+    INTEGER(esm_class, 1)
+    INTEGER(registered_delivery, 1)
+    INTEGER(data_coding, 1)
+    OPTIONAL_BEGIN
+    TLV_INTEGER(source_port, 2)
+    TLV_INTEGER(source_addr_subunit, 1)
+    TLV_INTEGER(source_network_type, 1)
+    TLV_INTEGER(source_bearer_type, 1)
+    TLV_INTEGER(source_telematics_id, 1)
+    TLV_INTEGER(destination_port, 2)
+    TLV_INTEGER(dest_addr_subunit, 1)
+    TLV_INTEGER(dest_network_type, 1)
+    TLV_INTEGER(dest_bearer_type, 1)
+    TLV_INTEGER(dest_telematics_id, 2)
+    TLV_INTEGER(sar_msg_ref_num, 2)
+    TLV_INTEGER(sar_total_segments, 1)
+    TLV_INTEGER(sar_segment_seqnum, 1)
+    TLV_INTEGER(more_messages_to_send, 1)
+    TLV_INTEGER(qos_time_to_live, 4)
+    TLV_INTEGER(payload_type, 1)
+    TLV_OCTETS(message_payload, 0, 65536)
+    TLV_INTEGER(set_dpf, 1)
+    TLV_NULTERMINATED(receipted_message_id, 65)
+    TLV_INTEGER(message_state, 1)
+    TLV_OCTETS(network_error_code, 3, 3)
+    TLV_INTEGER(user_message_reference, 2)
+    TLV_INTEGER(privacy_indicator, 1)
+    TLV_OCTETS(callback_num, 4, 19)
+    TLV_INTEGER(callback_num_pres_ind, 1)
+    TLV_OCTETS(callback_num_atag, 0, 65)
+    TLV_OCTETS(source_subaddress, 2, 23)
+    TLV_OCTETS(dest_subaddress, 2, 23)
+    TLV_INTEGER(user_response_code, 1)
+    TLV_INTEGER(display_time, 1)
+    TLV_INTEGER(sms_signal, 2)
+    TLV_INTEGER(ms_validity, 1)
+    TLV_INTEGER(ms_msg_wait_facilities, 1)
+    TLV_INTEGER(number_of_messages, 1)
+    TLV_INTEGER(alert_on_message_delivery, 0)
+    TLV_INTEGER(language_indicator, 1)
+    TLV_INTEGER(its_reply_type, 1)
+    TLV_OCTETS(its_session_info, 2, 2)
+    OPTIONAL_END
+)
+
+PDU(data_sm_resp,
+    0x80000103,
+    HEADER
+    NULTERMINATED(message_id, 65)
+    OPTIONAL_BEGIN
+    TLV_INTEGER(delivery_failure_reason, 1)
+    TLV_OCTETS(network_error_code, 3, 3)
+    TLV_NULTERMINATED(additional_status_info_text, 256)
+    TLV_INTEGER(dpf_result, 1)
+    OPTIONAL_END
+)
+
+PDU(query_sm,
+    0x00000003,
+    HEADER
+    NULTERMINATED(message_id, 65)
+    INTEGER(source_addr_ton, 1)
+    INTEGER(source_addr_npi, 1)
+    NULTERMINATED(source_addr, 21)
+)
+
+PDU(query_sm_resp,
+    0x80000003,
+    HEADER
+    NULTERMINATED(message_id, 65)
+    NULTERMINATED(final_date, 17)
+    INTEGER(message_state, 1)
+    INTEGER(error_code, 1)
+)
+
+PDU(cancel_sm,
+    0x00000008,
+    HEADER
+    NULTERMINATED(service_type, 6)
+    NULTERMINATED(message_id, 65)
+    INTEGER(source_addr_ton, 1)
+    INTEGER(source_addr_npi, 1)
+    NULTERMINATED(source_addr, 21)
+    INTEGER(dest_addr_ton, 1)
+    INTEGER(dest_addr_npi, 1)
+    NULTERMINATED(destination_addr, 65)
+)
+
+PDU(cancel_sm_resp,
+    0x80000008,
+    HEADER
+)
+
+PDU(replace_sm,
+    0x00000007,
+    HEADER
+    NULTERMINATED(service_type, 6)
+    NULTERMINATED(message_id, 65)
+    INTEGER(source_addr_ton, 1)
+    INTEGER(source_addr_npi, 1)
+    NULTERMINATED(source_addr, 21)
+    NULTERMINATED(schedule_delivery_time, 17)
+    NULTERMINATED(validity_period, 17)
+    INTEGER(registered_delivery, 1)
+    INTEGER(sm_default_msg_id, 1)
+    INTEGER(sm_length, 1)
+    OCTETS(short_message, sm_length)
+)
+
+PDU(replace_sm_resp,
+    0x80000007,
+    HEADER
+)
+
+PDU(enquire_link,
+    0x00000015,
+    HEADER
+)
+
+PDU(enquire_link_resp,
+    0x80000015,
+    HEADER
+)
+
+PDU(alert_notification,
+    0x00000102,
+    HEADER
+    INTEGER(source_addr_ton, 1)
+    INTEGER(source_addr_npi, 1)
+    NULTERMINATED(source_addr, 21)
+    INTEGER(esme_addr_ton, 1)
+    INTEGER(esme_addr_npi, 1)
+    NULTERMINATED(esme_addr, 65)
+    OPTIONAL_BEGIN
+    TLV_INTEGER(ms_availability_status, 1)
+    OPTIONAL_END
+)
+
+#undef PDU
+#undef INTEGER
+#undef NULTERMINATED
+#undef OCTETS
+#undef HEADER
+#undef OPTIONAL_BEGIN
+#undef TLV_INTEGER
+#undef TLV_NULTERMINATED
+#undef TLV_OCTETS
+#undef OPTIONAL_END
+

@@ -1,0 +1,45 @@
+#!@PERLPROG@ -w
+# -*- perl -*-
+#
+# make-op-table.in
+#
+# Author: Markku Rossi <mtr@iki.fi>
+#
+# Copyright (c) 1999-2000 WAPIT OY LTD.
+#		All rights reserved.
+#
+# A help script to create the `wsopcodes.h' file from the `wsasm.h'
+# header file.
+#
+
+my(@table) = ();
+my(@size) = ();
+
+while (<>) {
+    if (/^\#define\s(WS_ASM_[A-Z_0-9]+)\s+(\S+)\s+\/\*\s+(\S+)\s+(\S+)/) {
+	my($name) = $1;
+	my($code) = $2;
+	my($size) = $4;
+
+	if ($name =~ /WS_ASM_P_/) {
+	    next;
+	}
+
+	$table[hex($code)] = $name;
+	$size[hex($code)] = $size;
+    }
+}
+
+for ($i = 0; $i < 256; $i++) {
+    printf("  /* 0x%02x */ ", $i);
+
+    if (defined($table[$i])) {
+	$name = $table[$i];
+	$name =~ s/^WS_ASM_//;
+	$name =~ tr/A-Z/a-z/;
+
+	print "{\"$name\",\t$size[$i]},\n";
+    } else {
+	print "{NULL,\t0},\n";
+    }
+}

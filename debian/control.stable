@@ -1,0 +1,45 @@
+Source: kannel
+Section: net
+Priority: optional
+Maintainer: Bruno Rodrigues <bruno.rodrigues@litux.org>
+Build-Depends: debhelper (>> 4.0.0), libxml2-dev, libssl-dev, openssl, libmysqlclient10-dev, libpam0g-dev
+Build-Depends-Indep: debhelper (>> 4.0.0), docbook-dsssl, jadetex, transfig, imagemagick, gs
+Standards-Version: 3.6.1
+
+Package: kannel
+Architecture: any
+Section: net
+Priority: optional
+Depends: ${shlibs:Depends}
+Suggests: kannel-extras, kannel-docs
+Description: WAP and SMS gateway
+ Kannel is a gateway for connecting WAP (Wireless Application Protocol)
+ phones to the Internet. It also works as an SMS gateway, for providing
+ SMS based services for GSM phones.
+ .
+ Compiled with ssl, mysql and native malloc.
+
+Package: kannel-extras
+Architecture: any
+Section: net
+Priority: optional
+Suggests: kannel, python
+Depends: ${shlibs:Depends}
+Description: WAP and SMS gateway extras
+ Kannel is a gateway for connecting WAP (Wireless Application Protocol)
+ phones to the Internet. It also works as an SMS gateway, for providing
+ SMS based services for GSM phones.
+ .
+ Test utilities and contrib data.
+
+Package: kannel-docs
+Architecture: all
+Section: net
+Suggests: kannel
+Priority: optional
+Description: WAP and SMS gateway documentation
+ Kannel is a gateway for connecting WAP (Wireless Application Protocol)
+ phones to the Internet. It also works as an SMS gateway, for providing
+ SMS based services for GSM phones.
+ .
+ Documentation in HTML, RTF and PDF format.

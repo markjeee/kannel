@@ -1,0 +1,110 @@
+/* ==================================================================== 
+ * The Kannel Software License, Version 1.0 
+ * 
+ * Copyright (c) 2001-2009 Kannel Group  
+ * Copyright (c) 1998-2001 WapIT Ltd.   
+ * All rights reserved. 
+ * 
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions 
+ * are met: 
+ * 
+ * 1. Redistributions of source code must retain the above copyright 
+ *    notice, this list of conditions and the following disclaimer. 
+ * 
+ * 2. Redistributions in binary form must reproduce the above copyright 
+ *    notice, this list of conditions and the following disclaimer in 
+ *    the documentation and/or other materials provided with the 
+ *    distribution. 
+ * 
+ * 3. The end-user documentation included with the redistribution, 
+ *    if any, must include the following acknowledgment: 
+ *       "This product includes software developed by the 
+ *        Kannel Group (http://www.kannel.org/)." 
+ *    Alternately, this acknowledgment may appear in the software itself, 
+ *    if and wherever such third-party acknowledgments normally appear. 
+ * 
+ * 4. The names "Kannel" and "Kannel Group" must not be used to 
+ *    endorse or promote products derived from this software without 
+ *    prior written permission. For written permission, please  
+ *    contact org@kannel.org. 
+ * 
+ * 5. Products derived from this software may not be called "Kannel", 
+ *    nor may "Kannel" appear in their name, without prior written 
+ *    permission of the Kannel Group. 
+ * 
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED 
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES 
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+ * DISCLAIMED.  IN NO EVENT SHALL THE KANNEL GROUP OR ITS CONTRIBUTORS 
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,  
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT  
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR  
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,  
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE  
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,  
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * ==================================================================== 
+ * 
+ * This software consists of voluntary contributions made by many 
+ * individuals on behalf of the Kannel Group.  For more information on  
+ * the Kannel Group, please see <http://www.kannel.org/>. 
+ * 
+ * Portions of this software are based upon software originally written at  
+ * WapIT Ltd., Helsinki, Finland for the Kannel project.  
+ */ 
+
+/*
+ * Taken from SMPP Spec v3.4
+ */
+
+#ifndef SMPP_PDU_OPT
+#define SMPP_PDU_OPT
+
+#define	SMPP_dest_addr_subunit 			0x0005 
+#define	SMPP_dest_network_type 			0x0006 
+#define	SMPP_dest_bearer_type 			0x0007 
+#define	SMPP_dest_telematics_id 		0x0008 
+#define	SMPP_source_addr_subunit 		0x000D 
+#define	SMPP_source_network_type 		0x000E 
+#define	SMPP_source_bearer_type 		0x000F 
+#define	SMPP_source_telematics_id 		0x0010 
+#define	SMPP_qos_time_to_live 			0x0017 
+#define	SMPP_payload_type 			0x0019 
+#define	SMPP_additional_status_info_text 	0x001D 
+#define	SMPP_receipted_message_id 		0x001E 
+#define	SMPP_ms_msg_wait_facilities 		0x0030 
+#define	SMPP_privacy_indicator 			0x0201 
+#define	SMPP_source_subaddress 			0x0202 
+#define	SMPP_dest_subaddress 			0x0203 
+#define	SMPP_user_message_reference 		0x0204 
+#define	SMPP_user_response_code 		0x0205 
+#define	SMPP_source_port 			0x020A 
+#define	SMPP_destination_port 			0x020B 
+#define	SMPP_sar_msg_ref_num 			0x020C 
+#define	SMPP_language_indicator 		0x020D 
+#define	SMPP_sar_total_segments 		0x020E 
+#define	SMPP_sar_segment_seqnum 		0x020F 
+#define	SMPP_sc_interface_version 		0x0210 
+#define	SMPP_callback_num_pres_ind 		0x0302 
+#define	SMPP_callback_num_atag 			0x0303 
+#define	SMPP_number_of_messages 		0x0304 
+#define	SMPP_callback_num 			0x0381 
+#define	SMPP_dpf_result 			0x0420 
+#define	SMPP_set_dpf 				0x0421 
+#define	SMPP_ms_availability_status 		0x0422 
+#define	SMPP_network_error_code 		0x0423 
+#define	SMPP_message_payload 			0x0424 
+#define	SMPP_delivery_failure_reason 		0x0425 
+#define	SMPP_more_messages_to_send 		0x0426 
+#define	SMPP_message_state 			0x0427 
+#define	SMPP_ussd_service_op 			0x0501 
+#define	SMPP_display_time 			0x1201 
+#define	SMPP_sms_signal 			0x1203 
+#define	SMPP_ms_validity 			0x1204 
+#define	SMPP_alert_on_message_delivery 		0x130C 
+#define	SMPP_its_reply_type 			0x1380 
+#define	SMPP_its_session_info 			0x1383 
+
+#endif
+

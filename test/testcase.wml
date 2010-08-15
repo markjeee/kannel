@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<!DOCTYPE wml PUBLIC "-//WAPFORUM//DTD WML 1.1//EN"
+"http://www.wapforum.org/DTD/wml_1.1.xml">
+
+<wml>
+    <template>
+        <do type="accept" name="Back" label="Back">
+            <prev/>
+        </do>
+        <do type="help" name="Help" label="Help">
+            <go href="#help"/>
+        </do>
+    </template>
+    <card id="main" title="A cool testpage" newcontext="true">
+        <setvar name="var" value="test"/>
+        <p>
+            This is a testing page with lots of tests.
+        </p>
+        <p>
+            Try picking one up:
+            <select name="doop" ivalue="2">
+                <option value="A">
+                    ABC
+                </option>
+                <option value="B">
+                    BCD
+                </option>
+                <option value="C">
+                    CDE
+                </option>
+                <option value="D">
+                    DEF
+                </option>
+            </select>
+        </p>
+    </card>
+    <card id="help" title="Help" newcontext="true">
+        <p>
+            Do not panic.
+        </p>
+    </card>
+</wml>

@@ -1,0 +1,231 @@
+2003-02-17  Stipe Tolj  <stolj@wapme.de>
+    * doc/userguide/userguide.xml: minor xml fixes.
+
+2003-02-16  Bruno Rodrigues  <bruno.rodrigues@litux.org> 
+    * userguide.xml: some xml fixes. Cleaning of debian chapter and added
+      new packages's information. Standardization of configuration blocks, 
+      xml samples and shell commands. Fixed logrotate sample
+
+2003-02-16  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc/smsc_emi2.c: fixed assigning of non existent field in EMI/UCP
+      driver. Thanks to "Michael Mulcahy" <michael.mulcahy@anam.com> for 
+      reporting and Alexander for providing a patch.
+      [Msg-ID: <200302031916.32796.a.malysh@centrium.de>]
+    * configure[.in]: Modified doc building checking. Alan provided this
+      patch, thanks a lot. Now docs are only build if all requiries are meet.
+      [Msg-ID: <1044948632.1131.71.camel@terpsichore>]
+    * gwlib/pki.h: fixed minor compiler warning
+
+2003-02-15  Stipe Tolj  <stolj@wapme.de>
+    * doc/userguide/userguide.xml: fixed malformed xml tag from previous 
+      commit.
+
+2003-02-15  Bruno Rodrigues  <bruno.rodrigues@litux.org> 
+    * configure, configure.in: added detection of OPENSSL_THREADS to enable
+      compiling kannel with openssl 0.9.7
+
+2003-02-15  Stipe Tolj  <stolj@wapme.de>
+    * gw/*.conf: harmonized the example config files. Deleted specially 
+      developer specific config values that are of no use for a normal user.
+    * gw/wap_push_ppg.c, gw/wap_push_ppg_pushuser.c: fixed some minor parts
+      of Aarno's PPG SMSC routing patch.
+    * doc/userguide/userguide.xml: added documentation sections about new
+      'default-smsc' for the ppg group and 'default-smsc' and 'forced-smsc'
+      for the wap-push-user group.
+
+2003-02-14  Bruno Rodrigues  <bruno.rodrigues@litux.org> 
+    * debian/*: created kannel-devel-* package files - to build them you
+      need to copy control.devel and changelog.devel to control and changelog
+      respectivly. 
+
+2003-02-14  Stipe Tolj  <stolj@wapme.de>
+    * doc/userguide/userguide.xml: Alan provided some documentation about 
+      log file roation.
+      [Msg-ID: <1044948652.1108.73.camel@terpsichore>]
+
+2003-02-14  Stipe Tolj  <stolj@wapme.de>
+    * gw/wap_push_ppg_pushuser.c, gwlib/cfg.def: bouncing back to use unique
+      config directives for 'wap-push-user' and 'sendsms-user' groups for 
+      specifying forced smsc-ids.
+
+2003-02-14  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc_smpp.c, doc/userguide/userguide.xml: Changed default behaviour
+      of the 'source-addr-autodetect' to yes. Alex suggested this. If the 
+      feature is not needed, it can be turned off by setting the config
+      directive to 'no'.
+
+2003-02-13 Aarno Syvänen <as@gni.ch>
+    * PPG SMSC routing patch:
+    * gw/wap_ppg_push_machine.def: Added a field for smsc id.
+    * gw/wap_push_ota.c: Forward smsc id to wsp.
+    * gw/wap_push_ppg.c: Read smsc id from config or from cgi variable
+      and forward it to ota. Formatted.
+    * gw/wap_push_ppg_pushuser.[c|h]: Read smsc id from config file.
+      Added a public function wap_push_ppg_pushuser_smsc_id_get for 
+      this purpose.
+    * gw/wapbox.c: Forward smsc id to bearerbox.
+    * gwlib/cfg.def: Configuration variables forced_smsc_id and default_
+      smsc_id.
+    * wap/wap_events.def: Smsc id to all relevant wap events. Formatted.
+    * wap/wsp_unit.c: Forward smsc id to wdp.
+
+    * Make check bugfix:
+    * checks/check_sendsms.sh: Better echoing when a failure occurs.
+    * checks/check_smpp.sh: Ditto. Test will end, changed log item to
+    be grepped.
+    * gwlib/socket.c: Removed an error message. Caller can log this.
+    * test/drive_smpp.c: Formatted. 
+
+2003-02-07  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc/smsc_cimd2.c: missed the 'ts = NULL' for the sake of the
+      for() loop.
+
+2003-02-07  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc/smsc_cimd2.c: fixed now dependency things for previous 
+      urltrans fix. Thanks to "Dariusz Markowicz" <dariuszm@tenbit.pl>.
+
+2003-02-06  Stipe Tolj  <stolj@wapme.de>
+    * gwlib/http.c: bouncing back to "HTTP/1.x %d Foo" style. Bruno has
+      requested this and it's seems nothing speaks against serving Foo.
+    * gw/urltrans.c: fixed a bug in case sms.msgdata is empty we don't
+      want to pass this to octstr_split_words(). 
+      Patch provided by "Dariusz Markowicz" <dariuszm@tenbit.pl>.
+      [Msg-ID: <01f801c2c87c$cfde56b0$1900000a@toster>]
+      Couldn't this be avoided by dealing with a NULL'ed octstr inside
+      octstr_split_words() itself?!
+    * gw/bboxc.c: fixed the unnecessary mutex locking in case we deal
+      with a wapbox connection. Thanks Robert for pointing this out.
+    * gwlib/cfg.def, gw/wap_push_ppg_pushuser.c: added smsc-id value handling
+      for the 'wap-push-user' group. The transportation of the value up to the
+      bearerbox sending routine has to be implemented yet.
+
+2003-02-04  Bruno Rodrigues  <bruno.rodrigues@litux.org> 
+    * userguide.xml: fixed table 5.2 and 5.3 for emi2 smsc
+
+2003-02-04  Bruno Rodrigues  <bruno.rodrigues@litux.org> 
+    * VERSION: fix back to "cvs". Stipe will change to 1.3.1 when tagging
+    * config.guess, config.sub: these are autogenerated by autoconf, but it
+      seems better to leave them on CVS
+
+2003-02-02  Bruno Rodrigues  <bruno.rodrigues@litux.org> 
+    * test/run-http2-tests: renamed to test/run-http2-tests.sh
+    * Makefile.in: like "checks", have a "tests" that includes test
+      executables and scripts
+    * Makefile.in: Added install-test, install-checks and install-contrib
+    * Makefile.in: install *.conf examples in install-docs
+    * Makefile.in: install docs with INSTALL_DATA to have 644 permissions
+    * Makefile.in: added make target "debian"
+    * debian: make kannel-docs with documentation and kannel-extra with test,
+      checks and contrib files
+    * debian: bumped Standards-Version to latest 3.5.8
+    * debian/.cvsignore: ignore kannel-docs and kannel-extra directories
+    * debian/conffiles: now empty. New Standards-Version have assumes /etc/* 
+      as conffiles
+    * debian/docs: added other doc files
+    * debian/postinst, debian/postrm: updated to new standards version: no 
+      need for making /usr/doc -> /usr/share/doc link anymore now update-rd.d. 
+      They are automatic now
+    * debian/rules: updated to new Standards
+    * debian/*: added logrotate config file
+
+2003-01-29  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc/smsc_at2.c: fixed double-increment bug for outgoing messages
+      counter. Thanks to Paul for pointing on this.
+
+2003-01-29  Stipe Tolj  <stolj@wapme.de>
+    * gwlib/http.c: fixed the missing HTTP Server identifier from previous 
+      commit.
+
+2003-01-29  Stipe Tolj  <stolj@wapme.de>
+    * gwlib/http.c: fixed a keep-alive lookup problem when using a HTTP proxy.
+      Thanks to "Michael Mulcahy" <michael.mulcahy@anam.com> for reporting this.
+
+2003-01-29  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc/smpp_pdu.c: added missed fix from Alexanders previous patch.
+
+2003-01-28  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsbox.c: add debug info about ammount of outstanding HTTP reqeusts
+      in the retry queue.
+
+2003-01-28  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc/smpp_pdu.c: added Alexander's optional PDU parameters
+      robustness patch.
+      [Msg-ID: <200301252018.01219.a.malysh@centrium.de>]
+    * gw/smsc/smsc_oisd.c, gw/smsc/smsc.c, gw/smsc/smsc_p.h:
+      added new OIS direct module provided by Dariusz Markowicz <dm@tenbit.pl>.
+      [Msg-ID: <02a301c2c56d$fa354f20$d4e34cd5@oem>]
+
+2003-01-27  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc/smsc_http.c: fixed a missing octstr_duplicate() bug in 
+      kannel_receive_sms(). Thanks to Angel for this patch.
+      [Msg-ID: <NCEOLLKPFAEAOBBMHNHEAEODFAAA.afradejas@mediafusion.es>]
+    * gw/smsc/smsc_cimd2.c: added validity setting within CIMD2 module.
+      Patch submitted by Nicholas Rahn <nicholas.rahn@mnc.ch>.
+      [Msg-ID: <1043677000.2194.41.camel@frisbee.mnc.ch>]
+    * gw/smsc/smsc_cimd2.c: added non-activated RPI (reply path indicator)
+      as default. This is common in the other modules too. Allow alphanumeric
+      source addresses. Patch by "Arne K. Haaje" <haaje@eurobate.com>
+      [Msg-ID: <3E313D1E.2060903@eurobate.com>]
+
+2003-01-25  Stipe Tolj  <stolj@wapme.de>
+    * gw/wap_push_pap_compiler.c: fixed infinite loop bug if /TYPE=xxx is 
+      missing in the PAP document. Thanks to Paul for pointing this out.
+
+2003-01-24  Stipe Tolj  <stolj@wapme.de>
+    * gw/bb_boxc.c, gw/smsbox.c: fixed a un-locked mutex bug while waiting
+      for smsbox indenitificatio msgs. Bug identified and patch provided
+      by "Robert Galach" <kanelek@tenbit.pl>.
+      [Msg-ID: <018001c2c158$f864beb0$3200000a@tenbit.com>]
+
+2003-01-21  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc/smpp_pdu.c: fixed a bug in smpp_pdu_unpack() when an PDU 
+      contains optional parameters with len < 0, octstr_copy() would 
+      definetly crash.
+    * gw/smsc/smsc_emi2.c: fixed double counter increase bug for incoming
+      messages.
+
+2003-01-21  Stipe Tolj  <stolj@wapme.de>
+    * gw/smsc/smsc_http.c: added proxying of the smsc-id attribute to the
+      attached smsbox instance. This allows spreading load from one smsbox
+      to several bearerbox instances.
+
+2003-01-15  Stipe Tolj  <stolj@wapme.de>
+	* doc/userguide/userguide.xml: fixed out-dated 'msg-id-type' directive
+	  explanation. Thanks to Mauricio Ramos <mauricio.ramos@waura.com.br>.
+
+2003-01-13  Stipe Tolj  <stolj@wapme.de>
+    * gw/wap-appl.c: fixed memory leak in set_referer_url(). Patch 
+      provided by Vjacheslav Chekushin <slava@lmt.lv>. Thanks
+
+2003-01-12  Bruno Rodrigues  <bruno.rodrigues@litux.org> 
+    * ChangeLog: fix spaces ;) Sorry, I'm too used to debian's changelog
+    * debian/changelog: fix changing day but not month and year
+     
+22003-01-11  Bruno Rodrigues  <bruno.rodrigues@litux.org> 
+    * debian/*: updated to generate packages for 1.3.0
+    * test/.cvsignore: ignore new wapproxy file
+    * ChangeLog: fix spaces ;)
+ 
+2003-01-09 Andreas Fink <andreas@fink.org>
+    * gw/cfg.def: added wait-ack-expire variable as otherwhise it wont work
+      on a clean compilation
+
+2003-01-09  Stipe Tolj  <stolj@wapme.de>
+    * gw/wap-appl.c: fixed assertion panic in case HTTP method is not
+      supported. Thanks to Vjacheslav Chekushin <slava@lmt.lv>.
+
+2003-01-07  Stipe Tolj  <stolj@wapme.de>
+    * test/wapproxy.c: fixed compiler warning.
+
+2003-01-07  Stipe Tolj  <stolj@wapme.de>
+    * solaris/pkginfo.[tmpl]: removed pkginfo and added pkginfo.tmpl. 
+      Suggested by Alan McNatty <alan@catalyst.net.nz>.
+
+2003-01-06  Stipe Tolj  <stolj@wapme.de>
+    * README, README.MACOSX: moved information from MacOS X specific README
+      file to the global README. There is no need for a specific OS dependend
+      README file for such minimal informations.
+
+2003-01-05  Stipe Tolj  <stolj@wapme.de>
+    * Making development release 1.3.0.
+

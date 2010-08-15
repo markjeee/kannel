@@ -1,0 +1,313 @@
+2001-02-26  Richard Braakman <dark@wapit.com>
+
+	* Making release 1.1.2.
+
+2001-02-23  Peter Grönholm  <peter@wapit.com>
+
+        * userguide: Wrote section "Setting up a dial-up line"
+
+2001-02-21  Richard Braakman  <dark@wapit.com>
+
+	* gw/wap-appl.c: Suppress server-generated error pages if they
+	are in a format (i.e. text/html) that the client does not accept.
+
+2001-02-21  Richard Braakman  <dark@wapit.com>
+
+	* gw/wap-appl.c: When suppressing an HTTP result body because it is
+	too long for the client, also adjust the Content-Length header.
+
+2001-02-21  Tuomas Luttinen  <tuo@wapit.com>
+
+	* gw/wml_compiler.c (set_charset): The function uses now 
+	charset_to_utf8 function to convert the WML document into the 
+	UTF-8 charset before feeding it to the libxml parser.
+
+	* gwlib/charset.[ch]: Added the functions charset_to_utf8 and 
+	charset_from_utf8. These are frontend for the libxml character set
+	converion funtions.
+
+2001-02-20  Peter Grönholm  <peter@wapit.com>
+
+	* userguide: Updated section "Installing Kannel from RPM packages"
+
+2001-02-20  Richard Braakman  <dark@wapit.com>
+
+	* userguide: Explained more about syslog-level.
+
+2001-02-16  Richard Braakman  <dark@wapit.com>
+
+	* gw/smsbox.c: Fix a potential buffer overflow in sms_split(),
+	by removing the partlist array and using List directly.
+
+	* gw/urltrans.c: Fix memory leak: destroy_onetrans also destroys
+	"header" and "footer".
+
+	* gw/urltrans.c: Warn if a service configures prefix or suffix
+	when they will not be used.
+
+	* userguide: Describe when prefix and suffix are used.
+
+	* userguide: Improve description of "omit-empty".  (Suggested
+	by Gildas Perrot.)
+
+2001-02-16  Richard Braakman  <dark@wapit.com>
+
+	* gw/bb_smscconn.c, gw/urltrans.c: Deal with cfg_get_multi_group()
+	possibly being NULL.
+
+	* gw/bb_smscconn_p.h: Add #include "smscconn.h" so that it doesn't
+	depend on the caller having included that file already.
+
+2001-02-15  Lars Wirzenius  <liw@iki.fi>
+
+	* gw/smpp_pdu.def, gw/smsc_smpp.c: Implemented the enquire_link
+	PDU and the corresponding enquire_link_resp PDU. This should keep
+	Kannel connected to an SMPP SMS center even when the connection
+	is otherwise idle.
+	
+	* test/drive_smpp.c: Cleaned up shutdown.
+
+2001-02-15  Tuomas Luttinen  <tuo@wapit.com>
+
+	* gw/wml_compiler.c (set_charset): bug reported by Aymerick Jéhanne
+	fixed so no more 2*encoding in the XML-header.
+
+2001-02-15  Richard Braakman  <dark@wapit.com>
+
+	* gw/smsc_at.c: Corrected timestamp calculation.  mktime()
+	uses local time, and it got a GMT time.  Converted to use
+	date_convert_universal() from gwlib/date.c instead.
+	(There is no function in the C library for this task.)
+	It probably still doesn't work for negative timezones,
+	I'll have to check the specs for that.
+
+	* gwlib/date.[ch]: Make date_convert_universal() a public
+	function.
+
+2001-02-14  Lars Wirzenius  <liw@iki.fi>
+
+	* gwlib/octstr.[ch]: Changed the octstr_create_urlcoded to be
+	similar in name and usage to octstr_url_decode.
+	
+	* gw/bb_store.c, gw/smsc_fake.c, gw/urltrans.c: Changed the
+	places where the function is called.
+
+2001-02-14  Lars Wirzenius  <liw@iki.fi>
+
+	* gw/urltrans.c, doc/userguide/userguide.xml: Restored the
+	meaning of %a in sms-service, implemented and documented %b to
+	support binary data.
+
+2001-02-14  Lars Wirzenius  <liw@iki.fi>
+
+	* gw/smsbox.c, doc/userguide/userguide.xml: Implemented
+	X-Kannel-UDH header in responses to keyword fetches.
+
+2001-02-13  Uoti Urpala  <uau@wapit.com>
+
+	* gw/smsc.c: Fixed octstr_get_cstr(NULL) when username, password
+	or allow_ip wasn't specified in emi_ip smsc group. This bug
+	probably appeared when smsc.c was converted to use cfg.c.
+
+2001-02-13  Richard Braakman  <dark@wapit.com>
+
+	* gw/wml_definitions.h: Applied patch from Aymerick Jéhanne
+	to correct encodings for "ordered true" and "ordered false".
+
+2001-02-12  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/bb_smscconn.c, gw/bb_boxc.c, gw/bearerbox.h: Modified so that
+	SMS messages from smsbox are directly put into corresponding SMS
+	centers, or if not able, either rejected (i.e. discarded right
+	now) or put to outgoing_sms queue which acts like delayed list
+
+	* gw/bb_smscconn_cb.h: added new callback, smscconn_connected,
+	which is called when status changes to ACTIVE, and makes bearerbox
+	trying to empty outgoing_sms queue
+
+	* gw/smsc_wrapper.c, gw/smsc_fake.c: modified to call that new
+	callback
+
+2001-02-12  Lars Wirzenius  <liw@iki.fi>
+
+	* Makefile.in: Moved -I. to before other -I options (before
+	@CFLAGS@) so that Kannel's config.h is found before any config.h
+	that might be a system header file.
+
+2001-02-12  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/bb_store.c: Ooops, forgot to add earlier. Anyway, now uses
+	straight octstr handling instead of using octstr_split and thus
+	does not need so much memory while unpacking the store-file
+
+2001-02-12  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/bb_boxc.c: removed heartbeat message kludge as it caused
+	other problems, had to think this more...
+
+	* gw/bb_http.c: removed debug information of HTTP query result
+	because it caused ankward output 
+
+	* gw/bb_store.c: Added. Handles SMS store 
+
+	* gw/msg-decl.h, gw/msg.h: added new 'ack' message type and new 
+	fields to sms. Name of these can change later.
+
+	* gw/bb_boxc.c, gw/bb_smscconn.c, gw/bearerbox.c, gw/smsbox.c: 
+	implemented first version of SMS storing/retrieval system. 
+	Consumes lots of memory when starting up, so does not work
+	well with checking malloc, will fix that today.
+
+	* gw/*kannel.conf: added (commented-out) store-file row
+
+2001-02-10  Uoti Urpala  <uau@wapit.com>
+
+	* gw/smsbox.c: Fixed bugs in smsbox_req_sendota(), added 'from'
+	CGI variable to sendota requests.
+
+	* gwlib/cfg.def: Added missing 'speed' variable to otaconfig
+	group.
+
+	* doc/userguide/userguide.xml: Documented the added 'from'
+	variable. 'speed' was also missing from the documentation.
+
+	* gw/smsc_fake.c: Implemented SMSCCONN_FAILED_TEMPORARILY
+	(probably doesn't make much difference in practice).
+
+	* gwlib/octstr.c: Fixed memory leak in octstr_append_from_hex().
+
+2001-02-08  Richard Braakman  <dark@wapit.com>
+
+	* Applied Stipe Tolj's patch to cfg.def and userguide, to
+	fix OTA configuration parsing.
+
+2001-02-07  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/bb_boxc.c: kludged to use internal heartbeat to wakeup sender
+	from consume if other end closes the connection
+
+	* gw/bb_smscconn.c: modified failed routing access log output
+
+	* utils/accesslog_parser.pl: added failed routing to final output,
+	and change all keywords to lowercase
+
+2001-02-07  Kalle Marjola  <rpr@wapit.com>
+
+	* utils/accesslog_parser.pl: added simple perl script to read
+	(SMS) access log and print statistics out of it, based on hours.
+	Uses the new format printed out by bb_smscconn.c
+
+2001-02-07  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/bearerbox.c: Bugfix. Fixed memory leak caused by access log /
+	new config
+
+	* doc/userguide/userguide.xml: made it clearer that sms-service is
+	selected by keyword and number of parameters
+
+	* gw/bb_smscconn.c: Bugfix: fixed access log to use Octstring return value
+
+	* gw/bb_smscconn.c: Compatibility breaker: modified access log
+	output
+	
+2001-02-07  Yann Muller  <ymuller@3glab.com>
+
+	* gw/smsc_at.c: added support for Ericsson GSM modems (patch from
+	Chris Blown).
+
+2001-02-06  Uoti Urpala  <uau@wapit.com>
+
+	* gw/urltrans.c: Changed the %a URL parameter to mean the original
+	message as-is, to allow binary data. Previously consecutive
+	whitespace characters were changed into one space. Note that %r
+	was NOT changed, maybe it should work similarly?
+
+2001-02-06  Kalle Marjola  <rpr@wapit.com>
+
+	* gw/bb_smscconn_cb.h: added new failed sending status,
+	SMSCCONN_FAILED_TEMPORARILY, which should be called if connection
+	to SMS center is lost temporarily
+
+	* gw/bb_smscconn.c: added handling for new status
+
+	* gw/smscconn_p.h: added comments of the new status
+	
+	* gw/smsc_wrapper.c: added that when reconnect is started, message
+	queue is emptied from messages with status
+	SMSCCONN_FAILED_TEMPORARILY
+	
+
+2001-02-06  Peter Grönholm  <peter@wapit.com>
+
+	* utils/kannel-stable-rh6x.spec: Added rpm spec file for Kannel
+	stable releases.
+
+	* utils/kannel-stable-rh7.spec: Added rpm spec file for Kannel
+	stable releases.
+
+2001-02-06  Uoti Urpala  <uau@wapit.com>
+
+	* gw/smsbox.c: Rewrote message-splitting functions because they
+	had lots and lots of bugs. Basically they didn't work if
+	split-chars, split-suffix or concatenation was defined.
+
+2001-02-05  Richard Braakman  <dark@wapit.com>
+
+	* gwlib/octstr.c: Fixed off-by-one error in octstr_case_search(),
+	reported by Vjacheslav Chekushin.
+
+2001-02-04  Richard Braakman  <dark@wapit.com>
+
+	* wmlscript/wsasm.c: Avoid generating 0-length functions,
+	because not all clients can handle them.
+
+	* gw/wap-appl.c: If the response body does not fit in the
+	client SDU size, generate status code 502 ("Bad Gateway")
+	instead of 413 ("Request Entity Too Large").  413 is definitely
+	the wrong code because it refers to the request, not the
+	response.  502 means the gateway received an invalid response
+	from the server, which is pretty close.
+        Also, do not touch the status code at all if it already indicates
+	an error.  The upstream error is more interesting to the user
+	than knowing that the error page didn't fit.
+
+	* gwlib/http.[ch]: Add http_status_class() function to
+	distinguish success codes (2xx) from error codes.
+
+2001-02-02  Tuomas Luttinen  <tuo@wapit.com>
+
+	* test/decompile.[ch]: Applied the patch by Neil Hunter that 
+	implements the codepage switch, changes the indent size to a #define
+	and adds basic support for different DTDs.
+
+	* gw/utf8map_iso8859-7.h, gw/utf8map_win1251.h, gw/utf8map_win1257.h,
+	gw/utf8map_koi8r.h, gw/utf8map_win1253.h: removed as obsolete.
+
+	* gw/wml_compiler.c: Patch by Vjacheslav Chekushin applied. The
+	patch makes the libxml aware of some aliases for different 
+	character_sets, so these can be used in the WML content with the 
+	libxml.
+	Some other modifications due modifications in the wml_definitions.h.
+
+	* gw/wml_definitions.h: Patch by Vjacheslav Chekushin applied. The 
+	patch removes the use of the utf8map in the character_sets[].
+	Also utf8map removed from the character_sets[].
+
+2001-02-02  Tuomas Luttinen  <tuo@wapit.com>
+
+	* gw/wml_compiler.c (string_table_collect_strings): Removed the 
+	if (strlen(node->content) > WBXML_STRING_TABLE_MIN) -line that 
+	won't work with XML_USE_BUFFER_CONTENT.
+
+2001-02-02  Richard Braakman  <dark@wapit.com>
+
+	* Added gwmem_type() function that returns the name of the 
+	malloc wrapper used.
+
+	* gw/shared.c: Report gwmem_type in the version string.
+
+2001-02-01  Richard Braakman  <dark@wapit.com>
+
+	* Updated doc/release.txt to better reflect actual procedure.
+	Only covers development releases for now.
+

@@ -1,0 +1,30 @@
+Scripts to generate webalizer pages from kannel access.log format.
+
+* smsc-id name have only one slash in it
+example: KannelClient-P12345
+First field is client name and second field is short number, "P"
+for production SMSC
+
+* sendsms-user and service name have at least two slashes in it
+example: KannelClient-MT-Logos or KannelClient-MO-ReplyLogo
+First field is client name, second is MT for sendsms-users 
+(web generated MT messages) and MO for services (even if it is
+a MT message, it's a reply to an MO). Could be something like
+USER and SERVICE. Third field is the service name.
+
+* scripts have some hard-coded directories and filenames.
+I have a user kannel, in directory /home/kannel, inside a
+bin, etc and var/log. Just check and adjust them.
+
+* stats.sh could be run in crontab when everything is working
+ok
+
+* scripts uses <ClientName> to create a directory and 
+the rest for the webalizer directory. This way, we could have
+different directories for different clients connected to kannel
+
+
+
+(c) 2001,2002 Bruno Rodrigues <bruno.rodrigues@litux.org>
+Under GPL Licence
+

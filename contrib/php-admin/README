@@ -1,0 +1,7 @@
+
+Edit the config.inc so it matches your kannel.conf
+
+
+Depending on your PHP setup you might have to set the:
+"allow_call_time_pass_reference = on" in your php.ini to get rid of the
+annoing warning.

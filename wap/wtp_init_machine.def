@@ -1,0 +1,119 @@
+/* ==================================================================== 
+ * The Kannel Software License, Version 1.0 
+ * 
+ * Copyright (c) 2001-2009 Kannel Group  
+ * Copyright (c) 1998-2001 WapIT Ltd.   
+ * All rights reserved. 
+ * 
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions 
+ * are met: 
+ * 
+ * 1. Redistributions of source code must retain the above copyright 
+ *    notice, this list of conditions and the following disclaimer. 
+ * 
+ * 2. Redistributions in binary form must reproduce the above copyright 
+ *    notice, this list of conditions and the following disclaimer in 
+ *    the documentation and/or other materials provided with the 
+ *    distribution. 
+ * 
+ * 3. The end-user documentation included with the redistribution, 
+ *    if any, must include the following acknowledgment: 
+ *       "This product includes software developed by the 
+ *        Kannel Group (http://www.kannel.org/)." 
+ *    Alternately, this acknowledgment may appear in the software itself, 
+ *    if and wherever such third-party acknowledgments normally appear. 
+ * 
+ * 4. The names "Kannel" and "Kannel Group" must not be used to 
+ *    endorse or promote products derived from this software without 
+ *    prior written permission. For written permission, please  
+ *    contact org@kannel.org. 
+ * 
+ * 5. Products derived from this software may not be called "Kannel", 
+ *    nor may "Kannel" appear in their name, without prior written 
+ *    permission of the Kannel Group. 
+ * 
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED 
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES 
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+ * DISCLAIMED.  IN NO EVENT SHALL THE KANNEL GROUP OR ITS CONTRIBUTORS 
+ * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,  
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT  
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR  
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,  
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE  
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,  
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * ==================================================================== 
+ * 
+ * This software consists of voluntary contributions made by many 
+ * individuals on behalf of the Kannel Group.  For more information on  
+ * the Kannel Group, please see <http://www.kannel.org/>. 
+ * 
+ * Portions of this software are based upon software originally written at  
+ * WapIT Ltd., Helsinki, Finland for the Kannel project.  
+ */ 
+
+/*
+ * wtp_init_machine.def: macro call for generating WTP initiator state 
+ * machine. See the architecture document for guidance how to use and update 
+ * it.
+ *
+ * By Aarno Syvänen for Wapit Ltd.
+ *
+ * WTPRespMachine data structure includes current state of WTP responder state 
+ * machine for a specific transaction. This means all data needed to handle at
+ * least two incoming events of a certain transaction. Its fields can be 
+ * grouped following way:
+ *
+ * General:      a) wtp initiator machine state 
+ *               b) tidnew flag, telling whether tid is wrapped up
+ *
+ * Fields telling the service required: 
+ *               a) transaction class (is transaction confirmed or not) 
+ *               b) user acknowledgement flag (do we wait for response 
+ *                  primitive of WTP user (for instance, WSP) or not)
+ *
+ * Machine identification: address four-tuple and transaction identifier
+ *
+ * Fields required for reliable transmission: 
+ *               a) pointer to the timer of this machine in the timers list
+ *               b) counter for retransmissions 
+ *               c) flag telling are we resending ack pdu doing tid verifica-
+ *                  tion or not
+ *               d) packed invoke message, for greater effectivity
+ */
+
+
+#if !defined(MACHINE) 
+    #error "Macro MACHINE is missing."
+#elif !defined(INTEGER) 
+    #error "Macro INTEGER is missing."
+#elif !defined(ENUM)  
+    #error "Macro ENUM is missing."
+#elif !defined(EVENT)  
+    #error "Macro EVENT is missing."
+#elif !defined(TIMER) 
+    #error "Macro TIMER is missing."
+#elif !defined(ADDRTUPLE)
+    #error "Macro ADDRTUPLE is missing."
+#endif
+
+MACHINE(ENUM(state)
+        INTEGER(tid)             /* transaction identifier */
+        ADDRTUPLE(addr_tuple)
+        INTEGER(tidnew)          /* tidnew flag */
+        INTEGER(u_ack)           /* user acknowledgement flag */
+        EVENT(invoke)            /* invoke datagram for resending */
+        TIMER(timer)
+        INTEGER(rcr)             /* retransmission counter */
+        INTEGER(tidok_sent)      /* are we resending tid verification */
+        INTEGER(rid)             /* are we resending invoke */
+       )
+
+#undef MACHINE
+#undef ENUM
+#undef EVENT
+#undef INTEGER
+#undef ADDRTUPLE
+#undef TIMER
