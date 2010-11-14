@@ -283,6 +283,8 @@ SINGLE_GROUP(smsbox,
     OCTSTR(immediate-sendsms-reply)
     OCTSTR(max-pending-requests)
     OCTSTR(http-timeout)
+    OCTSTR(http-request-ack-only-on-result)
+    OCTSTR(http-request-ack-failed-tmp-on-failure)
 )
 
 

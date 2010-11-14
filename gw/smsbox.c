@@ -150,6 +150,26 @@ static int immediate_sendsms_reply = 0;
 static Dict *client_dict = NULL;
 static List *sendsms_reply_hdrs = NULL;
 
+
+/***** 
+ * the following variables control when an ACK is returned for a 
+ * bearerbox request.
+ */
+
+/* if true, only send an ack_success after an HTTP success, not at 
+ * the start of the request.
+ * 
+ * default: false
+ */
+static int http_request_ack_only_on_result = 0;
+
+/* works only if http_request_ack_only_on_result is true.
+ * if true, send an ack_failed to the bearerbox for this msg, instead of 
+ * ack_failed_tmp, when after many retries, http request still fails.
+ */
+static int http_request_ack_failed_tmp_on_failure = 0;
+
+
 /***********************************************************************
  * Communication with the bearerbox.
  */
@@ -430,6 +450,7 @@ static void *remember_receiver(Msg *msg, URLTranslation *trans, int method,
 
     receiver->msg = msg_create(sms);
 
+	uuid_copy(receiver->msg->sms.id, msg->sms.id);
     receiver->msg->sms.sender = octstr_duplicate(msg->sms.sender);
     receiver->msg->sms.receiver = octstr_duplicate(msg->sms.receiver);
     /* ppg_service_name should always be not NULL here */
@@ -979,7 +1000,7 @@ static void fill_message(Msg *msg, URLTranslation *trans,
 static void http_queue_thread(void *arg)
 {
     void *id;
-    Msg *msg;
+    Msg *msg, *mack;
     URLTranslation *trans;
     Octstr *req_url;
     List *req_headers;
@@ -1014,6 +1035,20 @@ static void http_queue_thread(void *arg)
             /* re-queue this request to the HTTPCaller list */
             http_start_request(caller, method, req_url, req_headers, req_body,
                                1, id, NULL);
+        } else {
+			if (http_request_ack_only_on_result) {	
+				mack = msg_create(ack);
+				mack->ack.time = msg->sms.time;
+				uuid_copy(mack->ack.id, msg->sms.id);
+				
+				if (http_request_ack_failed_tmp_on_failure) {
+					mack->ack.nack = ack_failed_tmp;
+				} else {
+					mack->ack.nack = ack_failed;
+				}
+				
+				write_to_bearerbox(mack);
+			}
         }
 
         msg_destroy(msg);
@@ -1030,7 +1065,7 @@ static void url_result_thread(void *arg)
     List *reply_headers;
     int status, method;
     void *id;
-    Msg *msg;
+    Msg *msg, *mack;
     URLTranslation *trans;
     Octstr *req_url;
     List *req_headers;
@@ -1146,6 +1181,24 @@ static void url_result_thread(void *arg)
                  (status == HTTP_OK) ? "<< successful >>" : octstr_get_cstr(reply_body));
         }
 
+		if (http_request_ack_only_on_result) {	
+			mack = msg_create(ack);
+			mack->ack.time = msg->sms.time;
+			uuid_copy(mack->ack.id, msg->sms.id);
+			
+			if (status == HTTP_OK || status == HTTP_ACCEPTED) {
+				mack->ack.nack = ack_success;
+			} else {
+				if (http_request_ack_failed_tmp_on_failure) {
+					mack->ack.nack = ack_failed_tmp;
+				} else {
+					mack->ack.nack = ack_failed;
+				}
+			}
+			
+			write_to_bearerbox(mack);
+		}
+		
 requeued:
         octstr_destroy(final_url);
         http_destroy_headers(reply_headers);
@@ -1750,8 +1803,14 @@ static void obey_request_thread(void *arg)
                 msg_destroy(reply_msg);
             }
 	}
-
-	write_to_bearerbox(mack); /* implicit msg_destroy */
+	
+    /* Only send an ACK if explicitly returned a non-zero,
+     * meaning it was successfully handled (success or error). If a service 
+     * is a URL, do not return an ack yet, until the http request has returned 
+     * a success or failure (returns ack_failed or ack_failed_tmp depending on settings)
+     */
+    if (ret != 0 || !http_request_ack_only_on_result)
+      write_to_bearerbox(mack); /* implicit msg_destroy */
 
 	msg_destroy(msg);
     }
@@ -3451,6 +3510,9 @@ static Cfg *init_smsbox(Cfg *cfg)
     if (cfg_get_integer(&value, grp, octstr_imm("http-timeout")) == 0)
        http_set_client_timeout(value);
 
+    cfg_get_bool(&http_request_ack_only_on_result, grp, octstr_imm("http-request-ack-only-on-result"));
+	cfg_get_bool(&http_request_ack_failed_tmp_on_failure, grp, octstr_imm("http-request-ack-failed-tmp-on-failure"));
+	
     /*
      * Reading the name we are using for ppg services from ppg core group
      */
