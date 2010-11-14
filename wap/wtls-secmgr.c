@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2009 Kannel Group  
+ * Copyright (c) 2001-2010 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -103,6 +103,15 @@ static List *secmgr_queue = NULL;
  */
 
 static void main_thread(void *);
+
+/*
+ * Public functions.
+ */
+
+void wtls_secmgr_init(void);
+void wtls_secmgr_shutdown(void);
+void wtls_secmgr_dispatch(WAPEvent *event);
+long wtls_secmgr_get_load(void);
 
 /***********************************************************************
  * The public interface to the application layer.

@@ -4067,6 +4067,9 @@ fi
 fi
 
     ;;
+  *-interix3*)
+    INSTALL="./install-sh"
+    ;;
 esac
 
 

@@ -1,0 +1,108 @@
+2010-11-11  Alex Guerrieri <aguerrieri at kannel dot org>
+    * COMPATIBILITY BREAKER: Extended Stipe's patch to url-encode the udhdata
+      field as well, making it possible to send wap-push and other binary
+      messages from sqlbox.
+
+2010-11-11  Alex Guerrieri <aguerrieri at kannel dot org>
+    * COMPATIBILITY BREAKER: Modified the format in which the msgdata field was
+      stored on the database to be url-encoded. This avoids corrupting the data
+      when saving it. Thanks Stipe Tolj  <stolj at kannel.org> for this patch.
+
+2010-11-11  Alex Guerrieri <aguerrieri at kannel dor org>
+    * Fixes PostgreSQL code to properly evaluate null columns and avoid
+      corrupting numeric fields on messages.
+
+2010-11-02  Stipe Tolj  <stolj at kannel.org>
+    * acinclude.m4: use the gateway version to have the terminal sequences and
+      various other m4 functions available.
+    * configure[.in]: make the output looks like the gateway version, with 
+      cleaner sections. Fixed cygwin platform builds.
+
+2010-10-07  Stipe Tolj  <stolj at kannel.org>
+    * autotools/*, aclocal.m4, configure, Makefile.in: add autotool build by
+      bootstrap run for distribution.
+      
+2010-10-07  Stipe Tolj  <stolj at kannel.org>
+    * gw/sqlbox_[pgsql|sqlite3].c: more compiler warning fixes.
+    
+2010-10-06  Stipe Tolj  <stolj at kannel.org>
+    * gw/sqlbox.c, gw/sqlbox_[pgsql|sqlite3].c: fixed various compiler warnings.
+
+2010-09-11  Alex Guerrieri <aguerrieri at kannel dot org>
+    * Fixed bug: Not all sms messages were acked properly before, leaving
+      messages in the message store. Thanks Rene Kluwen for this patch.
+
+2010-06-16 - Rene Kluwen <rene.kluwen at chimit.nl>
+    * Fixed bug that sqlbox didn't disconnect from bearerbox when one of the
+      attached smsboxes would disconnect.
+
+2010-08-02 - Alejandro Guerrieri <aguerrieri at kannel dot org>
+    * Fixes bug that prevented single quotes to be used on message text and
+      other fields. Thanks Rene Kluwen for this patch.
+
+2009-12-28 - Alejandro Guerrieri <aguerrieri at kannel dot org>
+    * Added support for meta-data on all DB engines
+    * Added support for automake 1.11
+
+2009-05-19 - Alejandro Guerrieri <aguerrieri at kannel dot org>
+    * Added support for MS-SQL and Sybase
+    * Added rpm target
+    * Fixed tab->spaces across all code
+
+2008-11-21 - Alejandro Guerrieri <aguerrieri at kannel dot org>
+    * Completed documentation on missing DB modules.
+    * Added RPM support. Now it's possible to build RPM's natively by running
+      "make rpm" instead of "make".
+    * The module detects the DB engine compiled on Kannel and renames the RPM
+      accordingly.
+
+2008-11-18  Alex Guerrieri <aguerrieri at kannel dot org>
+    * REVISION 0.7.1 [CVS Tag: rev-0-7-1]
+    * Added support for the LibSDB database abstraction library. DB support is
+      now similar to Kannel's.
+    * Extensive code reorganization to move the queries into the header files
+      and allow reusing from the libsdb module.
+    * Added examples for database connections on sample conf file.
+
+2008-11-12  Alejandro Guerrieri <aguerrieri at kannel dot org>
+    * REVISION 0.7.0 [CVS Tag: rev-0-7-0]
+    * Added support for Oracle, SQLite2 and SQLite 3.
+    * Binary now install under sbin instead of bin, just like all the other
+      Kannel "boxes".
+
+2008-11-03  Alex Guerrieri <aguerrieri at kannel dot org>
+    * REVISION 0.6.0 [CVS Tag: rev-0-6-0]
+    * Added documentation into the build process.
+    * Unified CVS and Standalone versions into CVS.
+
+2006-11-06
+    * Unicode support. Thanks to Cavit Dolgun <c dot dolgun at gmail dot com>
+
+2006-06-20
+    * Postgres SQL driver fixed after a long period of being broken.
+      Many thanks and credits go to Huberto Figuera <hfiguera at gmail dot com>
+
+2006-06-14
+    * make patch failure fixed by Martin Conte
+
+2006-05-30
+    * Applied patch of Martin <reflejo at gmail dot com> for the bug:
+      SQLbox is not reading smsbox-port. It is hardcoded to 13005.
+    * Applied patch of Martin <reflejo at gmail dot com>:
+      Delivery reports are now stored as 'DLR' in the MOMT database field.
+      This makes it easier to filter them out if you are only interested in
+      MO messages while reading the sent_sms table.
+    * Bug fixed by Rene Kluwen <rene dot kluwen at chimit dot nl>:
+      sqlbox now reads the port value from the mysql-connection group.
+
+2005-11-01
+    * Applied patch of Thomas Gottgens: The fields udhdata and msgdata are now
+      created as blob and text fields.
+    * Also some fields of Kannel.conf are renamed to match CVS HEAD revision of
+      the gateway module.
+    * mysql-username is now "username"
+    * mysql-password is now "password"
+    * mysql-host is now "host"
+
+2005-09-29
+    * First repository release of sqlbox.

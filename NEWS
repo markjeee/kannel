@@ -1,9 +1,89 @@
-NEWS about Kannel: Open Source WAP and SMS Gateway version 1.4.2
+NEWS about Kannel: Open Source WAP and SMS Gateway version 1.5.0
 
-This is a STABLE version. It should be usable for production systems.
+This is a DEVELOPMENT version. It should be usable for production systems.
 Please do report problems to the Kannel bug tracking system available at 
 http://bugs.kannel.org/ or send a mail to <devel@kannel.org> (the development 
 mailing list).
+
+
+Changes since version 1.4.3: 
+
+[*** Beware that the version move from 1.4.3 to 1.5.0 contains numerous 
+change sets, with major bug fixes and improvements. Following is a summary of the 
+main issues. For a complete and detailed set of changes please refer to the 
+specific ChangeLog in the doc/ directory of the distribution. ***]
+
+Compatibility breakers:
+
+  * Internal message structure has changed, so older smsbox connection daemons
+    won't be able to communicate with this bearerbox. Please ensure that you
+    use boxes from releases greater or equal 1.5.0 for correct communication.
+    
+  * DLR storage via MySQL requires now MySQL 4.1 or higher, due that we use now
+    prepared statements in the SQL calls.
+
+New features:
+
+  * Added 'meta-data' support, which provides a mechanism to pass SMSC protocol
+    specific optional data to the lower SMSC module layer. Ie. optional TLVs 
+    for SMPP.
+    
+  * Added better serial speed support for the AT modem on MacOS systems.
+  
+  * Added cleaner iconv() support for character re-encoding.
+  
+  * Added SMPP v3.4 DLR support via optional TLV values.
+  
+  * Added DLR support for the MT batch processing program.
+  
+  * Added Microsoft SQL server support as DLR storage backend.
+  
+  * Extended the HTTP admin interface.
+  
+  * Added SMPP v3.4 intermediate notification support.
+  
+  * Added MT module handling of +CME ERROR cases.
+  
+  * Added better result parsing generic HTTP SMSC module.
+  
+  * Added better throughput handling in SMPP module.
+  
+  * Added SMSC module 'loopback' as the MT counterpart of the 're-route'
+    directive in the 'group = smsc' for MO messages. MT messages are 
+    bounced back as MOs into the incoming queue.
+    
+  * Added separate DLR message counters on the HTTP admin status.
+  
+  * Added 'http-timeout' config directive to allow setting of a timeout
+    value for outgoing HTTP calls.
+  
+  * Added WTLS provisioning support.
+  
+  * Added add-on packages sqlbox and opensmppbox to the main distribution,
+    where sqlbox provides abstraction from bearerbox towards SQL RDBMS and
+    opensmppbox provides abstraction from bearerbox towards SMPP clients. 
+   
+Bugfixes:
+
+  * Fixed various bugs in AT module.
+  
+  * Fixed various memory leaks.
+  
+  * Fixed ISO date parsing.
+  
+  * Fixed HTTP cookie parsing in WAP module.
+  
+  * Fixed WAP-WSP quoted text parsing.
+ 
+  * Fixed various WAP module bugs.
+  
+  * Fixed MT batch processing program.
+
+  * Fixed FreeBSD build procedure.
+  
+  * Fixed OMA OTA compiler output.
+  
+  * Fixed weak DLR resolving for some SMSC types.
 
 
 Changes since version 1.4.1: 

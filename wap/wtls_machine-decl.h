@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2009 Kannel Group  
+ * Copyright (c) 2001-2010 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -60,6 +60,7 @@
  * the architecture document for guidance how to use and update it.
  *
  * By Nick Clarey <nclarey@3glab.com> (c) 3GLab Ltd.
+ * Nikos Balkanas, Inaccess Networks (2009)
  *
  * The WTLSMachine data structure preserves the state of the existing WTLS
  * transaction. The fields which are included;
@@ -108,6 +109,7 @@ MACHINE(ENUM(state)
         OCTSTR(client_random)                   /* The client's random number */
         OCTSTR(server_random)                   /* The server's random number */
         OCTSTR(master_secret)                   /* The master secret */
+        INTEGER (key_algorithm)         /* Exchange key algorithm chosen */
         INTEGER (key_size)              /* The "key size". Which key size, I have no idea */
         INTEGER (key_material_length)   /* and what might that be ? */
         INTEGER (is_exportable)                 /* exportable flag (?) */
@@ -116,6 +118,7 @@ MACHINE(ENUM(state)
         INTEGER(mac_key_size)                   /* MAC key size */
         INTEGER(sequence_number_mode)   /* The sequence number mode */
         INTEGER(key_refresh)                    /* How often we should refresh our keys */
+        INTEGER(last_refresh)     /* Last client seqnum when keys were refreshed */
         OCTSTR(compression_method)              /* The compression algorithm */
         INTEGER(encrypted)				/* set if packets are encrypted */
 		

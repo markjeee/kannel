@@ -1,0 +1,42 @@
+OVERVIEW
+========
+
+OpenSMPPBox is a special Kannel box that listens for smpp connections and accepts
+and sends sms messages from and to smpp clients.
+
+OpenSMPPBox behaves similar to other Kannel boxes and share a compatible
+configuration file format and command line options.
+
+After starting opensmppbox, a new connection to bearerbox is made for each
+smpp client that is connecting. This (new) connection with it's own
+'smsbox-id' is dedicated to sending and receiving messages for this particular
+smpp client.
+
+INSTALLATION
+============
+Please read the INSTALL file for further instructions. If in a hurry, the quick
+explanation is:
+
+./bootstrap
+./configure
+make
+
+And finally, as root:
+
+make install
+
+You need to have a development version of Kannel installed in order to compile
+opensmppbox.
+
+The Userguide has also valuable information about the install and configuration
+steps. To create the userguide, run ./configure with --enable-docs and then
+type "make docs".
+
+HELP
+====
+
+The best to ask for help is on Kannel's mailing lists.
+
+Please visit Kannel's site for more information:
+
+http://www.kannel.org/

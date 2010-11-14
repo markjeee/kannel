@@ -1,0 +1,15 @@
+***** IMPORTANT NOTICE *****
+
+If you're upgrading from a version BEFORE 2010-11-11 (0.7.x and
+lower), please note that the format for the msgdata and udhdata
+columns is now url-encoded. That probably means that if you use
+inserts on send_sms to send MT, YOU WILL NEED TO MODIFY YOUR
+CODE TO URLENCODE THE MESSAGES FIRST.
+
+***** OLDER COMMENTS *****
+
+If you are upgrading from a previous sqlbox version before
+2006-05-30, you will have to modify your existing sql table
+structure by issuing the following command:
+
+ALTER TABLE sent_sms MODIFY momt enum('MO','MT','DLR');

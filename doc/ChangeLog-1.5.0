@@ -1,0 +1,744 @@
+2010-10-20  Stipe Tolj  <stolj at kannel.org>
+    * configure[.in]: make sure we use the packaged install script rather
+      then the system own install on Interix 3. The system own version has
+      no option -d support.
+    * gwlib/counter.c: Interix 3 has pthread spinlocks, but they seem to
+      be experimental and block the system. We'll use mutex locks instead.
+    * gwlib/gwlib.h: Interix 3 has no strtoll(), but strtoq() provides the
+      equivalent functionality.
+    * gwlib/gwthread.h: Interix 3 has no sys/poll.h, so ignore the inclusion
+      for this platform.
+    * gwlib/socket.c: use gw_netaddr_to_octstr() instead of inet_ntop(), due
+      to the fact that the later is not provided in Interix 3.
+    * gwlib/utils.c: there is no initgroups() in Interix 3, so avoid the call
+      for this specific platform.
+
+2010-10-12 Vincent CHAVANIS <v.chavanis at telemaque.fr>
+    * test/test_list.c: fixed compiler warnings.
+
+2010-10-12 Vincent CHAVANIS <v.chavanis at telemaque.fr>
+    * gw/dlr_mysql.c: Fixed broken DLR when state is intermediate when using Mysql
+
+2010-10-11  Stipe Tolj  <stolj at kannel.org>
+    * doc/userguide/userguide.xml: add reference to new '%R' escape code for
+      the DLR-URL value.
+    * gw/bb_alog.c: add '%R' handling to get_pattern() for the 'access-log-format'
+      custom access logging.
+    * gw/urltrans.c: add '%R' handling to the escape code handling.
+
+2010-10-07  Stipe Tolj  <stolj at kannel.org>
+    * */*: updating the LICENSE preamble to reflect the correct year.
+    
+2010-10-07  Stipe Tolj  <stolj at kannel.org>
+    * utils/makedist: addopt for our SVN repository.
+    
+2010-09-27 Alexander Malysh <amalysh at kannel.org>
+    *  gw/bb_smscconn.c, gw/msg.h, gw/smscconn.c: applied patch that fixes sms-resend-* handling
+       for concatenated messages.
+
+2010-09-24 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/list.[ch]: added function to search for the equal item on the list, this is usefull
+      to lookup for one element if it's still present.
+
+2010-09-24 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/list.[ch]: added new function gwlist_consumer_count to receive count consumers
+      for this list. Fixed comment for gwlist_sort function.
+
+2010-09-24 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/list.c, test/test_list.c: fixed gwlist_sort if list get fragmented by usage.
+
+2010-09-21 Alexander Malysh <amalysh at kannel.org>
+    * wap/wtls-secmgr.c, wap/wtls.c, wap/wtls_pdu.c, wap/wtls_pdusupport.c, wap/wtls_statesupport.c:
+      Fixed WTLS branch warnings.
+      Thanks to Nikos Balkanas <nbal at amdtelecom.net> for this patch.
+
+2010-09-21 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_smpp.c: handle “Invalid system_type" as fatal and don't retry login.
+      Thanks to Roy Walker <rwalker at sensorlogic.com> for this patch.
+
+2010-09-13 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/pki.c, wmlscript/wsgram.[chy]: fixed some warnings.
+      Thanks to Nikos Balkanas <nbal at amdtelecom.net> for this patch.
+
+2010-09-12 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/http.c: fixed issue that new servers were added every time gwthread_poll returns as well as on startup.
+      This fixes #525.
+
+2010-09-12 Alexander Malysh <amalysh at kannel.org>
+    * merged wtls_provision branch.
+      Thanks to Nikos Balkanas <nbal at amdtelecom.net> for this patch.
+
+2010-09-01 Alexander Malysh <amalysh at kannel.org>
+    * doc/userguide/userguide.xml, gw/urltrans.c: Fixed bug that keyword-regex
+      was case insensitive.
+      Thanks to Nikos Balkanas <nbal at amdtelecom.net> for this patch.
+
+2010-08-06 Alexander Malysh <amalysh at kannel.org>
+    * gw/bb_boxc.c: fixed security issue that box-[allow|deny]-ip options were
+      ignored for smsbox. This fixes #188.
+      Thanks to Roland Discein for patch.
+
+2010-08-05 Alexander Malysh <amalysh at kannel.org>
+    * bootstrap.sh: changed to /bin/sh bacase e.g. FreeBSD has bash in /usr/local/bin.
+      Thanks to Victor Luchitz <vluchits at gmail.com> for the hint.
+
+2010-07-28 Alexander Malysh <amalysh at kannel.org>
+    * gw/dlr.[ch], gw/dlr_mem.c, gw/dlr_mssql.c, gw/dlr_mysql.c, gw/dlr_oracle.c, gw/dlr_p.h
+      gw/dlr_pgsql.c, gw/dlr_sdb.c, gw/smsc/smsc_at.c, gw/smsc/smsc_cgw.c, gw/smsc/smsc_cimd2.c,
+      gw/smsc/smsc_emi.c, gw/smsc/smsc_fake.c, gw/smsc/smsc_http.c, gw/smsc/smsc_oisd.c,
+      gw/smsc/smsc_smpp.c, gw/smsc/smsc_soap.c: applied patch that adds last 7 digits from destination
+      to DB queries for DLR support. It reduces possibility to get wrong DLR for e.g. EMI.
+      Thanks to Nikos Balkanas <nbal at amdtelecom.net> for this patch.
+
+2010-06-04 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_at.c: clear privdata afetr read error to get clean status
+      for reconnect.This fixes #544.
+      Thanks to <anping.qiao at gmail.com> for patch and bugreport.
+
+2010-05-31 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_oisd.c: applied patch that allows empty MOs.
+      Thanks to Michael Zervakis <michael at zervakis.com> for this patch.
+
+2010-05-14  Stipe Tolj  <stolj at kannel.org>
+    * gw/dlr.c: fixed missing foreign ID (FID) escape codes handling for 
+      DLR SMSC SUCCESS|FAIL events, due that we handle the last chunk here, we
+      didn't get hold of the FID. We need to duplicate it to the split list 
+      original too, in order to have it available later, when the last chunk 
+      us handled for the DLR events.
+      Thanks to Gianluca Moretti <gianluca.moretti at hotmail dot it> for report.
+
+2010-05-06 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_smpp.c: ignore receive_port for transceiver mode.
+      Thanks to Juan Nin <juanin at gmail.com> for report.
+
+2010-04-27 Alexander Malysh <amalysh at kannel.org>
+    * doc/userguide/userguide.xml, gw/smsc/smsc_at.[ch], gwlib/cfg.def:
+      Aplied patch that adds configuration option to at smsc, message-start
+     (in group modems). In case of sim-buffering it will set the starting buffer
+     index in the sim. For some modems such as the UMG181 this needs to be set to
+     0. Defaults to 1, and doesn't need changing for most others.
+     Thanks to to Nikos Balkanas <nbal at amdtelecom.net> for this patch.
+
+2010-04-12 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_at.c: applied patch that fixes issue when error received
+      during handshake.
+      Thanks to hisham malik <hisham.malik at confiz.com> for this patch.
+
+2010-04-01 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/http.c: fixed memory leak.
+
+2010-03-24  Stipe Tolj  <stolj at kannel.org>
+    * doc/userguide/userguide.xml: fixed Alex's missing paragraph closing tag.
+    
+2010-03-22  Stipe Tolj  <stolj at kannel.org>
+    * VERSION: fix typo and make the rXXXX tag more clean here.
+    
+2010-03-22 Alexander Malysh <amalysh at kannel.org>
+    * configure, VERSION, configure.in, acinclude.m4, aclocal.m4: switched CVS -> SVN
+
+2010-03-20 Alexander Malysh <amalysh at kannel.org>
+    * userguide/userguide.xml: applied patch that should clarify modem initialization.
+      Thanks to Nikos Balkanas <nbal at amdtelecom.net> for this patch.
+
+2010-03-20 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsbox.c: rewrite of XML POST to use libxml/xpath. This should handle all of
+      escaping, namespacing etc. issues.
+
+2010-03-18  Andreas Fink <andreas at fink.org>
+    * doc/examples/modems.conf, modems.conf
+      fixed default settings for Siemens TC35
+      this should make hanging TC35's a thing of the past
+
+2010-03-09  Stipe Tolj  <stolj at kannel.org>
+    * doc/userguide/userguide.xml: we use UTF-8 as default encoding for the
+      payload and not WINDOWS-1252. This caused a lot of mis-understanding.
+    * gw/smsbox.c: fix also the comment. NLC.
+
+2010-02-28 Alexander Malysh <amalysh at kannel.org>
+    * gw/bearerbox.c: don't ignore errors on startup. This fixes #536.
+
+2010-01-21  Stipe Tolj  <stolj at kannel.org>
+    * gw/bb_boxc.c: fix a duplicate store_save_ack() call in case we get
+      SMSCCONN_FAILED_DISCARDED as result of our smsc routing call. In this
+      case we HAVE already called the store_save_ack(), and hence yield an
+      ERROR line that we're unable to unlink the file from a spool directory.
+
+2010-01-20  Stipe Tolj  <stolj at kannel.org>
+    * utils/start-stop-daemon.c: fix FreeBSD build, removed the redundant
+      command here that breaks the build. NLC.
+
+2010-01-19 Andreas Fink <andreas at fink.org>
+    * gwlib/charset.c partially revert last change.
+      GSM charset character 09 is encoded differently by various vendors.
+      Nokia and Apple show a small c cedille.
+      Ericcson and Android show a capital C cedile
+      The standard GSM ETSI TS 123 038 V8.2.0 (2008-10) shows a 
+      capital, even though french speakers who have invented GSM
+      will agree that it most likely was meant as small (in french you dont
+      write capital C cedille but you use small c cedille often).
+      Capital and small c cedile get encoded into 09.
+      09 gets decoded to capital c cedille as it is in the standard.
+
+2010-01-19 Andreas Fink <andreas at fink.org>
+    * gwlib/charset.c Fixed french character c cedille. In GSM 23.38-700 it 
+      looks like a capital C cedille for code point 0x09. Real life phones
+      however display a small c cedille for code 0x09. The change does
+      encode capital and small C cedille into 0x09 and decodes to small C
+      on incoming. Before a small c cedille resulted in a questionmark.
+
+2010-01-11 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/octstr.[ch]: the search functions should return long #526
+      Thanks to Stepan Seycek <s.seycek at dimoco.at> for this patch.
+
+2010-01-11 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/octstr.c: fixed #527
+      Thanks to Stepan Seycek <s.seycek at dimoco.at> for this patch.
+
+2010-01-03  Stipe Tolj  <stolj at kannel.org>
+    * gw/smsc/smsc_loopback.c: make sure we create an new UUID for the MO we
+      are about to loopback via this smsc. This is more realistic by means that
+      other smsc modules also create an own UUID for a logical MO.
+    
+2009-12-23 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/log.c, gw/wap_push_ppg.c: fixed some compiler warnings and typos.
+      Thanks to Nikos Balkanas <nbal at amdtelecom.net> for this patch.
+
+2009-12-22 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/octstr.c: fixed crash in octstr_decode_url() when called with octstr=NULL.
+      Bug #528.
+      Thanks to Stepan Seycek <s.seycek at dimoco.at> for this patch.
+
+2009-12-07  Stipe Tolj  <stolj at kannel.org>
+    * gw/smsc/smsc_emi.c: fix segmentation fault in case we jump via goto 
+      error in smsc_emi2_create(), but have yet no privdata created.
+
+2009-12-06 Alexander Malysh <amalysh at kannel.org>
+    * doc/userguide/userguide.xml, gw/bearerbox.c, gw/smsbox.c, gw/wapbox.c, gwlib/cfg.def:
+      Applied patch that adds configurable http-timeout support for outgoing http client connections.
+      Thanks to Nikos Balkanas <nbal at amdtelecom.net> for this patch.
+
+2009-12-03 Alexander Malysh <amalysh at kannel.org>
+    * gw/meta_data.c: fixed memory leak.
+      Thanks to Nikos Balkanas <nbal at amdtelecom.net> for hint.
+
+2009-11-24 Alejandro Guerrieri <aguerrieri at kannel.org>
+    * contrib/kannel-monitor/*: rewrite of the code to support separate dlr
+      counters. Interface cleanup and php code updates.
+
+2009-11-23 Alexander Malysh <amalysh at kannel.org>
+    * gw/dlr_pgsql.c: applied patch that escapes table name and fields.
+      Quoting an identifier also makes it case-sensitive, whereas unquoted names are
+      always folded to lower case. CB.
+      See http://www.postgresql.org/docs/8.0/static/sql-syntax.html#SQL-SYNTAX-IDENTIFIERS
+      Thanks to Vincent CHAVANIS <v.chavanis at telemaque.fr> for this patch.
+
+2009-11-15 Alexander Malysh <amalysh at kannel.org>
+    * gw/wap_push_ppg.c: allow requesting DLRs without dlr-url.
+      Thanks to Nikos Balkanas <nbal at amdtelecom.net> for this patch.
+
+2009-11-15 Alexander Malysh <amalysh at kannel.org>
+    * gw/bb_smscconn.c: applied patch that minimize possibility of wrong re-assembling of
+      concatenated MO messages.
+
+2009-11-11 Alexander Malysh <amalysh at kannel.org>
+    * gw/bb_smscconn.c, gw/bearerbox.c, gw/smscconn.[ch], gw/smscconn_p.h: applied patch
+      that adds separate dlr counters on the status page.
+      Thanks to Alejandro Guerrieri <aguerrieri at kannel.org> fir this patch.
+
+2009-11-09 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/octstr.c: fixed crashes on Snow Leopard 64Bit.
+      Thanks to Paul Bagyenda <bagyenda at dsmagic.com> for this patch
+
+2009-11-01 Alexander Malysh <amalysh at kannel.org>
+    * gw/numhash.c, gw/bb_smscconn.c: fixed possible crash by reloading
+      white/blask lists via HTTP interface.
+
+2009-10-22 Alexander Malysh <amalysh at kannel.org>
+    * gw/dlr_mssql.c, gw/dlr_mysql.c, gw/dlr_oracle.c, gw/dlr_pgsql.c, gw/dlr_sdb.c:
+      added warnings if DLR was not inserted/updated/deleted but no error occurs
+      e.g. row to update not found.
+      Thanks to Nikos Balkanas <nbal at amdtelecom.net> for this patch.
+      [Msg-Id: <001801ca530c$43c24ac0$02b2a8c0@tardis>
+
+2009-10-13 Alexander Malysh <amalysh at kannel.org>
+    * gw/dlr_mysql.c: applied patch that fixes table name and field names that
+      use reserved keywords.
+      See http://dev.mysql.com/doc/refman/5.0/en/identifiers.html for details.
+      Thanks to Vincent CHAVANIS <v.chavanis at telemaque.fr> for this patch.
+
+2009-09-20 Alexander Malysh <amalysh at kannel.org>
+    * gw/msg.c: fixed crash when wrong packet received on bearerbox port.
+      Thanks to Michael Zervakis <michael at zervakis.com> for report.
+      [Msg-Id: <4AB3A08C.3050408@zervakis.com>]
+
+2009-09-17  Stipe Tolj  <stolj at kannel.org>
+    * doc/userguide.xml: document the 'smsc = loopback' type.
+    * gw/smscconn[_p].[ch]: add the loopback SMSC type to the internal 
+      structures.
+    * gw/smsc/smsc_loopback.c: add loopback SMSC type module.
+      [Msg-Id: <4A4B9245.1030705@tolj.org>]
+
+2009-09-04 Alexander Malysh <amalysh at kannel.org>
+    * aclocal.m4, configure, configure.in, gw/dlr_mysql.c, gwlib/dbpool_mysql.c,
+      test/test_dbpool.c: implemented select/update function calls for dbpool_mysql. This
+      require mysql prepared statement support and therefore mysql version >= 4.1.
+      Changed dlr_mysql to use these new function calls. This fixes #258.
+
+2009-09-03 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smpp_pdu.c: fixed memory leak.
+
+2009-09-02 Alexander Malysh <amalysh at kannel.org>
+    * doc/userguide/userguide.xml, gw/smsc/smpp_pdu.[ch], gw/smsc/smsc_smpp.c, test/drive_smpp.c,
+      test/drive_smpp.conf, test/test_smsc.c: implemented smsc-id config option for smpp-tlv group.
+
+2009-09-01 Alexander Malysh <amalysh at kannel.org>
+    * gw/bearerbox.c: fixed memory leak
+
+2009-08-31 Alejandro Guerrieri <aguerrieri at kannel.org>
+    * gw/bb_smscconn.c, gw/bearerbox.c, gw/bearerbox.h,
+      doc/userguide/userguide.xml: limit of 1M messages on outgoing queue limit
+      documented. Small code cleanup.
+
+2009-08-28 Andreas Fink <andreas at fink.org>
+    * util/start-stop-daemon.c: fix compilation under MacOS X 10.6
+
+2009-08-28 Alexander Malysh <amalysh at kannel.org>
+    * gw/bb_smscconn.c: always initialize msgdata because too many parts in
+      kannel expect msgdata non NULL.
+
+2009-08-24 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_at.c: fixed timeout value passed to select. This should fix #514.
+
+2009-08-12 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_at.[ch]: changes as follows:
+      - changed at2_read_line to first try buffer and only then try to read from device.
+        This should give us some speedup.
+      - populate timeout to select. This fixes to high CPU usage.
+      - more error handling.
+      - variuos fixes.
+
+2009-08-07 Alexander Malysh <amalysh at kannel.org>
+    * gw/dlr_oracle.c: fixed table name in dlr_flush_oracle.
+
+2009-07-28 Alexander Malysh <amalysh at kannel.org>
+    * gw/numhash.[ch]: increase numhash precision from 9,18 to 19,38 on 32,64bit respectively.
+      This is possible by using C99 standard type long long.
+
+2009-07-21  Stipe Tolj  <stolj at kannel.org>
+    * gw/smsc/smsc_smpp.c: fix compile error for --disable-ssl builds. NLC.
+      Thanks to Gottfried Huber <gottfried.huber at siemens.com> for reporting.
+
+2009-07-08 Alejandro Guerrieri <aguerrieri at kannel.org>
+    * gw/bb_smscconn.c: fixed warnings on unused variables
+
+2009-07-08 Alejandro Guerrieri <aguerrieri at kannel.org>
+    * doc/userguide/userguide.xml, gw/bearerbox.c, gw/bearerbox.h, gw/bb_smscconn.c,
+      gw/bb_http.c: improvements and bug fixes for the http admin interface:
+      - added add-smsc and remove-smsc commands to dinamically add and remove smsc
+        without restarting bearerbox
+      - start-smsc reloads the configuration from disk
+      - fixes bug on stop-smsc and start-smsc to properly report an error when a
+	non-existing smsc name is stopped/started
+      - fixes a bug when starting a group with 2 or more entries with the same id and
+        different admin-id's
+
+2009-07-07 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_smpp.c: merged smpp throttling branch that adds throughput handling
+      without sleep for better ACK/DLR performance. Also changed:
+      - added return codes to all sending and processing PDU functions
+      - added extra error code when we receive malformed PDU
+      - inlined smpp_msg_[create|destroy]
+      - check validity against SMS_PARAM_UNDEFINED instead of hardcoded >= 0
+      - added function to send generic NACK
+      - check bind_xxx_resp for error 'already bound' and don't handle it as error
+      - re-wrote io_thread function (this is the main loop) to take into accounts all
+        possible conditions and throughput
+      - implemented async shutdown sequence
+
+2009-06-29 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_at.c: optimizing detection process on CME/CMS Errors (avoid to check
+      if CMS when CME was detected). Renaming param value code -> errcode to make it
+      more clean.
+      Thanks to Vincent CHAVANIS <v.chavanis at telemaque.fr> for this patch.
+
+2009-06-29 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/regex.c: fixed memory leak.
+      Thanks to "Franck LAMASUTA" <f.lamasuta at cobratelematics.com> for patch.
+
+2009-06-24  Stipe Tolj  <stolj at kannel.org>
+    * acinclude.m4: fix unquoted definition warnings from bootstrap.sh run.
+    * aclocal.m4: outcome of aclocal
+    * configure[.in]: fix Fedora Core 11 (x86 and amd64) build for openssl
+      detection. The static libssl.a library has been extracted from the
+      openssl-devel package and is usually now not installed on a base system
+      resulting in a failing build environment.
+
+2009-06-23 Alexander Malysh <amalysh at kannel.org>
+    * doc/userguide/userguide.xml, gw/smsc/smsc_http.c, gwlib/cfg.def: added 
+      generic-foreign-id-regex config option that allows us to substract message
+      id from body content by successful submission.
+      Thanks to "Franck LAMASUTA" <f.lamasuta at cobratelematics.com> for this patch.
+
+2009-06-22 Alejandro Guerrieri <aguerrieri at kannel.org>
+    * gwlib/dbpool_mssql.c: various fixes:
+        - allows execution of stored procedures on mssql_select
+        - fixed memory leak on mssql_select
+        - fixed double free on data deallocation
+
+2009-06-22 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_at.c: applied patch that adds handling of +CME ERROR.
+      Thanks to Vincent CHAVANIS <v.chavanis at telemaque.fr> for this patch.
+
+2009-06-19 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_smpp.c: following changes:
+        - added retrurn codes to all sending and processing PDU functions
+        - dded extra errorcode when we receive malformed PDU
+        - indents fixes
+
+2009-06-19 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_smpp.c, doc/userguide/userguide.xml: added possibility to bind with SSL. 
+
+2009-06-18 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_at.c: applied patch that adds more error descriptions.
+      Thanks to Vincent CHAVANIS <v.chavanis at telemaque.fr> for this patch.
+
+2009-06-18 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/http.c: removed max http server limit.
+
+2009-06-16 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/http.c: increase max http servers from 32 to 100 and return error
+      if max servers reached.
+
+2009-06-16 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/http.c: indent fixes.
+
+2009-06-15 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/http.c: fixed last commit that broke urls with port and query.
+
+2009-06-11 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/http.c: fixed #503. we didn't handle right urls like http://host:port?query.
+
+2009-06-10 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_http.c: fixed compiler warnings.
+
+2009-06-10 Alejandro Guerrieri <aguerrieri at kannel.org>
+    * test/.cvsignore utils/.cvsignore: ignoring test_date and decode_emimsg
+
+2009-06-10 Alejandro Guerrieri <aguerrieri at kannel.org>
+    * gw/smsc/smsc_http.c: removed the dlr-url field as a requirement for
+    incoming dlrs on kannel smsc-type
+
+2009-06-09 Alejandro Guerrieri <aguerrieri at kannel.org>
+    * gw/smsc/smsc_http.c gwlib/cfg.def doc/userguide/userguide.xml: added
+      support for mo parameters, return messages and codes configuration.
+
+2009-06-09 Alexander Malysh <amalysh at kannel.org>
+    * gw/ota_compiler.c: fixed #484 and reordered syncsettings to be in line
+      with OTA spec.
+
+2009-06-09 Alexander Malysh <amalysh at kannel.org>
+    * gw/ota_compiler.c: revert of re-order INLINE attributs in oma_ota_attributes
+       because code assume VALUE INLINE to be last in table.
+       Thanks to "Nikos Balkanas" <nbalkanas at gmail.com> for this patch.
+
+2008-10-22  Stipe Tolj  <stolj at kannel.org>
+    * gw/ota_compiler.c: re-order INLINE attributs in oma_ota_attributes struct
+          to fit the order in the spec tables. NLC.
+
+2009-06-04  Stipe Tolj  <stolj at kannel.org>
+    * gw/smsc/smsc_smpp.c: add the SMPP username as msg->sms.account value, so
+      we can use it in the urltrans layer with escape code '%o'. This makes
+      the semantics for MT/MO direction similar.
+      
+2009-05-25  Stipe Tolj  <stolj at kannel.org>
+    * doc/userguide/userguide.xml: fixing bug 'document type does not allow element 
+      "PARA" here; missing one of "FOOTNOTE", "MSGTEXT", "CAUTION", "IMPORTANT", 
+      "NOTE", "TIP", "WARNING", "BLOCKQUOTE", "INFORMALEXAMPLE" start-tag'.
+    
+2009-05-20 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_smpp.c: some SMSCs have submit/done date with seconds. Now we
+      can parse it sscanf way.
+
+2009-05-20 Alexander Malysh <amalysh at kannel.org>
+    * doc/userguide/userguide.xml, gw/smsc/smsc_smpp.c, gw/smsbox.c, gw/dlr.h:
+      added support for intermediate notification.
+      Thanks to Alejandro Guerrieri <aguerrieri at kannel.org> for this patch.
+
+2009-05-20 Alexander Malysh <amalysh at kannel.org>
+    * doc/userguide/userguide.xml: adding clarification that user can provide own
+      message id's to the dlr-url.
+      Thanks to "Arne K. Haaje" <arne at drlinux.no> for this patch.
+ 
+2009-05-20 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/octstr.c: fixed PANIC when we try to send empty message body.
+
+2009-05-06 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/dbpool_oracle.c: fixed compiler warnings.
+
+2009-05-06 Alexander Malysh <amalysh at kannel.org>
+    * doc/userguide/userguide.xml, gw/bb_smscconn.c, gw/smscconn.[ch], gw/smscconn_p.h
+      gwlib/cfg.def: added new config option to smsc group 'smsc-admin-id'. This is
+      used in admin interface to shutdown/start/restart smsc links when smsc-id is
+      equal due to loadbalancing.
+      Thanks to Alejandro Guerrieri <aguerrieri at kannel.org> for this patch.
+
+2009-05-05  Stipe Tolj  <stolj at kannel.org>
+    * gw/msg.[ch], gw/msg-decl.h: remove the semicolon references from the 
+      macro definition file for the sake or usability of the macro in other
+      places. NLC.
+
+2009-05-04 Alexander Malysh <amalysh at kannel.org>
+    * aclocal.m4, configure, configure.in, gw-config.h.in, gw/dlr.c,
+      gw/dlr_p.h, gwlib/cfg.def, gwlib/dbpool.[ch], doc/userguide/userguide.xml:
+      added MSSQL support to DBPool and DLR.
+      Thanks to Alejandro Guerrieri <aguerrieri at kannel.org> for this patch.
+
+2009-05-04 Alexander Malysh <amalysh at kannel.org>
+    * gw/meta_data.[ch]: Extends meta_data_set_values function to be able to add
+      new values without replacing the whole dict.
+    * gw/smsc/smsc_smpp.c: return DLR error in dlr_err metadata parameter.
+      Thanks to Alejandro Guerrieri <aguerrieri at kannel.org> for this patch.
+
+2009-04-30 Alexander Malysh <amalysh at kannel.org>
+    * utils/mtbatch.c: fixed freeze at the shutdown.
+
+2009-04-30 Alexander Malysh <amalysh at kannel.org>
+    * utils/mtbatch.c: send the whole message to bearerbox instead of splitted
+      parts. Splitting is done in bearerbox.
+
+2009-04-17 Alexander Malysh <amalysh at kannel.org>
+    * aclocal.m4, configure, configure.in: fixed FeeBSD compilation options.
+      Use -lpthread instead of -lkse. See http://www.FreeBSD.org/kse/.
+
+2009-04-17 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/charset.c, gwlib/date.c: fixed compiler warnings.
+      Thanks to Vincent CHAVANIS <v.chavanis at telemaque.fr> for pointing
+      to it and partially fix.
+
+2009-04-16  Stipe Tolj  <stolj at kannel.org>
+    * utils/mtbatch.c: changed email reference. NLC.
+    * gwlib/socket.c: re-inforced preamble, which was changed acidently
+      in the previous patchset. NLC.
+
+2009-04-15 Alexander Malysh <amalysh at kannel.org> 
+    * gwlib/socket.c: implemented support for multi-IP.
+
+2009-04-15 Alexander Malysh <amalysh at kannel.org> 
+    * gw/smsc/smsc_at.c: fixed error path that we didn't close device.
+
+2009-04-15 Alexander Malysh <amalysh at kannel.org> 
+    * utils/mtbatch.c: applied patch that add DLR support for mtbatch.
+      Thanks to Vincent CHAVANIS <v.chavanis at telemaque.fr> for this patch.
+
+2009-04-14 Alexander Malysh <amalysh at kannel.org>
+    * test/decode_emimsg.c: moved to utils.
+      Thanks to Vincent CHAVANIS <v.chavanis at telemaque.fr> for this patch.
+
+2009-04-07 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/gwmem.h: fixed compiler warnings about strdup redefine.
+
+2009-04-06  Stipe Tolj  <stolj at kannel.org>
+    * gwlib/gwmem.h: fixed typo from previous commit set. NLC.
+    
+2009-04-06 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/gwmem-check.c, gwlib/gwmem-native.c, gwlib/gwmem.h: applied patch
+      that adds gw_calloc function and speedup a gw_strdup.
+      Thanks to "Nikos Balkanas" <nbalkanas at gmail.com> for this patch.
+
+2009-04-03 Alexander Malysh <amalysh at kannel.org>
+    * utils/mtbatch.c: applied patch that fixes #495.
+      Thanks to Vincent CHAVANIS <v.chavanis at telemaque.fr> for this patch.
+
+2009-04-02 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/thread.[ch]: fixed compilation failure if compiled with
+      '--enable-mutex-stats'.
+      Thanks to "Nikos Balkanas" <nbalkanas at gmail.com> for report.
+
+2009-04-02 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_smpp.c: fixed issue that return code 1 of conn_write
+      that indicated still data buffered but no error was interpreted
+      as error.
+      Thanks to "Raf Coremans" <raco at mach.com> who spotted and reported
+      this issue.
+
+2009-04-01 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_smpp.c: handle partial SMPP v3.4 DLR support, when
+      receipted_message_id received but not the dlrstat.
+
+2009-03-30 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/http.c: applied patch that fixes octsr_copy length.
+      Thanks to Vincent CHAVANIS <v.chavanis at telemaque.fr> for this patch.
+
+2009-03-30 Alexander Malysh <amalysh at kannel.org>
+    * gw/wap-appl.c: applied patch that fixes possible infinite loop.
+      Thanks to "Nikos Balkanas" <nbalkanas at gmail.com> for this patch.
+
+2009-03-29 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/http.c: applied patch that fixes octsr_copy length.
+      Thanks to "Nikos Balkanas" <nbalkanas at gmail.com> for this patch.
+      [Msg-Id: <002b01c9af01$c06655d0$02b2a8c0@tardis>]
+
+2009-03-15 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/cfg.c: fixed compilation error introduced by Stipe.
+
+2009-03-14  Stipe Tolj  <stolj at kannel.org>
+    * gwlib/cfg.c: fix segfault on sparc-solaris10 and possibly various other
+      systems in case of a failing lstat() call and further undefined 
+      processing of the variable outcome.
+      
+2009-03-14  Stipe Tolj  <stolj at kannel.org>
+    * config.rpath: touched file to surpress the configure error.
+    * configure[.in], aclocal.m4: added '--enable-auto-import' linker option
+      for the Cygwin 1.x platform to avoid warnings at link time.
+      
+2009-03-14  Stipe Tolj  <stolj at kannel.org>
+    * Makefile.in: fix missing -liconv flag for gw-config's --libs output. We
+      rather use the Makefile variable then the configure substitution, so we
+      get all library flags handled.
+      
+2009-03-13  Stipe Tolj  <stolj at kannel.org>
+    * gwlib/date.c, gwlib/dbpool_sqlite3.c, test/test_store_dump.c: fixed 
+      minor compiler warnings. NLC.
+    * acinclude.m4: changed header to reflect the correct file name. NLC.
+    
+2009-03-13 Alexander Malysh <amalysh at kannel.org>
+    * .cvsignore, Makefile.in, acinclude.m4, aclocal.m4, bootstrap.sh,
+      configure, configure.in, gw-config.h.in, gwlib/charset.c: Use already
+      defined in gettext AM_ICONV macro to detect and declare iconv. This
+      fixes warning about const declaration.
+      This macro defined in aclocal and therefore I renamed aclocal.m4 to
+      acinclude.m4 and added bootstrap.sh. Please always use bootstrap.sh to
+      create new configure script!
+
+2009-03-08  Stipe Tolj  <stolj at kannel.org>
+    * install-sh: use a more recent version taken from automake-1.10, in order
+      to support wildcard filenames to install. This script is used in case
+      the configure run finds no other BSD-compatible install program, i.e.
+      required for Solaris 10 that has no such thing.
+
+2009-03-02  Stipe Tolj  <stolj at kannel.org>
+    * gw/bb_boxc.c: minor source re-formatting. NLC.
+    
+2009-03-02 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/charset.c: try to convert with iconv harder.
+
+2009-03-01 Alexander Malysh <amalysh at kannel.org>
+    * configure.in, configure: added openjade to search.
+      Added /sw /opt/local to search path for docbook.
+
+2009-03-01 Alexander Malysh <amalysh at kannel.org>
+    * gw/bb_boxc.c: applied patch that fixes handling of multiple boxes with
+      equal name.
+      Thanks to Ben Suffolk <ben at vanilla.net> for the initial patch.
+      [Msg-ID: <C5DF9E3A-61B5-467D-91E0-0844B2AB4645@vanilla.net>]
+
+2009-02-16  Stipe Tolj  <stolj at kannel.org>
+    * doc/userguide/userguide.xml: adding documetation section for the
+      command line switch for showing the version.
+    * gw/shared.[ch]: moved the version printing related public functions.
+    * gwlib/utils.[ch]: places the printing functions here and adding the
+      --version command line switch to the general command line intrpreting
+      function.
+      [Msg-Id: <4996DF94.5010505@tolj.org>]
+      
+2009-02-15 Alexander Malysh <amalysh at kannel.org>
+    * test/test_octstr_format.c: fixed compiler warnings.
+      Thanks to Vincent CHAVANIS <v.chavanis at telemaque.fr> for patch.
+
+2009-02-15 Alexander Malysh <amalysh at kannel.org>
+    * gw/meta_data.c: fixed compiler warnings.
+      Thanks to Vincent CHAVANIS <v.chavanis at telemaque.fr> for patch
+      and to "Nikos Balkanas" <nbalkanas at gmail.com>.
+
+2009-02-15 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_at.c: applied patch that includes more speed cases,
+      and allows the default to be any speed (rather than 9600) *if* the OS
+      behaves like OSX where B9600 == 9600 (not so under Linux).
+      Thanks to Paul Bagyenda <bagyenda at dsmagic.com> for this patch.
+      [Msg-ID: <48DB2FB0-2D8B-4FC0-A00B-A33E36DAA45D@dsmagic.com>]
+
+2009-02-10 Alexander Malysh <amalysh at kannel.org>
+    * checks, gw/pushkannel.conf, gw/smskannel.conf, gw/wapkannel.conf: fixes
+       for make check. It works now.
+       Thanks to Vincent CHAVANIS <v.chavanis at telemaque.fr> for patch.
+
+2009-02-10 Alexander Malysh <amalysh at kannel.org>
+    * wap/wsp_headers.c: fixes wsp_pack_text -> wsp_pack_quoted_text.
+      Thanks to Vincent CHAVANIS <v.chavanis at telemaque.fr> for patch.
+
+2009-02-10 Alexander Malysh <amalysh at kannel.org>
+    * test/*: various fixes.
+      Thanks to Vincent CHAVANIS <v.chavanis at telemaque.fr> for patch.
+
+2009-02-10 Alexander Malysh <amalysh at kannel.org>
+    * wap/cookies.c: applied patch that fixes cookies parsing.
+      Thanks to "Nikos Balkanas" <nbalkanas at gmail.com> for this patch.
+      [Msig-ID: <006201c9865e$bd574230$02b2a8c0@tardis>]
+
+2009-02-10 Alexander Malysh <amalysh at kannel.org>
+    * test/test_date.c: added test to test gwlib/date.
+
+2009-02-10 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/date.c: applied patch that corrects parsing of iso date
+      for YYYMMDDTHHMMSS format.
+      Thanks to Paul Bagyenda <bagyenda at dsmagic.com> for this patch.
+      [Msg-ID: <F438D467-5767-40D9-898E-C015DDF7923F@dsmagic.com>]
+
+2009-02-06 Alexander Malysh <amalysh at kannel.org>
+    * test/test_hmac.c, test/test_md5.c, test/test_octstr_dump.c, test/test_regex.c:
+      applied patch that fixes segfaults.
+      Thanks to Vincent CHAVANIS <v.chavanis at telemaque.fr> for patch.
+      [Msg-ID: <498C3EE0.4030408@telemaque.fr>]
+
+2009-02-06 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_at.c: fixed some memory leaks.
+
+2009-02-04  Stipe Tolj  <stolj at kannel.org>
+    * README: add the documentation requirement packages for Fedora Core too.
+    
+2009-02-04  Stipe Tolj  <stolj at kannel.org>
+    * test/test_octstr_format.c: fix intendion according to our CodingStyle
+      policy. NLC.
+
+2009-01-29 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_smpp.c: this patch should fix #460.
+      Changed %lu -> %llu in octstr_format call when strtoll is used.
+
+2009-01-29 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/octstr.c, test/test_octstr_format.c: applied patch that adds
+      support for %llu, %llx etc. to octstr_format. Also added test.
+      Thanks to Nikos Balkanas <nbalkanas at gmail.com> for patch.
+      [Msg-Id: <7f4386bc0901290255y3f8f44feya6132b138b0b6003@mail.gmail.com>]
+
+2009-01-26  Stipe Tolj  <stolj at kannel.org>
+    * gwlib/http.c: fix the recover_absolute_uri() to handle HTTPS connections
+      to port 80 too, via applying the port 80 to the URL scheme if the
+      connection IS SSL-enabled. Thanks to Martin for the vetoing.
+      [Msg-Id: <92cf04420901251835k5f0636acueafdfd17f8147355@mail.gmail.com>]
+       
+2009-01-25  Stipe Tolj  <stolj at kannel.org>
+    * gwlib/http.c: add function recover_absolute_uri() to handle partly
+      incomplete absoluteURI values in redirect HTTP headers.
+      [Msg-Id: <4979FB14.2000600@tolj.org>]
+  
+2009-01-21 Alexander Malysh <amalysh at kannel.org>
+    * utils/makedist: added sha1 digest for packages.
+
+2009-01-21 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_smpp.c: fixed panic due to the unsupported %llu
+      format in octstr_format.
+
+2009-01-14 Alexander Malysh <amalysh at kannel.org>
+    * doc/userguide/userguide.xml, gw/bb_alog.c, gw/bb_smscconn.c,
+      gw/meta_data.[ch],gw/msg-decl.h,gw/smsbox.c,gw/smsc/smpp_pdu.[ch],
+      gw/smsc/smsc_http.c,gw/smsc/smsc_smpp.c,gw/urltrans.c,gwlib/cfg.def,
+      test/drive_smpp.c,test/drive_smpp.conf: merged meta-data branch.
+
+2009-01-13  Stipe Tolj  <stolj at kannel.org>
+    * test/test_http_server.c: fixing Alex's previous committ clash. NLC.
+
+2009-01-13 Alexander Malysh <amalysh at kannel.org>
+    * test/test_http_server.c: fixed memleak.
+
+2009-01-12  Stipe Tolj  <stolj at kannel.org>
+    * Making stable release 1.4.2.

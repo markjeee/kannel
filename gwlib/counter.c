@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2009 Kannel Group  
+ * Copyright (c) 2001-2010 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -70,6 +70,10 @@
 #include <limits.h>
 
 #include "gwlib.h"
+
+#ifdef __INTERIX
+#undef HAVE_PTHREAD_SPINLOCK_T
+#endif
 
 struct Counter
 {

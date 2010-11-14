@@ -1,0 +1,24 @@
+/* ==================================================================
+ * Sqlbox-cfg.def - Definition of configuration groups and variables
+ *
+ * Martin Conte
+ *
+ */
+
+SINGLE_GROUP(sqlbox,
+    OCTSTR(id)
+    OCTSTR(smsbox-id)
+    OCTSTR(global-sender)
+    OCTSTR(bearerbox-host)
+    OCTSTR(smsbox-port)
+    OCTSTR(smsbox-port-ssl)
+    OCTSTR(sql-log-table)
+    OCTSTR(sql-insert-table)
+    OCTSTR(log-file)
+    OCTSTR(log-level)
+    OCTSTR(bearerbox-port)
+    OCTSTR(ssl-client-certkey-file)
+    OCTSTR(ssl-server-cert-file)
+    OCTSTR(ssl-server-key-file)
+    OCTSTR(ssl-trusted-ca-file)
+)

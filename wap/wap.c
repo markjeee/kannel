@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2009 Kannel Group  
+ * Copyright (c) 2001-2008 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -63,9 +63,11 @@
 #include "wtp.h"
 
 #define CONNECTIONLESS_PORT 9200
+#define WTLS_CONNECTIONLESS_PORT 9202
 
 void wap_dispatch_datagram(WAPEvent *dgram)
 {
+   long len;
     gw_assert(dgram != NULL);
 
     if (dgram->type != T_DUnitdata_Ind) {
@@ -76,7 +78,9 @@ void wap_dispatch_datagram(WAPEvent *dgram)
     }
 
     /* XXX Assumption does not hold for client side */
-    if (dgram->u.T_DUnitdata_Ind.addr_tuple->local->port == CONNECTIONLESS_PORT) {
+    if (dgram->u.T_DUnitdata_Ind.addr_tuple->local->port ==
+        CONNECTIONLESS_PORT || dgram->u.T_DUnitdata_Ind.addr_tuple->
+        local->port == WTLS_CONNECTIONLESS_PORT) {
 	wsp_unit_dispatch_event(dgram);
     } else {
         List *events;
@@ -90,7 +94,9 @@ void wap_dispatch_datagram(WAPEvent *dgram)
             return;
         }
 
-        while (gwlist_len(events) > 0) {
+         len = gwlist_len(events);
+         while (len-- > 0)
+         {
 	    WAPEvent *event;
 
 	    event = gwlist_extract_first(events);

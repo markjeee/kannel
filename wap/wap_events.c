@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2009 Kannel Group  
+ * Copyright (c) 2001-2008 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -59,6 +59,7 @@
  *
  * Aarno Syvänen
  * Lars Wirzenius
+ * Nikos Balkanas, Inaccess Networks (2009)
  */
 
 
@@ -112,7 +113,9 @@ void wap_event_destroy(WAPEvent *event) {
 	#define OCTSTR(name) octstr_destroy(p->name);
 	#define OPTIONAL_OCTSTR(name) octstr_destroy(p->name);
 	#define INTEGER(name) p->name = 0;
-    #define WTLSPDUS(name) debug("wap.events",0,"You need to create wtls_pdulist_destroy!");
+#ifdef HAVE_WTLS_OPENSSL
+	#define WTLSPDUS(name) wtls_pldList_destroy(p->name);
+#endif /* HAVE_WTLS_OPENSSL */
 	#define HTTPHEADER(name) http_destroy_headers(p->name);
 	#define ADDRTUPLE(name) wap_addr_tuple_destroy(p->name);
 	#define CAPABILITIES(name) wsp_cap_destroy_list(p->name);

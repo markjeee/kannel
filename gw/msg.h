@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2009 Kannel Group  
+ * Copyright (c) 2001-2010 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -88,9 +88,14 @@ typedef struct {
 } Msg;
 
 struct split_parts {
+    /* original large message */
     Msg *orig;
+    /* how many parts still not sent */
     Counter *parts_left;
+    /* status of splitted message parts */
     long status;
+    /* pointer to SMSCConn */
+    void *smsc_conn;
 };
 
 /* enums for Msg fields */

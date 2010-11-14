@@ -1,7 +1,7 @@
 dnl /* ==================================================================== 
 dnl  * The Kannel Software License, Version 1.0 
 dnl  * 
-dnl  * Copyright (c) 2001-2009 Kannel Group  
+dnl  * Copyright (c) 2001-2010 Kannel Group  
 dnl  * Copyright (c) 1998-2001 WapIT Ltd.   
 dnl  * All rights reserved. 
 dnl  * 
@@ -164,6 +164,9 @@ case "$host" in
     AC_CHECK_LIB(pthread, pthread_exit, [LIBS="$LIBS -lpthread"; pthread="yes"],
       [AC_CHECK_LIB(c_r, pthread_exit, [LIBS="$LIBS -lc_r"; pthread="yes"])]
     )
+    ;;
+  *-interix3*)
+    INSTALL="./install-sh"
     ;;
 esac
 AC_SUBST(EXE_EXT)

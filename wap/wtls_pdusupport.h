@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2009 Kannel Group  
+ * Copyright (c) 2001-2008 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -52,6 +52,8 @@
  * 
  * Portions of this software are based upon software originally written at  
  * WapIT Ltd., Helsinki, Finland for the Kannel project.  
+ *
+ * Nikos Balkanas, Inaccess Networks (2009)
  */ 
 
 #ifndef PDUSUPPORT_H
@@ -106,33 +108,40 @@ Identifier * unpack_identifier(Octstr *data, long *charpos);
 Signature * unpack_signature(Octstr *data, long *charpos);
 WTLSCertificate * unpack_wtls_certificate(Octstr *data, long *charpos);
 
-void dump_int16(unsigned char *dbg, int level, int i);
-void dump_int32(unsigned char *dbg, int level, long i);
-void dump_octstr(unsigned char *dbg, int level, Octstr *opaque);
-void dump_octstr16(unsigned char *dbg, int level, Octstr *opaque);
-void dump_octstr_fixed(unsigned char *dbg, int level, Octstr *opaque);
-void dump_random(unsigned char *dbg, int level, Random *random);
-void dump_dhparams(unsigned char *dbg, int level, DHParameters *dhparams);
-void dump_ecparams(unsigned char *dbg, int level, ECParameters *ecparams);
-void dump_param_spec(unsigned char *dbg, int level, ParameterSpecifier *pspec);
-void dump_public_key(unsigned char *dbg, int level, PublicKey *key, PublicKeyType key_type);
-void dump_rsa_pubkey(unsigned char *dbg, int level, RSAPublicKey *key);
-void dump_dh_pubkey(unsigned char *dbg, int level, DHPublicKey *key);
-void dump_ec_pubkey(unsigned char *dbg, int level, ECPublicKey *key);
-void dump_rsa_secret(unsigned char *dbg, int level, RSASecret *secret);
-void dump_rsa_encrypted_secret(unsigned char *dbg, int level, RSAEncryptedSecret *secret);
-void dump_key_exchange_id(unsigned char *dbg, int level, KeyExchangeId *keyexid);
-void dump_array(unsigned char *dbg, int level, List *array);
-void dump_key_list(unsigned char *dbg, int level, List *key_list);
-void dump_ciphersuite_list(unsigned char *dbg, int level, List *ciphersuites);
-void dump_compression_method_list(unsigned char *dbg, int level, List *compmethod_list);
-void dump_identifier(unsigned char *dbg, int level, Identifier *ident);
-void dump_signature(unsigned char *dbg, int level, Signature *sig);
-void dump_wtls_certificate(unsigned char *dbg, int level, WTLSCertificate *cert);
+void dump_int16(char *dbg, int level, int i);
+void dump_int32(char *dbg, int level, long i);
+void dump_octstr(char *dbg, int level, Octstr *opaque);
+void dump_octstr16(char *dbg, int level, Octstr *opaque);
+void dump_octstr_fixed(char *dbg, int level, Octstr *opaque);
+void dump_random(char *dbg, int level, Random *random);
+void dump_dhparams(char *dbg, int level, DHParameters *dhparams);
+void dump_ecparams(char *dbg, int level, ECParameters *ecparams);
+void dump_param_spec(char *dbg, int level, ParameterSpecifier *pspec);
+void dump_public_key(char *dbg, int level, PublicKey *key, PublicKeyType key_type);
+void dump_rsa_pubkey(char *dbg, int level, RSAPublicKey *key);
+void dump_dh_pubkey(char *dbg, int level, DHPublicKey *key);
+void dump_ec_pubkey(char *dbg, int level, ECPublicKey *key);
+void dump_rsa_secret(char *dbg, int level, RSASecret *secret);
+void dump_rsa_encrypted_secret(char *dbg, int level, RSAEncryptedSecret *secret);
+void dump_key_exchange_id(char *dbg, int level, KeyExchangeId *keyexid);
+void dump_array(char *dbg, int level, List *array);
+void dump_key_list(char *dbg, int level, List *key_list);
+void dump_ciphersuite_list(char *dbg, int level, List *ciphersuites);
+void dump_compression_method_list(char *dbg, int level, List *compmethod_list);
+void dump_identifier(char *dbg, int level, Identifier *ident);
+void dump_signature(char *dbg, int level, Signature *sig);
+void dump_wtls_certificate(char *dbg, int level, WTLSCertificate *cert);
 
 void destroy_rsa_pubkey(RSAPublicKey *key);
 void destroy_array(List *array);
 void destroy_identifier(Identifier *ident);
-
-
-#endif
+void destroy_random(Random *random);
+void destroy_key_list(List *key_list);
+void destroy_ciphersuite_list(List *ciphersuites);
+void destroy_compression_method_list(List *compmethod_list);
+void destroy_wtls_certificate(WTLSCertificate *cert);
+void destroy_param_spec(ParameterSpecifier *pspec);
+void destroy_dh_pubkey(DHPublicKey *key);
+void destroy_ec_pubkey(ECPublicKey *key);
+void destroy_rsa_encrypted_secret(RSAEncryptedSecret *secret);
+#endif /* PDUSUPPORT_H */

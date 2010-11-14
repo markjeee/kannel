@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2009 Kannel Group  
+ * Copyright (c) 2001-2010 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -92,7 +92,7 @@
  */
 
 /*
- * Append the User Data Header (UDH) including the lenght (UDHL). Only ports 
+ * Append the User Data Header (UDH) including the length (UDHL). Only ports 
  * UDH here - SAR UDH is added when (or if) we split the message. This is our
  * *specific* WDP layer.
  */
@@ -343,7 +343,7 @@ Msg *ota_tokenize_settings(CfgGroup *grp, Octstr *from, Octstr *receiver)
     msg = msg_create(sms);
 
     /*
-     * Append the User Data Header (UDH) including the lenght (UDHL)
+     * Append the User Data Header (UDH) including the length (UDHL)
      * WDP layer (start WDP headers)
      */
     
@@ -551,7 +551,7 @@ Msg *ota_tokenize_bookmarks(CfgGroup *grp, Octstr *from, Octstr *receiver)
     msg = msg_create(sms);
 
     /*
-     * Append the User Data Header (UDH) including the lenght (UDHL)
+     * Append the User Data Header (UDH) including the length (UDHL)
      * WDP layer (start WDP headers)
      */
     

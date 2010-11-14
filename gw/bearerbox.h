@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2009 Kannel Group  
+ * Copyright (c) 2001-2010 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -174,6 +174,8 @@ int smsc2_stop_smsc(Octstr *id);   /* shutdown a specific smsc */
 int smsc2_restart_smsc(Octstr *id);  /* re-start a specific smsc */
 int smsc2_add_smsc(Octstr *id);   /* add a new smsc */
 int smsc2_remove_smsc(Octstr *id);   /* remove a specific smsc */
+
+int smsc2_reload_lists(void); /* reload blacklists */
 
 
 /*---------------

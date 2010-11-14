@@ -1,0 +1,1612 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook V3.1//EN"
+     [
+<!ENTITY figtype "#FIGTYPE#">
+<!ENTITY timestamp "#DATE#">
+<!ENTITY version "#VERSION#">
+<!ENTITY % draft "#DRAFTS#">
+]>
+    <!--
+        Embed your block with these to set it to "draft" <![%draft;[ <your
+        block> ]]>
+    -->
+<book>
+    <bookinfo>
+        <title>sqlbox &version;&timestamp;
+            User's Guide
+        </title>
+        <subtitle>SQL-Based queue engine for Kannel</subtitle>
+        <authorgroup>
+            <author>
+                <firstname>Rene</firstname>
+                <surname>Kluwen</surname>
+                <affiliation>
+          <jobtitle>Sqlbox Author</jobtitle>
+                    <orgname>Chimit</orgname>
+                    <address>
+                        <email>rene.kluwen at chimit dot nl</email>
+                        <otheraddr>http://www.chimit.nl/</otheraddr>
+                    </address>
+                </affiliation>
+            </author>
+            <author>
+                <firstname>Martin</firstname>
+                <surname>Conte Mac Donell</surname>
+                <affiliation>
+          <jobtitle>Standalone Version and Patches</jobtitle>
+                    <address>
+                        <email>reflejo at gmail dot com</email>
+                    </address>
+                </affiliation>
+            </author>
+            <author>
+                <firstname>Alejandro</firstname>
+                <surname>Guerrieri</surname>
+                <affiliation>
+                    <jobtitle>Maintainer, Documentation and Patches</jobtitle>
+                    <orgname>Magicom</orgname>
+                    <address>
+                        <email>aguerrieri at kannel dot org</email>
+                        <otheraddr>http://www.blogalex.com/</otheraddr>
+                    </address>
+                </affiliation>
+            </author>
+        </authorgroup>
+        <abstract>
+            <title>Abstract</title>
+            <para>This document describes how to install and use sqlbox, the
+                SQL-Based queue engine for Kannel.</para>
+        </abstract>
+        <revhistory>
+            <revision>
+                <revnumber>&version;
+                </revnumber>
+                <date>&timestamp;
+                </date>
+            </revision>
+        </revhistory>
+    </bookinfo>
+    <chapter>
+        <title>Introduction</title>
+        <highlights>
+      <para>Sqlbox is a special Kannel box that sits between bearerbox and smsbox and
+      uses a database queue to store and forward messages.</para>
+    </highlights>
+        <sect1>
+            <title>Overview</title>
+            <para>Sqlbox behaves similar to other Kannel boxes and share a compatible configuration
+              file format and command line options.</para>
+            <para>It works between bearerbox and smsbox, intercept all messages and use a couple of database
+              tables to process messages.</para>
+        <para>Messages are queued on a configurable table (defaults to
+          <literal>send_sms</literal>) and moved to another table (defaults to <literal>sent_sms</literal>)
+          afterwards.</para>
+        <para>You can also manually insert messages into the <literal>send_sms</literal> table
+          and they will be sent and moved to the <literal>sent_sms</literal> table as well. This
+          allows for fast and easy injection of large amounts of messages into
+          kannel.</para>
+        </sect1>
+        <sect1>
+            <title>Features</title>
+            <para>
+                <itemizedlist>
+                    <listitem>
+                        <para>Modular architecture: Easily integrates into Kannel infrastructure.</para>
+                    </listitem>
+          <listitem>
+            <para>Compatible configuration file format and command line arguments.</para>
+          </listitem>
+          <listitem>
+            <para>Supports most Kannel features.</para>
+          </listitem>
+                </itemizedlist>
+            </para>
+        </sect1>
+        <sect1>
+            <title>Requirements</title>
+            <para>sqlbox is being developed on Linux and OSX systems, and
+                should be fairly easy to export to other Unix-like systems. However,
+                we don't yet support other platforms, due to lack of time, although
+                it should be working without major problems on Windows (through
+                Cygwin), Mac OSX, Solaris and FreeBSD. </para>
+            <para>
+                sqlbox requires the following software environment:
+                <itemizedlist>
+                    <listitem>
+                        <para>Kannel libraries (gwlib) installed.</para>
+                    </listitem>
+                    <listitem>
+                        <para>C compiler and libraries for ANSI C, with normal Unix
+                            extensions such as BSD sockets and related tools. (GNU's GCC
+                            tool-chain is recommended)</para>
+                    </listitem>
+                    <listitem>
+                        <para>GNU Make.</para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            An implementation of POSIX threads (
+                            <filename>pthread.h</filename>
+                            ).
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            DocBook processing tools: DocBook style-sheets, jade, jadetex,
+                            etc; see
+                            <filename>README</filename>
+                            , section `Documentation', for more information (pre-formatted
+                            versions of the documentation are available, and you can compile
+                            Sqlbox itself even without the documentation tools).
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>GNU autoconf</para>
+                    </listitem>
+                </itemizedlist>
+            </para>
+        </sect1>
+    </chapter>
+    <chapter>
+        <title>Installing sqlbox</title>
+        <para>This chapter explains how to build and install sqlbox from
+            source or from a binary package. The goal of this chapter is to get
+            the module compiled and all the files in the correct places; the next
+            chapter will explain how to configure it.</para>
+        <note>
+            <para>
+                If you are upgrading from a previous version, please look at
+                <xref linkend="upgrading-notes"> for any important information.
+            </para>
+        </note>
+        <sect1>
+            <title>Getting the source code</title>
+            <para>
+                The source code to Sqlbox is available for download at
+                <ulink url="http://www.kannel.org/~aguerrieri/">http://www.kannel.org/~aguerrieri/</ulink>.
+                It is available in various formats and you can choose to download
+                either the latest release version or the daily snapshot of the
+                development source tree for the next release version, depending on
+                whether you want to use Sqlbox for production use or to participate
+                in the development.
+            </para>
+            <para>If you're serious about development, you probably want to use
+                CVS, the version control system used by the Kannel project. This
+                allows you to participate in Sqlbox development much more easily
+                than by downloading the latest release and integrating any
+                changes you've made every day. CVS does that for you. (See the
+                Kannel web site for more information on how to use CVS.)</para>
+        </sect1>
+        <sect1>
+            <title>Finding the documentation</title>
+            <para>
+                The documentation for Sqlbox consists of two parts:
+                <orderedlist>
+                    <listitem>
+                        <para>
+                            <citetitle>User's Guide</citetitle>
+                            , i.e., the one you're reading at the moment.
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            The
+                            <filename>README</filename>
+                            and various other text files in the source tree.
+                        </para>
+                    </listitem>
+                </orderedlist>
+            </para>
+            <para>
+                You can also find general information on Kannel's
+                <ulink url="http://www.kannel.org">website</ulink>
+                and information about existing problems at
+                <ulink url="http://bugs.kannel.org">our bugtracker</ulink>
+                .
+            </para>
+            <para>
+                We intend to cover everything you need to install and use Sqlbox is
+                in
+                <citetitle>User's Guide</citetitle>
+                , but the guide is still incomplete in this respect. The
+                <filename>README</filename>
+                is not supposed to be very important, nor contain much information.
+                Instead, it will just point at the other documentation.
+            </para>
+        </sect1>
+        <sect1>
+            <title>Compiling sqlbox</title>
+            <para>
+                If you are using Sqlbox on a supported platform, or one that is
+                similar enough to one, compiling Sqlbox should be trivial. After you
+                have unpacked the source package of your choose, or after you have
+                checked out the source code from CVS, enter the following commands:
+                <screen>
+                    <userinput> ./bootstrap ./configure make </userinput>
+                </screen>
+                The
+                <filename>bootstrap</filename>
+                script uses autoconf to generate the files needed to build the
+                module. The
+                <filename>configure</filename>
+                script investigates various things on your computer for the Sqlbox
+                compilation needs, and writes out the
+                <filename>Makefile</filename>
+                used to compile the module.
+                <command>make</command>
+                then runs the commands to actually compile it.
+            </para>
+            <para>
+                If either command writes out an error message and stops before it
+                finishes its job, you have a problem, and you either need to fix it
+                yourself, if you can, or report the problem to the Kannel project.
+                See
+                <xref linkend="bug-reporting"> for details.
+            </para>
+            <para>
+                For detailed instruction on using the configuration script, see file
+                <filename>INSTALL</filename>
+                . That file is a generic documentation for
+                <command>configure</command>
+                . Sqlbox defines a few additional options:
+                <itemizedlist>
+                    <listitem>
+                        <para>
+                            <literal>--with-kannel-dir=</literal>
+                            <replaceable>DIR</replaceable>
+                            Where to look for Kannel Gateway libs and header files
+                            <replaceable>DIR</replaceable>
+                            points to the Kannel installation directory. Defaults to
+                            <literal>/usr/local</literal>
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <literal>--disable-docs (default is --enable-docs)</literal>
+                            Use this option if you don't have DocBook installed and/or you
+                            want to save some time and CPU cycles. Pre-generated
+                            documentation is available on Kannel's site. Default behavior is
+                            to build documentation, b.e., converting the User Guide from the
+                            DocBook markup language to PostScript and HTML if DocBook is
+                            available.
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <literal>--enable-drafts (default is
+                                --disable-drafts)</literal>
+                            When building documentation, include the sections marked as
+                            <literal>draft</literal>
+                            .
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <literal>--with-ctlib=</literal><replaceable>DIR</replaceable>
+                            Include Ct-Lib support.
+                            <replaceable>DIR</replaceable>
+                            is the Ct-Lib install directory, defaults to
+                            <literal>/opt/sybase</literal>.
+                        </para>
+                    </listitem>
+                    <listitem>
+                        <para>
+                            <literal> --with-freetds=</literal><replaceable>DIR</replaceable>
+               Include FreeTDS Ct-Lib support.
+              <replaceable>DIR</replaceable>
+              is the FreeTDS install directory, defaults to
+              <literal>/usr/local</literal>.
+            </para>
+                    </listitem>
+                </itemizedlist>
+            </para>
+            <para>
+                You may need to add compilations flags to configure:
+                <screen>
+                    <userinput>CFLAGS='-pthread' ./configure</userinput>
+                </screen>
+                The above, for instance, seems to be required on FreeBSD. If you
+                want to develop Sqlbox, you probably want to add CFLAGS that make
+                your compiler use warning messages. For example, for GCC:
+                <screen>
+                    <userinput>CFLAGS='-Wall -O2 -g' ./configure</userinput>
+                </screen>
+                (You may, at your preference, use even stricter checking options.)
+            </para>
+        </sect1>
+        <sect1>
+            <title>Installing Sqlbox</title>
+            <para>
+                After you have compiled Kannel, you need to install the sqlbox binary
+                in a suitable place. This is most easily done by using
+                <command>make</command> again:
+                <screen>
+                    <userinput>make bindir=<replaceable>/path/to/directory</replaceable> install</userinput>
+                </screen>
+                Replace
+                <replaceable>/path/to/directory</replaceable>
+                with the pathname of the actual directory where the programs should
+                be installed. This install the sqlbox binary:
+                <simplelist>
+                    <member>
+                        <filename>gw/sqlbox</filename>
+                    </member>
+                </simplelist>
+            </para>
+        </sect1>
+        <sect1>
+            <title>Using pre-compiled binary packages</title>
+            <para>To be done</para>
+            <sect2>
+                <title>Installing Sqlbox from RPM packages</title>
+                <para>To be done</para>
+            </sect2>
+      <sect2>
+        <title>Installing Sqlbox from DEB packages</title>
+        <para>To be done</para>
+      </sect2>
+        </sect1>
+    </chapter>
+    <chapter>
+        <title>Using sqlbox</title>
+        <para>This chapter explains how to configure and run Sqlbox and also
+          how to tell if it's running from Kannel's HTTP interface.</para>
+        <para>There is only one configuration file for Sqlbox, and that file
+          commands all aspects of its execution.</para>
+        <sect1>
+            <title>Configuring Sqlbox</title>
+            <para>The configuration file can be divided into two parts:
+                sqlbox configuration and database connection.</para>
+            <para>Details of each part are in appropriate sections later on
+                this documentation.</para>
+            <sect2>
+                <title>Configuration file syntax</title>
+                <para>The syntax used for the configuration file is the same used
+                  in Kannel. Skip this section if you are already familiar with it.
+                  Otherwise, keep on reading:</para>
+                <para>
+                    A configuration file consists of groups of configuration variables.
+                    Groups are separated by empty lines, and each variable is defined
+                    on its own line. Each group in Sqlbox configuration is
+                    distinguished with a group variable. Comments are lines that begin
+                    with a number sign (
+                    <literal>#</literal>
+                    ) and are ignored (they don't, for example, separate groups of
+                    variables).
+                </para>
+                <para>
+                    A variable definition line has the name of the variable, and equals
+                    sign (
+                    <literal>=</literal>
+                    ) and the value of the variable. The name of the variable can
+                    contain any characters except whitespace and equals. The value of
+                    the variable is a string, with or without quotation marks (
+                    <literal></literal>
+                    ) around it. Quotation marks are needed if the variable needs to
+                    begin or end with whitespace or contain special characters. Normal
+                    C escape character syntax works inside quotation marks.
+                </para>
+                <para>
+                    Perhaps an example will make things easier to comprehend:
+<programlisting>
+01 # Sqlbox configuration
+02 group = sqlbox
+03 id = "my-sqlbox"
+04 smsbox-id = "sqlbox"
+...
+11 log-level = 0
+12 log-file = "/var/log/kannel/kannel-sqlbox.log"
+13
+14 #MySQL Connection
+15 group = mysql-connection
+16 id = "my-sqlbox"
+17 host = localhost
+...
+</programlisting>
+                    The above snippet defines an sqlbox instance with id <literal>my-sqlbox</literal>
+                    that identifies with <literal>bearerbox</literal> as <literal>sqlbox</literal> and also
+                    sets the log-level and file location. It also defines a MySQL connection to localhost.
+                </para>
+                <para>Lines 1 and 14 are comment lines. Line 13 separates the two
+                    groups. The remaining lines define variables. The group type is
+                    defined by the group variable value.</para>
+                <para>The various variables that are understood in each type of
+                    configuration group are explained below.</para>
+                <para>
+                    Some variable values are marked as <literal>'bool'</literal>.
+                    The value for variable can be like true, false, yes, no, on, off,
+                    0 or 1. Other values are treated as 'true' while if the variable is
+                    not present at all, it is treated as being 'false'.
+                </para>
+            </sect2>
+            <sect2 id="includes">
+                <title id="includes.title">Inclusion of configuration files</title>
+                <para>
+                    A configuration file may contain a special directive called
+                    <literal>include</literal>
+                    to include other file or a directory with files to the
+                    configuration processing.
+                </para>
+                <para>This allows to segment the specific configuration groups
+                    required for several services and boxes to different files and
+                    hence to have more control in larger setups.</para>
+                <para>
+                    Here is an example that illustrates the
+                    <literal>include </literal>
+                    statement :
+<programlisting>
+group = sqlbox
+id = my-sqlbox
+smsbox-id = sqlbox
+...
+log-file = "/var/log/kannel/kannel-sqlbox.log"
+log-level = 0
+include = "dbconn.conf"
+ </programlisting>
+                    Above is the main
+                    <literal>sqlbox.conf</literal>
+                    configuration file that includes the following
+                    <literal>dbconn.conf</literal>
+                    file with all required directives for the database connection.
+<programlisting>
+group = mysql-connection
+id = my-sqlbox
+host = localhost
+username = myuser
+password = mypass
+database = kannel
+</programlisting>
+                    The above
+                    <literal>include</literal>
+                    statement may be defined at any point in the configuration file and
+                    at any inclusion depth. Hence you can cascade numerous inclusions
+                    if necessary.
+                </para>
+                <para>At process start time inclusion of configuration files
+                    breaks if either the included file can not be opened and processed
+                    or the included file has been processed already in the stack and a
+                    recursive cycling has been detected.</para>
+            </sect2>
+            <sect2>
+                <title>Sqlbox configuration</title>
+                <para>
+                    The configuration file
+                    <emphasis>MUST</emphasis>
+                    always include an 'sqlbox' group for general configuration. This
+                    group should be the first group in the configuration file.
+                </para>
+                <para>
+                    As its simplest form, 'sqlbox' group looks like this:
+<programlisting>
+group = sqlbox
+id = sqlbox
+bearerbox-port = 13001
+</programlisting>
+                    Naturally this is usually not sufficient for any real use. Thus, one or
+                    more of the optional configuration variables are used. In following
+                    list (as in any other similar lists), all mandatory variables are
+                    marked with <literal>(m)</literal>, while conditionally mandatory
+                    (variables which must be set in certain cases) are marked with
+                    <literal>(c)</literal>
+                    .
+                </para>
+                <table frame="none">
+                    <title>Sqlbox Group Variables</title>
+                    <tgroup cols="3">
+                        <thead>
+                            <row>
+                                <entry>Variable</entry>
+                                <entry>Value</entry>
+                                <entry>Description</entry>
+                            </row>
+                        </thead>
+                        <tbody>
+                            <row>
+                                <entry>
+                                    <literal>group (m)</literal>
+                                </entry>
+                                <entry>
+                                    <literal>sqlbox</literal>
+                                </entry>
+                                <entry valign="bottom"> This is a mandatory variable </entry>
+                            </row>
+              <row>
+                <entry>
+                  <literal>smsbox-id (m)</literal>
+                </entry>
+                <entry>string</entry>
+                <entry valign="bottom">This is the box id.</entry>
+              </row>
+              <row>
+                <entry>
+                  <literal>global-sender</literal>
+                </entry>
+                <entry>number</entry>
+                <entry valign="bottom">If no explicit number is given, this number is used when sending messages.</entry>
+              </row>
+              <row>
+                <entry>
+                  <literal>bearerbox-host (m)</literal>
+                </entry>
+                <entry>host-name</entry>
+                <entry valign="bottom">This is the host where bearerbox is running.</entry>
+              </row>
+                            <row>
+                                <entry>
+                                    <literal>bearerbox-port (m)</literal>
+                                </entry>
+                                <entry>port-number</entry>
+                                <entry valign="bottom">This is the port number used to connect to bearerbox.</entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    <literal>smsbox-port (c)</literal>
+                                </entry>
+                                <entry>port-number</entry>
+                                <entry valign="bottom"> This is the port number to which the
+                                    smsboxes, if any, connect. This can be
+                                    anything you want. Must be set if you want to handle any SMS
+                                    traffic. </entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    <literal>smsbox-port-ssl (o)</literal>
+                                </entry>
+                                <entry>bool</entry>
+                                <entry valign="bottom"> If set to true, the smsbox connection
+                                    module will be SSL-enabled. Your smsboxes will have to connect
+                                    using SSL to sqlbox then. This is used to secure
+                                    communication between sqlbox and smsboxes in case they are
+                                    in separate networks operated and the TCP communication is not
+                                    secured on a lower network layer. Defaults to "no". </entry>
+                            </row>
+              <row>
+                <entry>
+                  <literal>sql-log-table</literal>
+                </entry>
+                <entry>table-name</entry>
+                <entry valign="bottom">Indicates the table where messages are copied after being sent.
+                Defaults to <literal>sent_sms</literal>.</entry>
+              </row>
+              <row>
+                <entry>
+                  <literal>sql-insert-table</literal>
+                </entry>
+                <entry>table-name</entry>
+                <entry valign="bottom">Indicates the table where messages should be inserted to sent.
+                Defaults to <literal>send_sms</literal>.</entry>
+              </row>
+                            <row>
+                                <entry>
+                                    <literal>log-file</literal>
+                                </entry>
+                                <entry>filename</entry>
+                                <entry valign="bottom">
+                                    A file in which to write a log. This in addition to
+                                    <literal>stdout</literal>
+                                    and any log file defined in command line.
+                                </entry>
+                            </row>
+                            <row>
+                                <entry>
+                                    <literal>log-level</literal>
+                                </entry>
+                                <entry>number 0..5</entry>
+                                <entry valign="bottom"> Minimum level of log-file events logged. 0
+                                    is for 'debug', 1 'info', 2 'warning, 3 'error' and 4 'panic'
+                                    (see Command Line Options) </entry>
+                            </row>
+            </tbody>
+          </tgroup>
+        </table>
+              <para>A sample more complex 'sqlbox' group could be something like
+              this:
+<programlisting>
+group = sqlbox
+id = sqlbox-db
+smsbox-id = sqlbox
+#global-sender = ""
+bearerbox-host = localhost
+bearerbox-port = 13001
+smsbox-port = 13005
+smsbox-port-ssl = false
+sql-log-table = sent_sms
+sql-insert-table = send_sms
+log-file = "/var/log/kannel/kannel-sqlbox.log"
+log-level = 0
+</programlisting>
+        </para>
+      </sect2>
+    </sect1>
+    <sect1>
+      <title>The DB Connection</title>
+      <para><literal>sqlbox</literal> needs a connection to a supported DB engine to operate.
+      This connection is established at startup time and kept open until the box stops.</para>
+
+      <para>At the moment, <literal>sqlbox</literal> supports MySQL, Oracle, PostgreSQL, LibSDB, MS-SQL, Sybase,
+      Sqlite2 and Sqlite3, though only MySQL and PostgreSQL are tested enough to be considered stable.</para>
+
+      <para>The process of configuring a DB connection is simple: You need to create a
+      <literal>[engine]-connection</literal> section (where [engine] is the DB engine name, either
+      mysql, oracle, pgsql, sdb, sqlite or sqlite3) and indicate a few parameters needed to
+      establish the DB connection.</para>
+      <sect2>
+        <title>MySQL Storage</title>
+        <para>Uses a MySQL database to store the data. You need to specify the <literal>mysql-connection</literal>
+        group.</para>
+        <table frame="none">
+            <title>MySql Database connection configuration variables</title>
+            <tgroup cols="3">
+                <thead>
+                 <row>
+                   <entry>Variable</entry>
+                   <entry>Value</entry>
+                   <entry>Description</entry>
+                 </row>
+                </thead>
+                <tbody>
+                 <row><entry><literal>group</literal></entry>
+                   <entry><literal>mysql-connection (m)</literal></entry>
+                   <entry valign="bottom">
+                     This is a mandatory variable.
+                   </entry>
+                 </row>
+
+                 <row><entry><literal>id (m)</literal></entry>
+                   <entry><literal>string</literal></entry>
+                   <entry valign="bottom">
+                     An id to identify which external connection should be used for
+                    Sqlbox storage. Any string is acceptable, but semicolon ';' may cause
+                    problems, so avoid it and any other special non-alphabet characters.
+                   </entry></row>
+
+                 <row><entry><literal>host (m)</literal></entry>
+                   <entry><literal>string</literal></entry>
+                   <entry valign="bottom">
+                      The hostname where the MySQL engine is running.
+                   </entry></row>
+
+             <row><entry><literal>port</literal></entry>
+               <entry><literal>number</literal></entry>
+               <entry valign="bottom">
+                  The port where the MySQL engine is running.
+               </entry></row>
+
+                 <row><entry><literal>username (m)</literal></entry>
+                   <entry><literal>string</literal></entry>
+                   <entry valign="bottom">
+                      The username used to connect to the MySQL engine.
+                   </entry></row>
+
+                 <row><entry><literal>password (m)</literal></entry>
+                   <entry><literal>string</literal></entry>
+                   <entry valign="bottom">
+                      The password used to connect to the MySQL engine.
+                   </entry></row>
+
+                 <row><entry><literal>database (m)</literal></entry>
+                   <entry><literal>string</literal></entry>
+                   <entry valign="bottom">
+                      The database name to use to store the data.
+                   </entry></row>
+
+                 <row><entry><literal>max-connections</literal></entry>
+                   <entry><literal>number</literal></entry>
+                   <entry valign="bottom">
+                      Create a pool with this number of connections open.
+                   </entry></row>
+
+                </tbody>
+            </tgroup>
+        </table>
+
+        <para>Example configuration:</para>
+
+<programlisting>
+group = mysql-connection
+id = my-sqlbox
+host = localhost
+username = foo
+password = bar
+database = kannel
+max-connections = 1
+</programlisting>
+      </sect2>
+      <sect2>
+        <title>MS-SQL/Sybase Storage (using FreeTDS)</title>
+        <para>Uses an MS-SQL or Sybase database to store the data. You need to specify the <literal>mssql-connection</literal>
+        group.</para>
+        <table frame="none">
+          <title>MS-SQL/Sybase Database connection configuration variables</title>
+          <tgroup cols="3">
+            <thead>
+             <row>
+               <entry>Variable</entry>
+               <entry>Value</entry>
+               <entry>Description</entry>
+             </row>
+            </thead>
+            <tbody>
+             <row><entry><literal>group</literal></entry>
+               <entry><literal>mssql-connection (m)</literal></entry>
+               <entry valign="bottom">
+                 This is a mandatory variable.
+               </entry>
+             </row>
+
+             <row><entry><literal>id (m)</literal></entry>
+               <entry><literal>string</literal></entry>
+               <entry valign="bottom">
+                 An id to identify which external connection should be used for
+                Sqlbox storage. Any string is acceptable, but semicolon ';' may cause
+                problems, so avoid it and any other special non-alphabet characters.
+               </entry></row>
+
+             <row><entry><literal>server (m)</literal></entry>
+               <entry><literal>string</literal></entry>
+               <entry valign="bottom">
+                  The server definition used to connect to the MS-SQL/Sybase engine (this
+                  should be identical to the one defined on freetds.conf).
+               </entry></row>
+
+             <row><entry><literal>username (m)</literal></entry>
+               <entry><literal>string</literal></entry>
+               <entry valign="bottom">
+                  The username used to connect to the MS-SQL/Sybase engine.
+               </entry></row>
+
+             <row><entry><literal>password (m)</literal></entry>
+               <entry><literal>string</literal></entry>
+               <entry valign="bottom">
+                  The password used to connect to the MS-SQL/Sybase engine.
+               </entry></row>
+
+             <row><entry><literal>max-connections</literal></entry>
+               <entry><literal>number</literal></entry>
+               <entry valign="bottom">
+                  Create a pool with this number of connections open.
+               </entry></row>
+
+            </tbody>
+          </tgroup>
+        </table>
+
+        <para>Example configuration:</para>
+
+<programlisting>
+group = oracle-connection
+server  = myserver
+username = foo
+password = bar
+max-connections = 1
+</programlisting>
+      </sect2>
+      <sect2>
+        <title>Oracle Storage</title>
+        <para>Uses an Oracle database to store the data. You need to specify the <literal>oracle-connection</literal>
+        group.</para>
+        <table frame="none">
+          <title>Oracle Database connection configuration variables</title>
+          <tgroup cols="3">
+            <thead>
+             <row>
+               <entry>Variable</entry>
+               <entry>Value</entry>
+               <entry>Description</entry>
+             </row>
+            </thead>
+            <tbody>
+             <row><entry><literal>group</literal></entry>
+               <entry><literal>oracle-connection (m)</literal></entry>
+               <entry valign="bottom">
+                 This is a mandatory variable.
+               </entry>
+             </row>
+
+             <row><entry><literal>id (m)</literal></entry>
+               <entry><literal>string</literal></entry>
+               <entry valign="bottom">
+                 An id to identify which external connection should be used for
+                Sqlbox storage. Any string is acceptable, but semicolon ';' may cause
+                problems, so avoid it and any other special non-alphabet characters.
+               </entry></row>
+
+             <row><entry><literal>tnsname (m)</literal></entry>
+               <entry><literal>string</literal></entry>
+               <entry valign="bottom">
+                  The tnsname used to connect to the Oracle engine.
+               </entry></row>
+
+             <row><entry><literal>username (m)</literal></entry>
+               <entry><literal>string</literal></entry>
+               <entry valign="bottom">
+                  The username used to connect to the Oracle engine.
+               </entry></row>
+
+             <row><entry><literal>password (m)</literal></entry>
+               <entry><literal>string</literal></entry>
+               <entry valign="bottom">
+                  The password used to connect to the Oracle engine.
+               </entry></row>
+
+             <row><entry><literal>max-connections</literal></entry>
+               <entry><literal>number</literal></entry>
+               <entry valign="bottom">
+                  Create a pool with this number of connections open.
+               </entry></row>
+
+            </tbody>
+          </tgroup>
+        </table>
+
+        <para>Example configuration:</para>
+
+<programlisting>
+group = oracle-connection
+tnsname  = //localhost:1521/XE
+username = foo
+password = bar
+max-connections = 1
+</programlisting>
+      </sect2>
+      <sect2>
+        <title>PostgreSQL Storage</title>
+        <para>Uses a PostgreSQL database to store the data. You need to specify the <literal>pgsql-connection</literal>
+        group.</para>
+        <table frame="none">
+          <title>PostgreSQL Database connection configuration variables</title>
+          <tgroup cols="3">
+            <thead>
+             <row>
+               <entry>Variable</entry>
+               <entry>Value</entry>
+               <entry>Description</entry>
+             </row>
+            </thead>
+            <tbody>
+
+             <row><entry><literal>group</literal></entry>
+               <entry><literal>pgsql-connection (m)</literal></entry>
+               <entry valign="bottom">
+                 This is a mandatory variable.
+               </entry></row>
+
+             <row><entry><literal>id (m)</literal></entry>
+               <entry><literal>string</literal></entry>
+               <entry valign="bottom">
+                 An id to identify which external connection should be used for
+                Sqlbox storage. Any string is acceptable, but semicolon ';' may cause
+                problems, so avoid it and any other special non-alphabet characters.
+               </entry></row>
+
+             <row><entry><literal>host (m)</literal></entry>
+               <entry><literal>string</literal></entry>
+               <entry valign="bottom">
+                  The hostname where the PostgreSQL engine is running.
+               </entry></row>
+
+             <row><entry><literal>username (m)</literal></entry>
+               <entry><literal>string</literal></entry>
+               <entry valign="bottom">
+                  The username used to connect to the PostgreSQL engine.
+               </entry></row>
+
+             <row><entry><literal>password (m)</literal></entry>
+               <entry><literal>string</literal></entry>
+               <entry valign="bottom">
+                  The password used to connect to the PostgreSQL engine.
+               </entry></row>
+
+             <row><entry><literal>database (m)</literal></entry>
+               <entry><literal>string</literal></entry>
+               <entry valign="bottom">
+                  The database name to use to store the data.
+               </entry></row>
+
+             <row><entry><literal>max-connections</literal></entry>
+               <entry><literal>number</literal></entry>
+               <entry valign="bottom">
+                  Create a pool with this number of connections open.
+               </entry></row>
+
+            </tbody>
+          </tgroup>
+        </table>
+
+        <para>Example configuration:</para>
+
+<programlisting>
+group = pgsql-connection
+id = pg-sqlbox
+host = localhost
+username = foo
+password = bar
+database = kannel
+max-connections = 1
+</programlisting>
+      </sect2>
+      <sect2>
+        <title>LibSDB Abstraction Layer</title>
+        <para>Uses the LibSDB database abstraction layer to transparently connect to a database that stores the data.
+        You need to specify the <literal>sdb-connection</literal> group.</para>
+        <table frame="none">
+          <title>LibSDB Database connection configuration variables</title>
+          <tgroup cols="3">
+            <thead>
+             <row>
+               <entry>Variable</entry>
+               <entry>Value</entry>
+               <entry>Description</entry>
+             </row>
+            </thead>
+            <tbody>
+
+             <row><entry><literal>group</literal></entry>
+               <entry><literal>sdb-connection (m)</literal></entry>
+               <entry valign="bottom">
+                 This is a mandatory variable.
+               </entry></row>
+
+             <row><entry><literal>id (m)</literal></entry>
+               <entry><literal>string</literal></entry>
+               <entry valign="bottom">
+                 An id to identify which external connection should be used for
+                Sqlbox storage. Any string is acceptable, but semicolon ';' may cause
+                problems, so avoid it and any other special non-alphabet characters.
+               </entry></row>
+
+             <row><entry><literal>url (m)</literal></entry>
+               <entry><literal>string</literal></entry>
+               <entry valign="bottom">
+                  The LibSDB URL used to connect to the database. See the
+                  <ulink url="http://siag.nu/libsdb/">LibSDB web site</ulink> for information about how
+                  to construct the URL to connect to your particular DB engine.
+               </entry></row>
+
+             <row><entry><literal>max-connections</literal></entry>
+               <entry><literal>number</literal></entry>
+               <entry valign="bottom">
+                  Create a pool with this number of connections open.
+               </entry></row>
+
+            </tbody>
+          </tgroup>
+        </table>
+
+        <para>Example configuration:</para>
+
+<programlisting>
+group = sdb-connection
+id = sd-sqlbox
+#url = mysql:host=localhost:db=kannel:uid=myuser:pwd=mypass
+#url = sqlite:db=/path/to/kannel.db
+url = sqlite3:db=/path/to/kannel3.db
+max-connections = 1
+</programlisting>
+      </sect2>
+      <sect2>
+        <title>Sqlite 2.x Storage</title>
+        <para>Uses a Sqlite 2.x database to store the data. You need to specify the <literal>sqlite-connection</literal>
+        group.</para>
+        <table frame="none">
+          <title>Sqlite 2.x Database connection configuration variables</title>
+          <tgroup cols="3">
+            <thead>
+             <row>
+               <entry>Variable</entry>
+               <entry>Value</entry>
+               <entry>Description</entry>
+             </row>
+            </thead>
+            <tbody>
+
+             <row><entry><literal>group</literal></entry>
+               <entry><literal>sqlite-connection (m)</literal></entry>
+               <entry valign="bottom">
+                 This is a mandatory variable.
+               </entry></row>
+
+             <row><entry><literal>id (m)</literal></entry>
+               <entry><literal>string</literal></entry>
+               <entry valign="bottom">
+                 An id to identify which external connection should be used for
+                Sqlbox storage. Any string is acceptable, but semicolon ';' may cause
+                problems, so avoid it and any other special non-alphabet characters.
+               </entry></row>
+
+             <row><entry><literal>database (m)</literal></entry>
+               <entry><literal>string</literal></entry>
+               <entry valign="bottom">
+                  The full path to the Sqlite 2.x database file used to store the data. Creates the file if it doesn't exists.
+               </entry></row>
+
+             <row><entry><literal>lock-timeout</literal></entry>
+               <entry><literal>string</literal></entry>
+               <entry valign="bottom">
+                  Time to wait for a lock to free before giving up. You may need to tweak this if you experience lock issues. The
+                  default is to let Sqlite 2.x do it's default behaviour.
+               </entry></row>
+
+             <row><entry><literal>max-connections</literal></entry>
+               <entry><literal>number</literal></entry>
+               <entry valign="bottom">
+                  Create a pool with this number of connections open.
+               </entry></row>
+
+            </tbody>
+          </tgroup>
+        </table>
+
+        <para>Example configuration:</para>
+
+<programlisting>
+group = sqlite-connection
+id = s2-sqlbox
+host = localhost
+database = /path/to/kannel.db
+lock-timeout = 5
+max-connections = 1
+</programlisting>
+      </sect2>
+      <sect2>
+        <title>Sqlite 3.x Storage</title>
+        <para>Uses a Sqlite 3.x database to store the data. You need to specify the <literal>sqlite3-connection</literal>
+        group.</para>
+        <table frame="none">
+          <title>Sqlite 3.x Database connection configuration variables</title>
+          <tgroup cols="3">
+            <thead>
+             <row>
+               <entry>Variable</entry>
+               <entry>Value</entry>
+               <entry>Description</entry>
+             </row>
+            </thead>
+            <tbody>
+
+             <row><entry><literal>group</literal></entry>
+               <entry><literal>sqlite3-connection (m)</literal></entry>
+               <entry valign="bottom">
+                 This is a mandatory variable.
+               </entry></row>
+
+             <row><entry><literal>id (m)</literal></entry>
+               <entry><literal>string</literal></entry>
+               <entry valign="bottom">
+                 An id to identify which external connection should be used for
+                Sqlbox storage. Any string is acceptable, but semicolon ';' may cause
+                problems, so avoid it and any other special non-alphabet characters.
+               </entry></row>
+
+             <row><entry><literal>database (m)</literal></entry>
+               <entry><literal>string</literal></entry>
+               <entry valign="bottom">
+                  The full path to the Sqlite 3.x database file used to store the data. Creates the file if it doesn't exists.
+               </entry></row>
+
+             <row><entry><literal>lock-timeout</literal></entry>
+               <entry><literal>string</literal></entry>
+               <entry valign="bottom">
+                  Time to wait for a lock to free before giving up. You may need to tweak this if you experience lock issues. The
+                  default is to let Sqlite 3.x do it's default behaviour.
+               </entry></row>
+
+             <row><entry><literal>max-connections</literal></entry>
+               <entry><literal>number</literal></entry>
+               <entry valign="bottom">
+                  Create a pool with this number of connections open.
+               </entry></row>
+
+            </tbody>
+          </tgroup>
+        </table>
+
+        <para>Example configuration:</para>
+
+<programlisting>
+group = sqlite3-connection
+id = s3-sqlbox
+host = localhost
+database = /path/to/kannel3.db
+lock-timeout = 5
+max-connections = 1
+</programlisting>
+      </sect2>
+    </sect1>
+    <sect1>
+      <title>Running Sqlbox</title>
+
+    <para>You need to start <literal>sqlbox</literal> after starting
+    the <literal>bearerbox</literal>, otherwise it won't have a port
+    open to connect to. The preferred way to do this is to include
+    sqlbox into your Kannel's startup script.
+  </para>
+
+<sect2>
+<title>Starting the box</title>
+
+  <para>If you want to start it from command line (for testing, for
+  example), give the following command:
+
+    <screen><userinput>
+    /path/to/sqlbox -v 1 [config-file]
+    </userinput></screen>
+
+  The <option>-v 1</option> sets the logging level to
+  <literal>INFO</literal>. This way, you won't see a large amount of
+  debugging output (the default is <literal>DEBUG</literal>). Full
+  explanation of Sqlbox command line arguments is below.</para>
+
+  <para><emphasis>[config-file]</emphasis> is the name of the
+  configuration file you are using with Sqlbox. The basic distribution
+  packet comes with a sample configuration file you can use with some
+  minor tweakings (check on the <literal>/examples</literal> folder.
+  Feel free to edit the file to suit your needs.</para>
+
+  <para>Of course you need to have the <literal>bearerbox</literal> running
+  before starting the box. Without the bearer box, sqlbox won't even start.</para>
+</sect2>
+
+<sect2 id="arguments">
+<title id="arguments.title">Command line options</title>
+
+ <para>Sqlbox accept certain command line options
+   and arguments when they are launched. These arguments are:</para>
+
+ <table frame="none">
+  <title>Sqlbox Command Line Options</title>
+  <tgroup cols="2">
+  <tbody>
+   <row><entry><literal>-v &lt;level&gt;</literal></entry>
+        <entry morerows="1" valign="bottom">
+             Set verbosity level for stdout (screen) logging. Default is 0,
+             which means 'debug'. 1 is 'info, 2 'warning', 3
+             'error' and 4 'panic'
+        </entry></row>
+   <row><entry><literal>--verbosity &lt;level&gt;</literal></entry></row>
+
+   <row><entry><literal>-D &lt;places&gt;</literal></entry>
+        <entry morerows="1" valign="bottom">
+             Set debug-places for 'debug' level output.
+        </entry></row>
+   <row><entry><literal>--debug &lt;places&gt;</literal></entry></row>
+
+   <row><entry><literal>-F &lt;file-name&gt;</literal></entry>
+        <entry morerows="1" valign="bottom">
+              Log to file named file-name, too. Does not overrun or
+              affect any log-file defined in configuration file.
+        </entry></row>
+   <row><entry><literal>--logfile &lt;file-name&gt;</literal></entry></row>
+
+   <row><entry><literal>-V &lt;level&gt;</literal></entry>
+        <entry morerows="1" valign="bottom">
+            Set verbosity level for that extra log-file (default 0,
+            which means 'debug'). Does not affect verbosity level of
+            the log-file defined in configuration file, not verbosity
+            level of the <literal>stdout</literal> output.
+        </entry></row>
+   <row><entry><literal>--fileverbosity &lt;level&gt;</literal></entry></row>
+
+   <row><entry><literal>-H</literal></entry>
+        <entry morerows="1" valign="bottom">
+             Only try to open HTTP sendsms interface; if it
+             fails, only warn about that, do not exit. (smsbox only)
+        </entry></row>
+   <row><entry><literal>--tryhttp</literal></entry></row>
+
+   <row><entry><literal>-g</literal></entry>
+        <entry morerows="1" valign="bottom">
+             Dump all known config groups and config keys to stdout
+             and exit.
+        </entry></row>
+   <row><entry><literal>--generate</literal></entry></row>
+
+   <row><entry><literal>-u &lt;username&gt;</literal></entry>
+        <entry morerows="1" valign="bottom">
+             Change process user-id to the given.
+        </entry></row>
+   <row><entry><literal>--user &lt;username&gt;</literal></entry></row>
+
+   <row><entry><literal>-p &lt;filename&gt;</literal></entry>
+        <entry morerows="1" valign="bottom">
+             Write process PID to the given file.
+        </entry></row>
+   <row><entry><literal>--pid-file &lt;filename&gt;</literal></entry></row>
+
+   <row><entry><literal>-d</literal></entry>
+        <entry morerows="1" valign="bottom">
+             Start process as daemon (detached from a current shell session).
+             Note: Process will change CWD (Current working directory) to <literal>/</literal>,
+                   therefore you should ensure that all paths to binary/config/config-includes are
+                   absolute instead of relative.
+        </entry></row>
+   <row><entry><literal>--daemonize</literal></entry></row>
+
+   <row><entry><literal>-P</literal></entry>
+        <entry morerows="1" valign="bottom">
+             Start watcher process. This process watch a child process and if child process
+             crashed will restart them automatically.
+        </entry></row>
+   <row><entry><literal>--parachute</literal></entry></row>
+
+   <row><entry><literal>-X &lt;scriptname&gt;</literal></entry>
+        <entry morerows="1" valign="bottom">
+             Execute a given shell script or binary when child process crash detected. This option
+             is usable only with <literal>--parachute/-P</literal>.
+             Script will be executed with 2 arguments:
+                 scriptname 'processname' 'respawn-count'.
+        </entry></row>
+   <row><entry><literal>--panic-script &lt;scriptname&gt;</literal></entry></row>
+
+ </tbody>
+ </tgroup>
+ </table>
+
+</sect2>
+<sect2>
+  <title>Database Tables</title>
+  <para>Sqlbox creates it's DB tables on the fly if the tables are not present at that moment. If you're
+  upgrading from a previous version, or happen to have tables with the same names as the ones Sqlbox
+  uses, but having a different structure, this will probably cause problems and there's a good chance the
+  process will panic and stop. In that case, rename/drop the offending tables or change the names Sqlbox
+  uses by using the <literal>sql-log-table</literal> and <literal>sql-insert-table</literal> variables.</para>
+</sect2>
+</sect1>
+
+<sect1>
+  <title>Inserting MT messages by SQL</title>
+  <para>One of the nice features Sqlbox provides is the ability to insert MT messages into Kannel's queue by
+  inserting rows into the <literal>send_sms</literal> table. Keep in mind that both tables have the same schema,
+  but you only need to care about <literal>send_sms</literal>. Sqlbox will move messages to the
+  <literal>sent_sms</literal> table autmatically after processing it.</para>
+
+  <sect2>
+  <title>Database Structure</title>
+  <para>The tables structure is as follows:</para>
+
+ <table frame="none">
+  <title>Sqlbox Database structure</title>
+  <tgroup cols="3">
+  <tbody>
+   <row><entry>Value</entry>
+     <entry>Type</entry>
+     <entry>Description</entry>
+     <entry>sendsms equivalent</entry>
+   </row>
+
+   <row><entry><literal>sql_id</literal></entry>
+   <entry><literal>BIGINT(20)</literal></entry>
+   <entry valign="bottom">
+        This is the auto-incremented PRIMARY KEY and should be always left alone. Set it to NULL or do not
+        include it in your INSERT query.
+   </entry>
+   <entry>-</entry>
+   </row>
+
+   <row><entry><literal>momt</literal></entry>
+   <entry><literal>ENUM('MO', 'MT')</literal></entry>
+   <entry valign="bottom">
+        Specifies if the message is either MO or MT. You should always use "MT" here.
+   </entry>
+   <entry>-</entry>
+   </row>
+
+   <row><entry><literal>sender</literal></entry>
+   <entry><literal>VARCHAR(20)</literal></entry>
+   <entry valign="bottom">
+        Phone number of the sender. If this variable is not
+        set, sqlbox <literal>global-sender</literal> is used.
+   </entry>
+   <entry>from</entry>
+   </row>
+
+   <row><entry><literal>receiver</literal></entry>
+   <entry><literal>VARCHAR(20)</literal></entry>
+   <entry valign="bottom">
+        Phone number of the receiver.
+   </entry>
+   <entry>to</entry>
+   </row>
+
+   <row><entry><literal>msgdata</literal></entry>
+   <entry><literal>TEXT</literal></entry>
+   <entry valign="bottom">
+        Contents of the message, URL encoded as necessary. The content
+        can be more than 160 characters, but then Kannel's
+        <literal>sendsms-user</literal> group must have
+        <literal>max-messages</literal> set more than 1.
+   </entry>
+   <entry>text</entry>
+   </row>
+
+   <row><entry><literal>udhdata</literal></entry>
+   <entry><literal><literal>BLOB</literal></literal></entry>
+   <entry valign="bottom">
+         Optional User Data Header (UDH) part of the message. Must be
+         URL encoded.
+   </entry>
+   <entry>udh</entry>
+   </row>
+
+   <row><entry><literal>time</literal></entry>
+   <entry><literal>BIGINT(20)</literal></entry>
+   <entry valign="bottom">
+         An integer timestamp. You can uses UNIX_TIMESTAMP() on MySQL or any similar function here. You
+         can also leave the field empty/alone if you don't care about having a timestamp on your messages.
+   </entry>
+   <entry>-</entry>
+   </row>
+
+   <row><entry><literal>smsc_id</literal></entry>
+   <entry><literal>VARCHAR(255)</literal></entry>
+   <entry valign="bottom">
+        Optional virtual smsc-id from which the message is supposed to
+  have arrived. This is used for routing purposes, if any denied
+  or preferred SMS centers are set up in SMS center
+  configuration. This variable can be overridden on Kannel with a
+        <literal>forced-smsc</literal> configuration
+        variable. Likewise, the <literal>default-smsc</literal> variable
+        can be used to set the SMSC if it is not set otherwise.
+   </entry>
+   <entry>smsc</entry>
+   </row>
+
+   <row><entry><literal>service</literal></entry>
+   <entry><literal>VARCHAR(255)</literal></entry>
+   <entry valign="bottom">
+  Optional. Service name from which the message is supposed to have arrived.
+  This field is logged as SVC in the log file so it allows you to do some
+  accounting on it if your front end uses the same username for all services
+  but wants to distinguish them in the log.
+   </entry>
+   <entry>smsc</entry>
+   </row>
+
+   <row><entry><literal>account</literal></entry>
+     <entry><literal>VARCHAR(255)</literal></entry>
+     <entry valign="bottom">
+  Optional. Account name or number to carry forward for billing purposes.
+  This field is logged as ACT in the log file so it allows you to do some
+  accounting on it if your front end uses the same username for all services
+  but wants to distinguish them in the log. In the case of a HTTP SMSC
+  type the account name is prepended with the service-name (username) and a colon (:)
+  and forwarded to the next instance of Kannel. This allows hierarchical accounting.
+   </entry>
+   <entry><literal>account</literal></entry>
+   </row>
+
+   <row><entry><literal>id</literal></entry>
+     <entry><literal>BIGINT(20)</literal></entry>
+     <entry valign="bottom">
+  Kannel's internal message identifier. This have no meaning when you're inserting your
+  own messages, since Kannel doesn't have an identifier on your message yet. Leave it alone.
+   </entry>
+   <entry><literal>-</literal></entry>
+   </row>
+
+   <row><entry><literal>sms_type</literal></entry>
+     <entry><literal>BIGINT(20)</literal></entry>
+     <entry valign="bottom">
+  A numeric value indicating if it's an MO, MT or DLR message. ALWAYS INSERT A "2" HERE (Meaning: MT), OTHERWISE KANNEL'S QUEUE WILL
+  GET CORRUPTED IF YOU RESTART IT AND YOU HAVE PENDING MESSAGES.
+   </entry>
+   <entry><literal>-</literal></entry>
+   </row>
+
+   <row><entry><literal>mclass</literal></entry>
+   <entry><literal>BIGINT(20)</literal></entry>
+   <entry valign="bottom">
+         Optional. Sets the Message Class in DCS field.
+   Accepts values between 0 and 3, for Message Class 0 to 3,
+   A value of 0 sends the message directly to display, 1 sends
+   to mobile, 2 to SIM and 3 to SIM toolkit.
+   </entry>
+   <entry><literal>mclass</literal></entry>
+   </row>
+
+   <row>
+   <entry><literal>mwi</literal></entry>
+   <entry><literal>BIGINT(20)</literal></entry>
+   <entry valign="bottom">
+         Optional. Sets Message Waiting Indicator bits in DCS field.
+   If given, the message will be encoded as a Message Waiting
+   Indicator. The accepted values are 0,1,2 and 3 for activating the
+   voice, fax, email and other indicator, or 4,5,6,7 for deactivating,
+   respectively.
+   <footnote id="mwi-messages"><para>To set number of messages, use
+   <literal>mwi=[0-3]&amp;coding=0&amp;udh=%04%01%02%&lt;XX&gt;%&lt;YY&gt;</literal>,
+   where YY are the number of messages, in HEX, and XX are <literal>mwi</literal>
+   plus 0xC0 if <literal>text</literal> field is not empty.</para> </footnote>
+   </entry>
+   <entry><literal>mwi</literal></entry>
+   </row>
+
+   <row>
+   <entry><literal>coding</literal></entry>
+   <entry><literal>BIGINT(20)</literal></entry>
+   <entry valign="bottom">
+         Optional. Sets the coding scheme bits in DCS field.
+   Accepts values 0 to 2, for 7bit, 8bit or UCS-2.
+   If unset, defaults to 7 bits unless a udh is defined, which sets
+   coding to 8bits.</entry>
+   <entry><literal>coding</literal></entry>
+   </row>
+
+   <row>
+   <entry><literal>compress</literal></entry>
+   <entry><literal>BIGINT(20)</literal></entry>
+   <entry valign="bottom">
+         Optional. Sets the Compression bit in DCS Field.
+   </entry>
+   <entry><literal>compress</literal></entry>
+   </row>
+
+   <row>
+   <entry><literal>validity</literal></entry>
+   <entry><literal>BIGINT(20)</literal></entry>
+   <entry valign="bottom">
+         Optional. If given, Kannel will inform SMS Center that it should only
+   try to send the message for this many minutes. If the destination
+   mobile is off other situation that it cannot receive the sms, the
+   smsc discards the message.
+   Note: you must have your Kannel box time synchronized with the SMS Center.
+   </entry>
+   <entry><literal>validity</literal></entry>
+   </row>
+
+   <row>
+   <entry><literal>deferred</literal></entry>
+   <entry><literal>BIGINT(20)</literal></entry>
+   <entry valign="bottom">
+         Optional. If given, the SMS center will postpone the message to be
+   delivered at now plus this many minutes.
+   Note: you must have your Kannel box time synchronized with the SMS Center.
+   </entry>
+   <entry><literal>deferred</literal></entry>
+   </row>
+
+   <row>
+   <entry><literal>dlr-mask</literal></entry>
+   <entry><literal>BIGINT(20)</literal></entry>
+   <entry valign="bottom">
+     Optional. Request for delivery reports with the state of the sent
+     message. The value is a bit mask composed of: 1: Delivered to phone,
+     2: Non-Delivered to Phone, 4: Queued on SMSC, 8: Delivered to SMSC,
+     16: Non-Delivered to SMSC. Must set <literal>dlr-url</literal> on
+     <literal>sendsms-user</literal> group or use the
+     sendsms <literal>dlr-url</literal> variable or Sqlbox column.
+   </entry>
+   <entry><literal>dlr-mask</literal></entry>
+   </row>
+
+   <row>
+   <entry><literal>dlr-url</literal></entry>
+   <entry><literal>VARCHAR(255)</literal></entry>
+   <entry valign="bottom">
+     Optional. If <literal>dlr-mask</literal> is given, this is the url to
+     be fetched. (Must be url-encoded)
+   </entry>
+   <entry><literal>dlr-url</literal></entry>
+   </row>
+
+   <row>
+   <entry><literal>pid</literal></entry>
+   <entry><literal>BIGINT(20)</literal></entry>
+   <entry valign="bottom">
+     Optional. Sets the PID value. (See ETSI Documentation).
+     Ex: SIM Toolkit messages would use something like
+     <literal>pid=127, coding=1, alt-dcs=1, mclass=3</literal>
+   </entry>
+   <entry><literal>pid</literal></entry>
+   </row>
+
+   <row>
+   <entry><literal>alt-dcs</literal></entry>
+   <entry><literal>BIGINT(20)</literal></entry>
+   <entry valign="bottom">
+     Optional. If unset, Kannel uses the alt-dcs defined on smsc configuration,
+     or 0X per default. If equals to 1, uses FX. If equals to 0, force 0X.
+   </entry>
+   <entry><literal>alt-dcs</literal></entry>
+   </row>
+
+   <row>
+   <entry><literal>rpi</literal></entry>
+   <entry><literal>BIGINT(20)</literal></entry>
+   <entry valign="bottom">
+     Optional. Sets the Return Path Indicator (RPI) value. (See ETSI Documentation).
+   </entry>
+   <entry><literal>rpi</literal></entry>
+   </row>
+
+   <row><entry><literal>charset</literal></entry>
+   <entry><literal>VARCHAR(255)</literal></entry>
+   <entry valign="bottom">
+        Charset of text message. Used to convert to a format suitable for
+  7 bits or to UCS-2. Defaults to WINDOWS-1252 if coding is 7bits and
+  UTF-16BE if coding is UCS-2.
+   </entry>
+   <entry><literal>charset</literal></entry>
+   </row>
+
+   <row><entry><literal>boxc_id</literal></entry>
+   <entry><literal>VARCHAR(255)</literal></entry>
+   <entry valign="bottom">
+        The bearerbox ID that should handle this message. You can usually leave this
+        one alone.
+   </entry>
+   <entry><literal>charset</literal></entry>
+   </row>
+
+   <row><entry><literal>binfo</literal></entry>
+     <entry><literal>VARCHAR(255)</literal></entry>
+     <entry valign="bottom">
+  Optional. Billing identifier/information proxy field used to pass arbitrary
+  billing transaction IDs or information to the specific SMSC modules. For EMI2 this
+  is encapsulated into the XSer 0c field, for SMPP this is encapsulated into the
+  service_type of the submit_sm PDU.
+   </entry>
+   <entry><literal>binfo</literal></entry>
+   </row>
+
+  </tbody>
+  </tgroup>
+ </table>
+</sect2>
+<sect2>
+  <title>Example</title>
+  <para>As when you're using the <literal>sendsms</literal> interface, you don't need to specify
+  all the columns in order to succesfully enqueue a message.</para>
+  <para>Here's an example query you can use to send a simple message using Sqlbox:</para>
+  <programlisting>
+INSERT INTO send_sms (
+  momt, sender, receiver, msgdata, sms_type
+) VALUES (
+  'MT', '1234', '1234567890', 'Hello world', 2
+);
+</programlisting>
+<para>The former example would send a message with text "Hello world" to number "1234567890".
+If possible, the sender would be set to "1234".</para>
+<para>You can add other parameters to specify routing, charset encoding and any other settings
+your setup may require. Just remember, try to keep it simple whenever possible</para>
+</sect2>
+</sect1>
+</chapter>
+
+<chapter id="bug-reporting">
+<title>Getting help and reporting bugs</title>
+
+    <para>This chapter explains where to find help with problems
+    related to the gateway, and the preferred procedure for reporting
+    bugs and sending corrections to them.</para>
+
+    <para>The Kannel development mailing list is devel@kannel.org.  To subscribe, send mail to <ulink url="mailto:devel-subscribe@kannel.org">devel-subscribe@kannel.org</ulink>.
+    This is currently the best location for asking help and reporting
+    bugs. Please include configuration file and version number.</para>
+
+</chapter>
+
+<appendix id="upgrading-notes">
+<title>Upgrading notes</title>
+
+    <para>This appendix includes pertinent information about required
+    changes on upgrades.
+    </para>
+
+    <para>As a general rule, always check the <literal>ChangeLog</literal> file
+    before upgrading, because it may contain important information worth knowing
+    before making any changes.</para>
+
+<sect1>
+    <title>Upgrading from different sqlbox versions</title>
+    <para>Sqlbox is a simple module that usually upgrades easily and without requiring any other changes.</para>
+    <para>In some cases, a change on the DB structure takes place and this requires changes on the DB schemas as well.
+    Since <literal>sqlbox</literal> automatically generates its tables, the best approach for this kind of upgrades is
+    to make sure that there's no messages pending, backup the tables contents (if there's no messages pending only the
+    <literal>sent_sms</literal> table will have records), drop the tables and let <literal>sqlbox</literal> create the
+    tables again. Alternatively you can check what changes are necessary and ALTER the tables yourself.</para>
+</sect1>
+
+</appendix>
+</book>
+

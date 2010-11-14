@@ -1,0 +1,62 @@
+group = sqlbox
+id = sqlbox-db
+smsbox-id = sqlbox
+#global-sender = ""
+bearerbox-host = localhost
+bearerbox-port = 13001
+smsbox-port = 13005
+smsbox-port-ssl = false
+sql-log-table = sent_sms
+sql-insert-table = send_sms
+log-file = "/var/log/kannel/kannel-sqlbox.log"
+log-level = 0
+#ssl-client-certkey-file = ""
+#ssl-server-cert-file = ""
+#ssl-server-key-file = ""
+#ssl-trusted-ca-file = ""
+
+# Database connection examples. Please uncomment as needed
+
+# Example MYSQL Connection
+#group = mysql-connection
+#id = sqlbox-db
+#host = localhost
+#username = myuser
+#password = mypass
+#database = kannel
+
+# Example ORACLE Connection
+#group = oracle-connection
+#id = sqlbox-db
+#username = myuser
+#password = mypass
+#tnsname  = //localhost:1521/XE
+
+# Example POSTGRESQL Connection
+#group = pgsql-connection
+#id = sqlbox-db
+#id = sqlbox-db
+#username = myuser
+#password = mypass
+#database = kannel
+#host = localhost
+
+# Example SDB Connection with some database URL examples
+# *** Note: Uncomment only _one_ "url" line ***
+#group = sdb-connection
+#id = sqlbox-db
+#url = mysql:host=localhost:db=kannel:uid=myuser:pwd=mypass
+#url = sqlite:db=/path/to/kannel.db
+#url = sqlite3:db=/path/to/kannel3.db
+
+# Example SQLITE 2 Connection
+#group = sqlite-connection
+#id = sqlbox-db
+#database = /path/to/kannel.db
+#max-connections = 1
+
+# Example SQLITE 3 Connection
+#group = sqlite3-connection
+#id = sqlbox-db
+#database = /path/to/kannel.db
+#max-connections = 1

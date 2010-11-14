@@ -1,0 +1,4 @@
+2010/08/01
+    From now on, opensmppbox needs to be compiled with Kannel sources
+    later than 2010/07/28 because the dlr_find function prototype
+    has been changed.

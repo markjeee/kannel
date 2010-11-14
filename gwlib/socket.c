@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2009 Kannel Group  
+ * Copyright (c) 2001-2010 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -204,21 +204,20 @@ int tcpip_connect_to_server_with_port(char *hostname, int port, int our_port, co
 
     i = 0;
     do {
-        char ip[16];
-        const char *ip2;
+        Octstr *ip2;
 
         addr = empty_sockaddr_in;
         addr.sin_family = AF_INET;
         addr.sin_port = htons(port);
         addr.sin_addr = *(struct in_addr *) hostinfo.h_addr_list[i];
 
-        ip2 = inet_ntop(AF_INET, &addr.sin_addr, ip, 16);
+        ip2 = gw_netaddr_to_octstr(AF_INET, &addr.sin_addr);
 
-        debug("gwlib.socket", 0, "Connecting to <%s>", ip2);
+        debug("gwlib.socket", 0, "Connecting to <%s>", octstr_get_cstr(ip2));
 
         rc = connect(s, (struct sockaddr *) &addr, sizeof(addr));
         if (rc == -1) {
-            error(errno, "connect to <%s> failed", ip2);
+            error(errno, "connect to <%s> failed", octstr_get_cstr(ip2));
         }
     } while (rc == -1 && hostinfo.h_addr_list[++i] != NULL);
 
@@ -298,21 +297,20 @@ int tcpip_connect_nb_to_server_with_port(char *hostname, int port, int our_port,
 
     i = 0;
     do {
-        char ip[16];
-        const char *ip2;
+        Octstr *ip2;
 
         addr = empty_sockaddr_in;
         addr.sin_family = AF_INET;
         addr.sin_port = htons(port);
         addr.sin_addr = *(struct in_addr *) hostinfo.h_addr_list[i];
 
-        ip2 = inet_ntop(AF_INET, &addr.sin_addr, ip, 16);
+        ip2 = gw_netaddr_to_octstr(AF_INET, &addr.sin_addr);
 
-        debug("gwlib.socket", 0, "Connecting nonblocking to <%s>", ip2);
+        debug("gwlib.socket", 0, "Connecting nonblocking to <%s>", octstr_get_cstr(ip2));
 
         if ((rc = connect(s, (struct sockaddr *) &addr, sizeof(addr))) < 0) {
             if (errno != EINPROGRESS) {
-                error(errno, "nonblocking connect to <%s> failed", ip2);
+                error(errno, "nonblocking connect to <%s> failed", octstr_get_cstr(ip2));
             }
         }
     } while (rc == -1 && errno != EINPROGRESS && hostinfo.h_addr_list[++i] != NULL);

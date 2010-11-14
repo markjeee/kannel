@@ -1,7 +1,7 @@
 /* ====================================================================
  * The Kannel Software License, Version 1.0
  *
- * Copyright (c) 2001-2009 Kannel Group
+ * Copyright (c) 2001-2010 Kannel Group
  * Copyright (c) 1998-2001 WapIT Ltd.
  * All rights reserved.
  *
@@ -154,6 +154,7 @@ typedef struct {
     int transmit_port;
     int receive_port;
     int use_ssl;
+    Octstr *ssl_client_certkey_file;
     volatile int quitting;
     long enquire_link_interval;
     long max_pending_submits;
@@ -265,6 +266,7 @@ static SMPP *smpp_create(SMSCConn *conn, Octstr *host, int transmit_port,
     smpp->bind_addr_ton = 0;
     smpp->bind_addr_npi = 0;
     smpp->use_ssl = 0;
+    smpp->ssl_client_certkey_file = NULL;
     smpp->load = load_create_real(0);
     load_add_interval(smpp->load, 1);
 
@@ -288,6 +290,7 @@ static void smpp_destroy(SMPP *smpp)
         octstr_destroy(smpp->my_number);
         octstr_destroy(smpp->alt_charset);
         octstr_destroy(smpp->alt_addr_charset);
+        octstr_destroy(smpp->ssl_client_certkey_file);
         load_destroy(smpp->load);
         gw_free(smpp);
     }
@@ -471,6 +474,10 @@ static Msg *pdu_to_msg(SMPP *smpp, SMPP_PDU *pdu, long *reason)
     msg->sms.binfo = pdu->u.deliver_sm.service_type;
     pdu->u.deliver_sm.service_type = NULL;
 
+    /* Foreign ID on MO */
+    msg->sms.foreign_id = pdu->u.deliver_sm.receipted_message_id;
+    pdu->u.deliver_sm.receipted_message_id = NULL;
+
     if (pdu->u.deliver_sm.esm_class & ESM_CLASS_SUBMIT_RPI)
         msg->sms.rpi = 1;
 
@@ -634,6 +641,10 @@ static Msg *data_sm_to_msg(SMPP *smpp, SMPP_PDU *pdu, long *reason)
     /* SMSCs use service_type for billing information */
     msg->sms.binfo = pdu->u.data_sm.service_type;
     pdu->u.data_sm.service_type = NULL;
+
+    /* Foreign ID on MO */
+    msg->sms.foreign_id = pdu->u.data_sm.receipted_message_id;
+    pdu->u.data_sm.receipted_message_id = NULL;
 
     if (pdu->u.data_sm.esm_class & ESM_CLASS_SUBMIT_RPI)
         msg->sms.rpi = 1;
@@ -1103,7 +1114,7 @@ static Connection *open_transmitter(SMPP *smpp)
 
 #ifdef HAVE_LIBSSL
     if (smpp->use_ssl)
-        conn = conn_open_ssl(smpp->host, smpp->transmit_port, NULL, smpp->conn->our_host);
+        conn = conn_open_ssl(smpp->host, smpp->transmit_port, smpp->ssl_client_certkey_file, smpp->conn->our_host);
     else
 #endif
         conn = conn_open_tcp(smpp->host, smpp->transmit_port, smpp->conn->our_host);
@@ -1151,7 +1162,7 @@ static Connection *open_transceiver(SMPP *smpp)
 
 #ifdef HAVE_LIBSSL
     if (smpp->use_ssl)
-        conn = conn_open_ssl(smpp->host, smpp->transmit_port, NULL, smpp->conn->our_host);
+        conn = conn_open_ssl(smpp->host, smpp->transmit_port, smpp->ssl_client_certkey_file, smpp->conn->our_host);
     else
 #endif
         conn = conn_open_tcp(smpp->host, smpp->transmit_port, smpp->conn->our_host);
@@ -1197,7 +1208,7 @@ static Connection *open_receiver(SMPP *smpp)
 
 #ifdef HAVE_LIBSSL
     if (smpp->use_ssl)
-        conn = conn_open_ssl(smpp->host, smpp->receive_port, NULL, smpp->conn->our_host);
+        conn = conn_open_ssl(smpp->host, smpp->receive_port, smpp->ssl_client_certkey_file, smpp->conn->our_host);
     else
 #endif
         conn = conn_open_tcp(smpp->host, smpp->receive_port, smpp->conn->our_host);
@@ -1654,7 +1665,8 @@ static int handle_pdu(SMPP *smpp, Connection *conn, SMPP_PDU *pdu,
                 smpp->conn->status = SMSCCONN_DISCONNECTED;
                 mutex_unlock(smpp->conn->flow_mutex);
                 if (pdu->u.bind_transmitter_resp.command_status == SMPP_ESME_RINVSYSID ||
-                    pdu->u.bind_transmitter_resp.command_status == SMPP_ESME_RINVPASWD) {
+                    pdu->u.bind_transmitter_resp.command_status == SMPP_ESME_RINVPASWD ||
+                    pdu->u.bind_transmitter_resp.command_status == SMPP_ESME_RINVSYSTYP) {
                     smpp->quitting = 1;
                 }
             } else {
@@ -1678,7 +1690,8 @@ static int handle_pdu(SMPP *smpp, Connection *conn, SMPP_PDU *pdu,
                  smpp->conn->status = SMSCCONN_DISCONNECTED;
                  mutex_unlock(smpp->conn->flow_mutex);
                  if (pdu->u.bind_transceiver_resp.command_status == SMPP_ESME_RINVSYSID ||
-                     pdu->u.bind_transceiver_resp.command_status == SMPP_ESME_RINVPASWD) {
+                     pdu->u.bind_transceiver_resp.command_status == SMPP_ESME_RINVPASWD ||
+                     pdu->u.bind_transceiver_resp.command_status == SMPP_ESME_RINVSYSTYP) {
                      smpp->quitting = 1;
                  }
             } else {
@@ -1702,11 +1715,12 @@ static int handle_pdu(SMPP *smpp, Connection *conn, SMPP_PDU *pdu,
                  smpp->conn->status = SMSCCONN_DISCONNECTED;
                  mutex_unlock(smpp->conn->flow_mutex);
                  if (pdu->u.bind_receiver_resp.command_status == SMPP_ESME_RINVSYSID ||
-                     pdu->u.bind_receiver_resp.command_status == SMPP_ESME_RINVPASWD) {
+                     pdu->u.bind_receiver_resp.command_status == SMPP_ESME_RINVPASWD ||
+                     pdu->u.bind_receiver_resp.command_status == SMPP_ESME_RINVSYSTYP) {
                      smpp->quitting = 1;
                  }
             } else {
-                /* set only resceive status if no transmitt is bind */
+                /* set only receive status if no transmitt is bind */
                 mutex_lock(smpp->conn->flow_mutex);
                 if (smpp->conn->status != SMSCCONN_ACTIVE) {
                     smpp->conn->status = SMSCCONN_ACTIVE_RECV;
@@ -2338,9 +2352,11 @@ int smsc_smpp_create(SMSCConn *conn, CfgGroup *grp)
     cfg_get_integer(&smpp->bind_addr_npi, grp, octstr_imm("bind-addr-npi"));
 
     cfg_get_bool(&smpp->use_ssl, grp, octstr_imm("use-ssl"));
-#ifndef HAVE_LIBSSL
     if (smpp->use_ssl)
+#ifndef HAVE_LIBSSL
         panic(0, "SMPP: Can not use 'use-ssl' without SSL support compiled in.");
+#else
+        smpp->ssl_client_certkey_file = cfg_get(grp, octstr_imm("ssl-client-certkey-file"));
 #endif
 
     conn->data = smpp;

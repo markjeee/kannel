@@ -144,7 +144,7 @@
     $fields['text'] .= "%01"; # Version WBXML 1.1
     $fields['text'] .= "%01"; # Unknown Public Identifier
     $fields['text'] .= "%6A"; # Charset UTF-8
-    $fields['text'] .= "%00"; # String table lenght
+    $fields['text'] .= "%00"; # String table length
 
 
     $params = array ( "bearer" => "12", "proxy" => "13", "port" => "14", "name" => "15", "proxy_type" => "16", "url" => "17", "proxy_authname" => "18", "proxy_authsecret" => "19", "sms_smsc_address" => "1A", "ussd_service_code" => "1B", "gprs_accesspointname" => "1C", "ppp_logintype" => "1D", "proxy_logintype" => "1E", "csd_dialstring" => "21", "csd_calltype" => "28", "csd_callspeed" => "29", "ppp_authtype" => "22", "ppp_authname" => "23", "ppp_authsecret" => "24" );

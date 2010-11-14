@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2009 Kannel Group  
+ * Copyright (c) 2001-2010 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -76,6 +76,7 @@
 
 /* WTLS material - make sure the addr_tuple comes first! */
 
+#ifdef HAVE_WTLS_OPENSSL
 WAPEVENT(T_Unitdata_Ind, "T-Unitdata.ind",
          ADDRTUPLE(addr_tuple)
          WTLSPDUS(pdu_list)
@@ -122,6 +123,7 @@ WAPEVENT(SEC_Unitdata_Req, "SEC-Unidata.req",
          ADDRTUPLE(addr_tuple)
          OCTSTR(user_data)
         )
+#endif /* HAVE_WTLS_OPENSSL */
 
 /*
  * Transport layer (WDP)

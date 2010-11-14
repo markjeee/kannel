@@ -1,0 +1,44 @@
+# sample opensmppbox.conf
+
+group = core
+dlr-storage = mysql
+
+# this group defines your opensmppbox
+group = opensmppbox
+# our boxc type
+opensmppbox-id = abcd
+# the port to listen on for smpp connections
+opensmppbox-port = 2346
+# we connect to the following host as a box
+bearerbox-host = localhost
+bearerbox-port = 14009
+log-level = 0
+log-file = opensmppbox.log
+our-system-id = chim1
+route-to-smsc = my-default-smsc
+# see sample smpplogins.txt
+smpp-logins = "/home/opensmppbox/etc/smpplogins.txt"
+
+# the following is just standard dlr configuration
+
+group = mysql-connection
+id = mydlr
+host = localhost
+username = kannel
+password = secret
+database = kannel
+# you can increase this upon a higher load
+max-connections = 1
+
+group = dlr-db
+id = mydlr
+table = dlr
+field-smsc = smsc
+field-timestamp = ts
+field-destination = destination
+field-source = source
+field-service = service
+field-url = url
+field-mask = mask
+field-status = status
+field-boxc-id = boxcid

@@ -3159,6 +3159,14 @@ address-range = ""
         Defines whether we should try to bind with SSL enabled connection.
      </entry></row>
 
+    <row><entry><literal>ssl-client-certkey-file (c)</literal></entry>
+     <entry>filename</entry>
+     <entry valign="bottom">
+      A PEM encoded SSL certificate and private key file to be used
+      for SSL connections. This option is used together with use-ssl
+      for client certificate validation with SMPP SMSCs requiring it.
+     </entry></row>
+
    <row><entry><literal>transceiver-mode</literal></entry>
      <entry>bool</entry>
      <entry valign="bottom">
@@ -5826,6 +5834,15 @@ ssl-certkey-file
         Sets socket timeout in seconds for outgoing client http
         connections. Optional. Defaults to 240 seconds.
      </entry></row>
+
+     <row><entry><literal>sms-length</literal></entry>
+        <entry>number</entry>
+        <entry valign="bottom">
+        Maximum allowed number of characters for a single SMS in smsbox.
+        If this maximum exceeds Kannel will split SMS into multiparts.
+        Default: 140
+     </entry></row>
+
   </tbody>
   </tgroup>
  </table>
@@ -6032,17 +6049,16 @@ get-url = "http://%S"
          number of `%s' fields in the URL. This allows you to
         configure the gateway to use different URLs for the same
         keyword depending on the number of words the SMS message
-        contains. The keyword matches in non-case sensitive manner,
-		  which means you don't have to use aliases to handle different
-		  cased versions of your keyword.
+        contains. The keyword is case insensitive, which means you don't
+        have to use aliases to handle different cased versions of your keyword.
      </entry></row>
 
    <row><entry><literal>keyword-regex</literal></entry>
      <entry>POSIX regular expression</entry>
      <entry valign="bottom">
      This field may be used to enable service-selection based on a regular expression.
-     If this field is defined for a service, then the selection will rely on the regex only, never taking
-     the literal <literal>keyword</literal> into account.
+     You can define either keyword or keyword-regex in configuration, but not both in
+     the same sms-service. keyword-regex is case sensitive.
      See section on <xref linkend="regular-expressions"> for details.
    </entry></row>
 
@@ -6050,7 +6066,8 @@ get-url = "http://%S"
      <entry>word-list</entry>
      <entry valign="bottom">
         If the service has aliases, they are listed as a list with 
-        each entry separated with a semicolon (';')
+        each entry separated with a semicolon (';'). Aliases are case
+        insensitive just like keyword.
 
      </entry></row>
 
@@ -6489,6 +6506,10 @@ the SMS ID of the internal message structure
 
 <row><entry><literal>%d</literal></entry><entry>
 the delivery report value
+</entry></row>
+
+<row><entry><literal>%R</literal></entry><entry>
+the delivery report URL value
 </entry></row>
 
 <row><entry><literal>%D</literal></entry><entry>

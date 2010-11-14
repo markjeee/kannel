@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2009 Kannel Group  
+ * Copyright (c) 2001-2010 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -203,23 +203,33 @@ static void handle_split(SMSCConn *conn, Msg *msg, long reason)
     struct split_parts *split = msg->sms.split_parts;
     
     /*
-     * If temporarely failed, try again immediately but only if connection active.
-     * Because if connection is not active we will loop for ever here consuming 100% CPU
-     * time due to internal queue cleanup in smsc module that call bb_smscconn_failed.
-     */
-    if (reason == SMSCCONN_FAILED_TEMPORARILY && smscconn_status(conn) == SMSCCONN_ACTIVE &&
-        smscconn_send(conn, msg) == 0) {
-        /* destroy this message because it will be duplicated in smsc module */
-        msg_destroy(msg);
-        return;
-    }
-    
-    /*
      * if the reason is not a success and status is still success
      * then set status of a split to the reason.
      * Note: reason 'malformed','discarded' or 'rejected' has higher priority!
      */
     switch(reason) {
+    case SMSCCONN_FAILED_TEMPORARILY:
+        /*
+         * Check if SMSC link alive and if so increase resend_try and set resend_time.
+         * If SMSC link is not active don't increase resend_try and don't set resend_time
+         * because we don't want to delay messages due to broken connection.
+         */
+        if (smscconn_status(conn) == SMSCCONN_ACTIVE) {
+            /*
+             * Check if sms_resend_retry set and this msg has exceeded a limit also
+             * honor "single shot" with sms_resend_retry set to zero.
+             */
+            if (sms_resend_retry >= 0 && msg->sms.resend_try >= sms_resend_retry) {
+                warning(0, "Maximum retries for message exceeded, discarding it!");
+                bb_smscconn_send_failed(NULL, msg, SMSCCONN_FAILED_DISCARDED,
+                                        octstr_create("Retries Exceeded"));
+                break;
+            }
+            msg->sms.resend_try = (msg->sms.resend_try > 0 ? msg->sms.resend_try + 1 : 1);
+            time(&msg->sms.resend_time);
+        }
+        gwlist_produce(outgoing_sms, msg);
+        return;
     case SMSCCONN_FAILED_DISCARDED:
     case SMSCCONN_FAILED_REJECTED:
     case SMSCCONN_FAILED_MALFORMED:
@@ -314,7 +324,7 @@ void bb_smscconn_send_failed(SMSCConn *conn, Msg *sms, int reason, Octstr *reply
         /*
          * Check if SMSC link alive and if so increase resend_try and set resend_time.
          * If SMSC link is not active don't increase resend_try and don't set resend_time
-         * because we don't want to delay messages because of connection broken.
+         * because we don't want to delay messages due to a broken connection.
          */
        if (conn && smscconn_status(conn) == SMSCCONN_ACTIVE) {
             /*
@@ -937,6 +947,40 @@ int smsc2_add_smsc(Octstr *id)
     return 0;
 }
 
+int smsc2_reload_lists(void)
+{
+    Numhash *tmp;
+    int rc = 1;
+
+    if (white_list_url != NULL) {
+        tmp = numhash_create(octstr_get_cstr(white_list_url));
+        if (white_list == NULL) {
+            error(0, "Unable to reload white_list."),
+            rc = -1;
+        } else {
+        	gw_rwlock_wrlock(&white_black_list_lock);
+        	numhash_destroy(white_list);
+        	white_list = tmp;
+        	gw_rwlock_unlock(&white_black_list_lock);
+        }
+    }
+
+    if (black_list_url != NULL) {
+        tmp = numhash_create(octstr_get_cstr(black_list_url));
+        if (black_list == NULL) {
+            error(0, "Unable to reload black_list");
+            rc = -1;
+        } else {
+        	gw_rwlock_wrlock(&white_black_list_lock);
+        	numhash_destroy(black_list);
+        	black_list = tmp;
+        	gw_rwlock_unlock(&white_black_list_lock);
+        }
+    }
+
+    return rc;
+}
+
 void smsc2_resume(void)
 {
     SMSCConn *conn;
@@ -1211,72 +1255,79 @@ long smsc2_rout(Msg *msg, int resend)
         return SMSCCONN_FAILED_DISCARDED;
     }
 
-    /*
-     * if global queue not empty then 20% reserved for old msgs
-     * and 80% for new msgs. So we can guarantee that old msgs find
-     * place in the SMSC's queue.
-     */
-    if (gwlist_len(outgoing_sms) > 0) {
-        max_queue = (resend ? max_outgoing_sms_qlength :
-                               max_outgoing_sms_qlength * 0.8);
-    }
-    else
-        max_queue = max_outgoing_sms_qlength;
-
-    s = gw_rand() % gwlist_len(smsc_list);
     best_preferred = best_ok = NULL;
     bad_found = full_found = 0;
     bp_load = bo_load = queue_length = 0;
 
-    conn = NULL;
-    for (i=0; i < gwlist_len(smsc_list); i++) {
-	conn = gwlist_get(smsc_list,  (i+s) % gwlist_len(smsc_list));
+    if (msg->sms.split_parts == NULL) {
+    	/*
+    	 * if global queue not empty then 20% reserved for old msgs
+    	 * and 80% for new msgs. So we can guarantee that old msgs find
+    	 * place in the SMSC's queue.
+    	 */
+    	if (gwlist_len(outgoing_sms) > 0) {
+    		max_queue = (resend ? max_outgoing_sms_qlength :
+    		max_outgoing_sms_qlength * 0.8);
+    	} else
+    		max_queue = max_outgoing_sms_qlength;
 
-	smscconn_info(conn, &info);
-        queue_length += (info.queued > 0 ? info.queued : 0);
+    	s = gw_rand() % gwlist_len(smsc_list);
 
-        ret = smscconn_usable(conn,msg);
-	if (ret == -1)
-	    continue;
+    	conn = NULL;
+    	for (i = 0; i < gwlist_len(smsc_list); i++) {
+    		conn = gwlist_get(smsc_list,  (i+s) % gwlist_len(smsc_list));
 
-	/* if we already have a preferred one, skip non-preferred */
-	if (ret != 1 && best_preferred)
-	    continue;
+    		smscconn_info(conn, &info);
+    		queue_length += (info.queued > 0 ? info.queued : 0);
 
-	/* If connection is not currently answering ... */
-	if (info.status != SMSCCONN_ACTIVE) {
-	    bad_found = 1;
-	    continue;
-	}
-        /* check queue length */
-        if (info.queued > max_queue) {
-            full_found = 1;
-            continue;
-        }
-	if (ret == 1) {          /* preferred */
-	    if (best_preferred == NULL || info.load < bp_load) {
-		best_preferred = conn;
-		bp_load = info.load;
-		continue;
-	    }
-	}
-	if (best_ok == NULL || info.load < bo_load) {
-	    best_ok = conn;
-	    bo_load = info.load;
-	}
-    }
-    queue_length += gwlist_len(outgoing_sms);
-    if (max_outgoing_sms_qlength > 0 && !resend &&
-         queue_length > gwlist_len(smsc_list) * max_outgoing_sms_qlength) {
-        gw_rwlock_unlock(&smsc_list_lock);
-        debug("bb.sms", 0, "sum(#queues) limit");
-        return SMSCCONN_FAILED_QFULL;
+    		ret = smscconn_usable(conn,msg);
+    		if (ret == -1)
+    			continue;
+
+    		/* if we already have a preferred one, skip non-preferred */
+    		if (ret != 1 && best_preferred)
+    			continue;
+
+    		/* If connection is not currently answering ... */
+    		if (info.status != SMSCCONN_ACTIVE) {
+    			bad_found = 1;
+    			continue;
+    		}
+    		/* check queue length */
+    		if (info.queued > max_queue) {
+    			full_found = 1;
+    			continue;
+    		}
+    		if (ret == 1) {          /* preferred */
+    			if (best_preferred == NULL || info.load < bp_load) {
+    				best_preferred = conn;
+    				bp_load = info.load;
+    				continue;
+    			}
+    		}
+    		if (best_ok == NULL || info.load < bo_load) {
+    			best_ok = conn;
+    			bo_load = info.load;
+    		}
+    	}
+    	queue_length += gwlist_len(outgoing_sms);
+    	if (max_outgoing_sms_qlength > 0 && !resend &&
+    	    queue_length > gwlist_len(smsc_list) * max_outgoing_sms_qlength) {
+    		gw_rwlock_unlock(&smsc_list_lock);
+    		debug("bb.sms", 0, "sum(#queues) limit");
+    		return SMSCCONN_FAILED_QFULL;
+    	}
+    } else {
+        struct split_parts *parts = msg->sms.split_parts;
+        /* check whether this SMSCConn still on the list */
+        if (gwlist_search_equal(smsc_list, parts->smsc_conn) != -1)
+            best_preferred = parts->smsc_conn;
     }
 
     if (best_preferred)
-	ret = smscconn_send(best_preferred, msg);
+        ret = smscconn_send(best_preferred, msg);
     else if (best_ok)
-	ret = smscconn_send(best_ok, msg);
+        ret = smscconn_send(best_ok, msg);
     else if (bad_found) {
         gw_rwlock_unlock(&smsc_list_lock);
         if (max_outgoing_sms_qlength < 0 || gwlist_len(outgoing_sms) < max_outgoing_sms_qlength) {
@@ -1285,17 +1336,15 @@ long smsc2_rout(Msg *msg, int resend)
         }
         debug("bb.sms", 0, "bad_found queue full");
         return SMSCCONN_FAILED_QFULL; /* queue full */
-    }
-    else if (full_found) {
+    } else if (full_found) {
         gw_rwlock_unlock(&smsc_list_lock);
         debug("bb.sms", 0, "full_found queue full");
         return SMSCCONN_FAILED_QFULL;
-    }
-    else {
+    } else {
         gw_rwlock_unlock(&smsc_list_lock);
         if (bb_status == BB_SHUTDOWN) {
             msg_destroy(msg);
-	    return SMSCCONN_QUEUED;
+            return SMSCCONN_QUEUED;
         }
         warning(0, "Cannot find SMSCConn for message to <%s>, rejected.",
                     octstr_get_cstr(msg->sms.receiver));
@@ -1306,7 +1355,7 @@ long smsc2_rout(Msg *msg, int resend)
     gw_rwlock_unlock(&smsc_list_lock);
     /* check the status of sending operation */
     if (ret == -1)
-	return smsc2_rout(msg, resend); /* re-try */
+        return smsc2_rout(msg, resend); /* re-try */
 
     msg_destroy(msg);
     return SMSCCONN_SUCCESS;
@@ -1638,41 +1687,5 @@ static int check_concatenation(Msg **pmsg, Octstr *smscid)
     msg_dump(msg,0);
 
     return ret;
-}
-
-int bb_reload_lists(void)
-{
-    Numhash *tmp;
-    int rc = 1;
-    
-    if (white_list_url != NULL) {
-        tmp = numhash_create(octstr_get_cstr(white_list_url));
-
-        gw_rwlock_wrlock(&white_black_list_lock);
-        numhash_destroy(white_list);
-        white_list = tmp;
-        gw_rwlock_unlock(&white_black_list_lock);
-
-        if (white_list == NULL) {
-            error(0, "Unable to reload white_list."),
-            rc = -1;
-        }
-    }
-
-    if (black_list_url != NULL) {
-        tmp = numhash_create(octstr_get_cstr(black_list_url));
-
-        gw_rwlock_wrlock(&white_black_list_lock);
-        numhash_destroy(black_list);
-        black_list = tmp;
-        gw_rwlock_unlock(&white_black_list_lock);
-
-        if (black_list == NULL) {
-            error(0, "Unable to reload black_list");
-            rc = -1;
-        }
-    }
-
-    return rc;
 }
 

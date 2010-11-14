@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2009 Kannel Group  
+ * Copyright (c) 2001-2010 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -2280,11 +2280,13 @@ static void server_thread(void *dummy)
 
     n = 0;
     while (run_status == running && keep_servers_open) {
-        if (n == 0 || gwlist_len(new_server_sockets) > 0) {
+        while (n == 0 || gwlist_len(new_server_sockets) > 0) {
             struct server *p = gwlist_consume(new_server_sockets);
             if (p == NULL) {
                 debug("gwlib.http", 0, "HTTP: No new servers. Quitting.");
                 break;
+            } else {
+                debug ("gwlib.http", 0, "HTTP: Including port %d, fd %d for polling in server thread", p->port, p->fd);
             }
             if (tab_size <= n) {
                 tab_size++;

@@ -1,0 +1,592 @@
+dnl /* ==================================================================== 
+dnl  * The Kannel Software License, Version 1.0 
+dnl  * 
+dnl  * Copyright (c) 2001-2009 Kannel Group  
+dnl  * Copyright (c) 1998-2001 WapIT Ltd.   
+dnl  * All rights reserved. 
+dnl  * 
+dnl  * Redistribution and use in source and binary forms, with or without 
+dnl  * modification, are permitted provided that the following conditions 
+dnl  * are met: 
+dnl  * 
+dnl  * 1. Redistributions of source code must retain the above copyright 
+dnl  *    notice, this list of conditions and the following disclaimer. 
+dnl  * 
+dnl  * 2. Redistributions in binary form must reproduce the above copyright 
+dnl  *    notice, this list of conditions and the following disclaimer in 
+dnl  *    the documentation and/or other materials provided with the 
+dnl  *    distribution. 
+dnl  * 
+dnl  * 3. The end-user documentation included with the redistribution, 
+dnl  *    if any, must include the following acknowledgment: 
+dnl  *       "This product includes software developed by the 
+dnl  *        Kannel Group (http://www.kannel.org/)." 
+dnl  *    Alternately, this acknowledgment may appear in the software itself, 
+dnl  *    if and wherever such third-party acknowledgments normally appear. 
+dnl  * 
+dnl  * 4. The names "Kannel" and "Kannel Group" must not be used to 
+dnl  *    endorse or promote products derived from this software without 
+dnl  *    prior written permission. For written permission, please  
+dnl  *    contact org@kannel.org. 
+dnl  * 
+dnl  * 5. Products derived from this software may not be called "Kannel", 
+dnl  *    nor may "Kannel" appear in their name, without prior written 
+dnl  *    permission of the Kannel Group. 
+dnl  * 
+dnl  * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED 
+dnl  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES 
+dnl  * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE 
+dnl  * DISCLAIMED.  IN NO EVENT SHALL THE KANNEL GROUP OR ITS CONTRIBUTORS 
+dnl  * BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,  
+dnl  * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT  
+dnl  * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR  
+dnl  * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,  
+dnl  * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE  
+dnl  * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,  
+dnl  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+dnl  * ==================================================================== 
+dnl  * 
+dnl  * This software consists of voluntary contributions made by many 
+dnl  * individuals on behalf of the Kannel Group.  For more information on  
+dnl  * the Kannel Group, please see <http://www.kannel.org/>. 
+dnl  * 
+dnl  * Portions of this software are based upon software originally written at  
+dnl  * WapIT Ltd., Helsinki, Finland for the Kannel project.  
+dnl  */ 
+
+dnl OpenSMPPBox - Open Source Kannel Extension for store messages
+dnl
+dnl Rene Kluwen <rene dot kluwen at chimit dot nl>
+dnl 
+dnl Documentation and additional patches by Alejandro Guerrieri <aguerrieri at kannel dot org>
+dnl 
+dnl This program is free software, distributed under the terms of
+dnl the GNU General Public License, with a few exceptions granted (see LICENSE)
+dnl
+
+AC_PREREQ(2.5)
+
+dnl Initialization
+AC_INIT([opensmppbox],[svn],[devel@kannel.org])
+AC_CONFIG_SRCDIR([gw/opensmppbox.c])
+AC_CONFIG_AUX_DIR(autotools)
+AC_SUBST(SHELL)
+
+AM_INIT_AUTOMAKE([$SB_NAME], [$VERSION])
+AC_CONFIG_HEADERS([sb-config.h])
+AM_MAINTAINER_MODE
+AC_CANONICAL_HOST
+
+dnl Check version number.
+VERSION=`head -n 1 VERSION`
+if test "x$VERSION" = "xsvn"; then
+  AC_MSG_CHECKING([svn checkout revision])
+  AC_SVN_REVISION(SVN_REVISION)
+  AC_MSG_RESULT([$SVN_REVISION])
+  VERSION="$VERSION-r$SVN_REVISION"
+fi
+AC_DEFINE_UNQUOTED(GW_NAME, "OpenSMPPBox", [ GW_NAME ])
+AC_DEFINE_UNQUOTED(GW_VERSION, "$VERSION", [ GW_VERSION ])
+AC_DEFINE_UNQUOTED(VERSION, "$VERSION", [ VERSION ])
+AC_SUBST(GW_VERSION)
+AC_SUBST(VERSION)
+AC_CONFIG_SECTION([Configuring for opensmppbox version $VERSION])
+
+dnl Checks for programs.
+dnl AC_PROG_CC
+AC_PROG_LIBTOOL
+
+dnl add mmlib to the include path
+INCLUDES='-I$(top_srcdir)/gw -I$(top_builddir)/gw'
+AC_SUBST([INCLUDES])
+
+dnl Checks for header files.
+AC_HEADER_DIRENT
+AC_HEADER_STDC
+AC_HEADER_SYS_WAIT
+
+dnl ommiting what kannel is already checking
+dnl AC_CHECK_HEADERS(sys/ioctl.h sys/time.h sys/types.h unistd.h sys/poll.h)
+dnl AC_CHECK_HEADERS(pthread.h getopt.h syslog.h iconv.h zlib.h execinfo.h stdlib.h)
+dnl AC_CHECK_HEADERS([sys/socket.h sys/sockio.h netinet/in.h])
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+AC_STRUCT_TM
+AC_C_VOLATILE
+
+dnl Checks for library functions.
+AC_FUNC_CLOSEDIR_VOID
+AC_FUNC_ERROR_AT_LINE
+AC_FUNC_MALLOC
+AC_FUNC_MEMCMP
+dnl AC_TYPE_SIGNAL
+dnl AC_FUNC_STAT
+dnl AC_CHECK_FUNCS(gettimeofday select socket strdup getopt_long localtime_r gmtime_r backtrace srandom)
+
+dnl Flags for determined platform
+EXE_EXT=""
+case "$host" in
+  *-sun-solaris*) 
+    CFLAGS="$CFLAGS -DSunOS=1"
+    ;;
+  *-cygwin*)
+    EXE_EXT=".exe"
+    ;;
+  *apple-darwin*) 
+    CFLAGS="$CFLAGS -DDARWIN=1"
+    LIBS="$LIBS -L/opt/local/lib" 
+    ;;
+  *-linux-*)
+    CFLAGS="$CFLAGS -D_XOPEN_SOURCE=600 -D_BSD_SOURCE"
+    LDFLAGS="$LDFLAGS -rdynamic"
+    ;;
+  *-*-openbsd* | *-*-freebsd*)
+    CFLAGS="$CFLAGS -pthread"
+    AC_CHECK_LIB(pthread, pthread_exit, [LIBS="$LIBS -lpthread"; pthread="yes"],
+      [AC_CHECK_LIB(c_r, pthread_exit, [LIBS="$LIBS -lc_r"; pthread="yes"])]
+    )
+    ;;
+esac
+
+AC_ARG_WITH(cflags,
+[  --with-cflags=FLAGS     use FLAGS for CFLAGS],
+CFLAGS="$CFLAGS $withval")
+
+AC_ARG_WITH(libs,
+[  --with-libs=FLAGS       use FLAGS for extra libraries],
+LIBS="$LIBS $withval")
+
+dnl Implement the --enable-pam option.
+
+AC_CONFIG_SECTION([Configuring PAM support])
+
+AC_MSG_CHECKING([whether to compile with PAM support])
+AC_ARG_ENABLE(pam,
+[  --enable-pam	          enable PAM authentication @<:@disabled@:>@], [
+  if test "$enableval" = "yes"
+  then
+    AC_CHECK_LIB(pam, pam_end)
+    AC_CHECK_LIB(dl,main)
+    AC_CHECK_HEADER([security/pam_appl.h],
+      AC_DEFINE(HAVE_PAM_SECURITY, 1, "HAVE_PAM_SECURITY")
+      AC_DEFINE(HAVE_PAM, 1, "HAVE_PAM")
+      AC_MSG_RESULT([enabling PAM for authentication]),
+      [AC_CHECK_HEADER([pam/pam_appl.h],
+        AC_DEFINE(HAVE_PAM_PAM, 1, "HAVE_PAM_PAM")
+        AC_DEFINE(HAVE_PAM, 1, "HAVE_PAM")
+        AC_MSG_RESULT([enabling PAM for authentication])
+      )]
+    )
+  else
+    AC_MSG_RESULT(disabled)
+  fi
+])
+
+
+dnl implement SSL stuff.
+dnl Implement the --with-ssl option.
+
+AC_ARG_WITH(ssl,
+[  --with-ssl[=DIR]          where to look for OpenSSL libs and header files
+                          DIR points to the installation [/usr/local/ssl]],
+[ if test -d "$withval"; then
+    ssllib="$withval/lib";
+    sslinc="$withval/include"
+  else
+    AC_MSG_ERROR(Unable to find OpenSSL libs and/or directories at $withval)
+  fi
+])
+
+dnl Implement --enable-ssl option.
+
+AC_MSG_CHECKING([whether to compile with SSL support])
+AC_ARG_ENABLE(ssl,
+[  --enable-ssl            enable SSL client and server support [enabled]], [
+  if test "$enableval" = no ; then
+    AC_MSG_RESULT(disabled)
+    ssl=no
+  else
+    ssl=yes
+  fi
+],[
+  ssl=yes
+])
+
+if test "$ssl" = "yes" ; then
+  dnl test only if --with-ssl has not been used
+  if test "x$ssllib" = "x" && test "x$sslinc" = "x"; then
+    for loc in /usr/lib /usr/local/ssl/lib /usr/local/openssl/lib; do
+      if test -f "$loc/libssl.a"; then
+        ssllib="$loc"
+      fi
+    done
+    for loc in /usr/include/ssl /usr/include/openssl /usr/local/ssl/include \
+               /usr/local/openssl/include; do
+      if test -d "$loc"; then
+        sslinc="$loc"
+      fi
+    done
+  fi
+  AC_MSG_RESULT(trying $ssllib $sslinc)
+fi
+
+dnl Implement the SSL library checking routine.
+dnl This will define HAVE_LIBSSL in config.h
+
+if test "x$ssllib" != "x" && test "x$sslinc" != "x"; then
+  CFLAGS="$CFLAGS -I$sslinc"
+  LIBS="$LIBS -L$ssllib"
+
+  AC_PATH_PROG(OPENSSL, openssl, no)
+  if test "$OPENSSL" = "yes"; then
+    AC_MSG_CHECKING([openssl version])
+    openssl_version=`$OPENSSL version | awk '{print $2}'`
+    AC_MSG_RESULT([$openssl_version])
+  fi
+  AC_CHECK_LIB(crypto, CRYPTO_lock,
+  [ LIBS="$LIBS -lcrypto"
+    AC_CHECK_LIB(ssl, SSL_library_init,
+    [ AC_CHECK_LIB(ssl, SSL_connect)
+      AC_CHECK_HEADERS(openssl/x509.h openssl/rsa.h openssl/crypto.h \
+                       openssl/pem.h openssl/ssl.h openssl/err.h)
+      AC_MSG_CHECKING(whether the OpenSSL library is multithread-enabled)
+      AC_TRY_RUN([
+        #define OPENSSL_THREAD_DEFINES
+        #include <openssl/opensslconf.h>
+        int main(void) {
+        #if defined(THREADS)
+          exit(0);
+        #elif defined(OPENSSL_THREADS)
+          exit(0);
+        #else
+          exit(1);
+        #endif
+        }
+      ], [
+        AC_MSG_RESULT(yes)
+        AC_DEFINE(HAVE_LIBSSL)
+        LIBS="$LIBS -lssl"
+        AC_MSG_CHECKING([whether to compile with SSL support])
+        AC_MSG_RESULT(yes)
+      ], [
+        AC_ARG_ENABLE(ssl-thread-test,
+        [  --disable-ssl-thread-test  disable the multithread test for the OpenSSL library
+                          this will force to continue even if the test fails],
+        [ if test "$enableval" = no ; then
+            AC_MSG_RESULT([no, continue forced])
+          fi
+        ], [
+          AC_MSG_RESULT(no)
+          AC_MSG_ERROR(Either get a multithread-enabled SSL or configure with --disable-ssl)
+        ])
+      ], echo "Cross-compiling; make sure your SSL library is multithread-enabled"
+      )
+    ])
+  ])
+fi
+
+
+dnl DocBook stuff
+
+AC_CONFIG_SECTION([Configuring DocBook support])
+AC_CHECK_PROG(OLDJADE, jade, jade, no)
+if test "$OLDJADE" = "no" ;
+  then
+    AC_CHECK_PROG(JADE, openjade, openjade, no)
+  else
+    JADE=$OLDJADE
+fi
+AC_CHECK_PROG(JADETEX, jadetex, jadetex, no)
+AC_CHECK_PROG(PDFJADETEX, pdfjadetex, pdfjadetex, no)
+AC_CHECK_PROG(DVIPS, dvips, dvips, no)
+AC_CHECK_PROG(FIG2DEV, fig2dev, fig2dev, no)
+AC_CHECK_PROG(CONVERT, convert, convert, no)
+AC_SUBST(HTML_DSL)
+found=""
+for loc in /usr /usr/local /opt/local; do
+  if test "x$found" = "x" ; then 
+    for file in ${loc}/lib/sgml/stylesheet/dsssl/docbook/nwalsh/html/docbook.dsl \
+  ${loc}/lib/sgml/stylesheets/nwalsh-modular/html/docbook.dsl \
+  ${loc}/share/dsssl/docbook-dsssl/html/docbook.dsl \
+  ${loc}/share/sgml/docbook/dsssl-stylesheets-1.*/html/docbook.dsl \
+  ${loc}/share/sgml/docbook/dsssl-stylesheets/html/docbook.dsl \
+  ${loc}/share/sgml/docbook/stylesheet/dsssl/modular/html/docbook.dsl \
+        ${loc}/share/sgml/docbook/dsssl/modular/html/docbook.dsl ; do
+      if test "x$found" = "x" ; then 
+  AC_CHECK_FILE($file,HTML_DSL=$file; found=1)
+      fi
+    done
+  fi
+done
+AC_SUBST(TEX_DSL)
+found=""
+for loc in /usr /usr/local /opt/local; do
+  if test "x$found" = "x" ; then 
+    for file in ${loc}/lib/sgml/stylesheet/dsssl/docbook/nwalsh/print/docbook.dsl \
+  ${loc}/lib/sgml/stylesheets/nwalsh-modular/print/docbook.dsl \
+  ${loc}/share/dsssl/docbook-dsssl/print/docbook.dsl \
+  ${loc}/share/sgml/docbook/dsssl-stylesheets-1.*/print/docbook.dsl \
+  ${loc}/share/sgml/docbook/dsssl-stylesheets/print/docbook.dsl \
+  ${loc}/share/sgml/docbook/stylesheet/dsssl/modular/print/docbook.dsl \
+        ${loc}/share/sgml/docbook/dsssl/modular/print/docbook.dsl ; do
+      if test "x$found" = "x" ; then 
+  AC_CHECK_FILE($file,TEX_DSL=$file; found=1)
+      fi
+    done
+  fi    
+done
+
+dnl Implement --enable-docs option.
+
+AC_SUBST(DOCSTARGET)
+
+AC_ARG_ENABLE(docs,
+[  --enable-docs           enable building of documentation @<:@enabled@:>@], [
+  if test "$enableval" = "yes"
+  then
+      DOCSTARGET="docs"
+  else
+      DOCSTARGET="no-docs"
+  fi
+])
+
+if test "x$HTML_DSL" = "x" -o "x$TEX_DSL"   = "x" \
+    || test "$JADE"       = "no" \
+    || test "$JADETEX"    = "no" \
+    || test "$PDFJADETEX" = "no" \
+    || test "$DVIPS"      = "no" \
+    || test "$FIG2DEV"    = "no" \
+    || test "$CONVERT"    = "no" \
+    || test "$DOCSTARGET" = "no-docs"
+then
+  DOCSTARGET="no-docs"
+else
+  DOCSTARGET="docs"
+fi
+
+case "$DOCSTARGET" in
+no-docs) AC_MSG_RESULT(Not building documentation.) ;;
+docs) AC_MSG_RESULT(Documentation will be built as well.) ;;
+esac
+
+dnl Implement --enable-drafts option.
+
+AC_SUBST(DOCDRAFTS)
+DOCDRAFTS="IGNORE"
+
+AC_ARG_ENABLE(drafts,
+[  --enable-drafts         enable building of documentation drafts @<:@disabled@:>@], [
+  if test "$enableval" = "yes"
+  then
+      DOCDRAFTS="INCLUDE"
+  else
+      DOCDRAFTS="IGNORE"
+  fi
+])
+if test "x$DOCSTARGET" = "xdocs"
+then
+    case "$DOCDRAFTS" in
+    INCLUDE) AC_MSG_RESULT(Documentation will include drafts.) ;;
+    esac
+fi
+
+dnl Checking for Ct-lib support
+
+AC_MSG_CHECKING(for Ct-Lib support)
+AC_ARG_WITH(ctlib,
+[  --with-ctlib[=DIR]      Include Ct-Lib support.  DIR is the Ct-Lib
+                          install directory, defaults to /opt/sybase.],
+[
+    if test "$withval" = "yes"; then
+        withval=/opt/sybase
+    fi
+
+    if test "$withval" != "no"; then
+        if test -f $withval/include/ctpublic.h; then
+            CTLIB_INCDIR=$withval/include
+            CTLIB_LIBDIR=$withval/lib
+        else
+            AC_MSG_RESULT(no)
+            AC_MSG_ERROR(Invalid Ct-Lib directory - unable to find ctpublic.h)
+        fi
+        CTLIB_LFLAGS="-L$CTLIB_LIBDIR -lct -lcs -lsybtcl -lcomn -lintl"
+        CTLIB_INCLUDE="-I$CTLIB_INCDIR"
+        AC_DEFINE(HAVE_CTLIB, 1, [Defined to 1])
+        AC_MSG_RESULT(yes)
+        have_db=yes
+        dnl ctlib requires -ldl sometime
+        AC_CHECK_FUNC(dlopen, , AC_CHECK_LIB(dl, dlopen, CTLIB_LFLAGS="$CTLIB_LFLAGS -ldl"))
+    fi
+    if test "x$DBTYPE" = "x" ; then
+       DBTYPE="ctlib"
+    else
+       DBTYPE="$DBTYPE-ctlib"
+    fi
+
+],[
+    AC_MSG_RESULT(no)
+])
+AC_SUBST(CTLIB_LFLAGS)
+AC_SUBST(CTLIB_INCLUDE)
+
+dnl Checking for FreeTDS ct-lib support
+AC_MSG_CHECKING(for FreeTDS Ct-Lib support)
+AC_ARG_WITH(mssql,
+[  --with-mssql[=DIR]    Include FreeTDS Ct-Lib support.  DIR is the FreeTDS
+                          install directory, defaults to /usr/local.],
+[
+    if test "$withval" = "yes"; then
+        withval=/usr/local
+    fi
+
+    if test "$withval" != "no"; then
+        if test -f $withval/include/ctpublic.h; then
+            CTLIB_INCDIR=$withval/include
+            CTLIB_LIBDIR=$withval/lib
+        else
+            AC_MSG_RESULT(no)
+            AC_MSG_ERROR(Invalid FreeTDS directory - unable to find ctpublic.h)
+        fi
+        CTLIB_LFLAGS="-L$CTLIB_LIBDIR -lct"
+        CTLIB_INCLUDE="-I$CTLIB_INCDIR"
+        AC_DEFINE(HAVE_CTLIB, 1, [Defined to 1])
+        AC_MSG_RESULT(yes)
+        have_db=yes
+        AC_CHECK_FUNC(dlopen, , AC_CHECK_LIB(dl, dlopen, CTLIB_LFLAGS="$CTLIB_LFLAGS -ldl"))
+    fi
+    if test "x$DBTYPE" = "x" ; then
+       DBTYPE="freetds"
+    else
+       DBTYPE="$DBTYPE-freetds"
+    fi
+
+],[
+    AC_MSG_RESULT(no)
+])
+AC_SUBST(CTLIB_LFLAGS)
+AC_SUBST(CTLIB_INCLUDE)
+
+dnl Need to check for kannel
+dnl Implement the --with-kannel-dir option
+AC_ARG_WITH(kannel-dir,
+[  --with-kannel-dir=DIR    where to look for Kannel Gateway libs and header files
+                                                DIR points to the installation [/usr/local] ]
+,
+[
+gwloc=""
+if test -d "$withval" ; then
+        gwloc="$withval"
+fi
+])
+
+AC_PATH_PROG(GW_CONFIG, gw-config, no, [$gwloc/bin:$gwloc:../gateway/gw/:$PATH])
+dnl check for Kannel gw-config
+if test "$GW_CONFIG" = "no"; then
+found=""
+        for loc in $pgsqlloc /usr /usr/local ; do
+                if test "x$found" = "x" ; then
+                        AC_MSG_CHECKING([for Kannel include files in])
+                        AC_MSG_RESULT($loc)
+                        AC_CHECK_FILE("$loc/include/kannel/gw-config.h",
+                                [CFLAGS="$CFLAGS -I$loc/include/kannel -I$loc/include/kannel"; 
+                LDFLAGS="$LDFLAGS -L$loc/lib/kannel -lwap -lgwlib";
+                found=1
+                                ])
+                fi
+        done;
+        if test "x$found" != "x1" ; then
+                AC_MSG_ERROR([Unable to find gw-config.h, please provide a --with-kannel-dir=<dir> location])
+        fi
+else
+        dnl gw_config found
+        AC_MSG_CHECKING([Kannel version])
+        gw_version=`$GW_CONFIG --version`
+        AC_MSG_RESULT([$gw_version])
+        AC_MSG_CHECKING([Kannel libs])
+        if ! $GW_CONFIG --libs &>/dev/null ; then
+                LDFLAGS="$LDFLAGS `$GW_CONFIG --libs`"
+                gw_libdir=`$GW_CONFIG --libs`
+                AC_MSG_RESULT([$gw_libdir])
+        fi
+        AC_MSG_CHECKING([Kannel includes])
+        if ! $GW_CONFIG --cflags &>/dev/null ; then
+                CFLAGS="$CFLAGS `$GW_CONFIG --cflags`"
+                gw_incdir=`$GW_CONFIG --cflags`
+                AC_MSG_RESULT([$gw_incdir])
+        fi
+fi
+
+AC_CHECK_LIB([gwlib], [cfg_create], [], AC_MSG_ERROR([Kannel gwlib is required!]))
+
+AC_MSG_CHECKING(for Kannel's DB support)
+
+AC_TRY_RUN([#include "gw-config.h"
+int main(
+#if defined(HAVE_SQLITE3)
+  exit(0);
+#endif
+  exit(1);
+}],[
+AC_SUBST(rpm_suffix, "sqlite3", [RPM Suffix])
+AC_SUBST(rpm_requires, "sqlite3-devel >= 1.8", [RPM Requires])
+])
+
+AC_TRY_RUN([#include "gw-config.h"
+int main(void){
+#if defined(HAVE_SQLITE)
+  exit(0);
+#endif
+  exit(1);
+}],[
+AC_SUBST(rpm_suffix, "sqlite", [RPM Suffix])
+AC_SUBST(rpm_requires, "sqlite2-devel >= 2.7", [RPM Requires])
+])
+
+AC_TRY_RUN([#include "gw-config.h"
+int main(void){
+#if defined(HAVE_PGSQL)
+  exit(0);
+#endif
+  exit(1);
+}],[
+AC_SUBST(rpm_suffix, "pgsql", [RPM Suffix])
+AC_SUBST(rpm_requires, "postgresql-devel >= 7.2", [RPM Requires])
+])
+
+AC_TRY_RUN([#include "gw-config.h"
+int main(void){
+#if defined(HAVE_ORACLE)
+  exit(0);
+#endif
+  exit(1);
+}],[
+AC_SUBST(rpm_suffix, "oracle", [RPM Suffix])
+AC_SUBST(rpm_requires, "oracle-instantclient-devel >= 8", [RPM Requires])
+])
+
+AC_TRY_RUN([#include "gw-config.h"
+int main(void){
+#if defined(HAVE_MYSQL)
+  exit(0);
+#endif
+  exit(1);
+}],[
+AC_SUBST(rpm_suffix, "mysql", [RPM Suffix])
+AC_SUBST(rpm_requires, "mysql-devel >= 3.23", [RPM Requires])
+])
+
+AC_TRY_RUN([#include "gw-config.h"
+int main(void){
+#if defined(HAVE_SDB)
+  exit(0);
+#endif
+  exit(1);
+}],[
+AC_SUBST(rpm_suffix, "sdb", [RPM Suffix])
+AC_SUBST(rpm_requires, "libsdb-devel >= 0.5", [RPM Requires])
+])
+
+AC_CONFIG_FILES([Makefile gw/Makefile rpm/opensmppbox.spec])
+
+AC_OUTPUT

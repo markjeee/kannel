@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2009 Kannel Group  
+ * Copyright (c) 2001-2010 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -875,6 +875,10 @@ int bb_restart(void)
     return bb_shutdown();
 }
 
+int bb_reload_lists(void)
+{
+    return smsc2_reload_lists();
+}
 
 #define append_status(r, s, f, x) { s = f(x); octstr_append(r, s); \
                                     octstr_destroy(s); }

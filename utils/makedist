@@ -9,9 +9,10 @@ set -e
 version="$1"
 tag=version_`echo $version | tr .- __`
 base=gateway-$version
+repo="https://svn.kannel.org/gateway/tags/"
 
 rm -rf $base
-cvs -Q export -r $tag -d $base gateway
+svn --quiet export ${repo}$tag $base
 if [ "`head -1 $base/VERSION`" != "$version" ]
 then
 	echo "Oops, VERSION does not match."

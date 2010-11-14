@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2009 Kannel Group  
+ * Copyright (c) 2001-2010 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -551,6 +551,7 @@ int smscconn_send(SMSCConn *conn, Msg *msg)
         split->parts_left = counter_create();
         split->status = SMSCCONN_SUCCESS;
         counter_set(split->parts_left, parts_len);
+        split->smsc_conn = conn;
         debug("bb.sms.splits", 0, "new split_parts created %p", split);
         for (i = 0; i < parts_len; i++) {
             msg = gwlist_get(parts, i);

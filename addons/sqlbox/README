@@ -1,0 +1,46 @@
+OVERVIEW
+========
+
+Sqlbox is a special Kannel box that sits between bearerbox and smsbox and uses
+a database queue to store and forward messages.
+
+Sqlbox behaves similar to other Kannel boxes and share a compatible
+configuration file format and command line options.
+
+It works between bearerbox and smsbox, intercept all messages and use a couple
+of database tables to process messages.
+
+Messages are queued on a configurable table (defaults to send_sms) and moved to
+another table (defaults to sent_sms) afterwards.
+
+You can also manually insert messages into the send_sms table and they will be
+sent and moved to the sent_sms table as well. This allows for fast and easy
+injection of large amounts of messages into kannel.
+
+INSTALLATION
+============
+Please read the INSTALL file for further instructions. If in a hurry, the quick
+explanation is:
+
+./bootstrap
+./configure
+make
+
+And finally, as root:
+
+make install
+
+You need to have a compiled version of Kannel available in order to compile
+sqlbox.
+
+The Userguide has also valuable information about the install and configuration
+steps.
+
+HELP
+====
+
+The best to ask for help is on Kannel's mailing lists.
+
+Please visit Kannel's site for more information:
+
+http://www.kannel.org/

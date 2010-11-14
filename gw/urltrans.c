@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2009 Kannel Group  
+ * Copyright (c) 2001-2010 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -421,6 +421,15 @@ Octstr *urltrans_fill_escape_codes(Octstr *pattern, Msg *request)
         octstr_url_encode(enc);
         octstr_append(result, enc);
         octstr_destroy(enc);
+        break;
+
+    case 'R': /* dlr_url */
+        if (octstr_len(request->sms.dlr_url)) {
+            enc = octstr_duplicate(request->sms.dlr_url);
+            octstr_url_encode(enc);
+            octstr_append(result, enc);
+            octstr_destroy(enc);
+        }
         break;
 
     case 'D': /* meta_data */
@@ -868,7 +877,7 @@ static URLTranslation *create_onetrans(CfgGroup *grp)
     Octstr *url, *post_url, *post_xml, *text, *file, *exec;
     Octstr *accepted_smsc, *accepted_account, *forced_smsc, *default_smsc;
     Octstr *grpname;
-    int is_sms_service;
+    int is_sms_service, regex_flag = REG_EXTENDED;
     Octstr *accepted_smsc_regex;
     Octstr *accepted_account_regex;
     Octstr *allowed_prefix_regex;
@@ -970,7 +979,7 @@ static URLTranslation *create_onetrans(CfgGroup *grp)
 	    Octstr *aliases;
 	    
 	    /* convert to regex */
-            octstr_convert_range(tmp, 0, octstr_len(tmp), tolower);
+	    regex_flag |= REG_ICASE;
 	    keyword_regex = octstr_format("^[ ]*(%S", tmp);
 	    octstr_destroy(tmp);
 
@@ -984,7 +993,6 @@ static URLTranslation *create_onetrans(CfgGroup *grp)
 	        
 	        for (i = 0; i < gwlist_len(l); ++i) {
 	            os = gwlist_get(l, i);
-	            octstr_convert_range(os, 0, octstr_len(os), tolower);
 	            octstr_format_append(keyword_regex, "|%S", os);
 	        }
 	        gwlist_destroy(l, octstr_destroy_item);
@@ -993,7 +1001,7 @@ static URLTranslation *create_onetrans(CfgGroup *grp)
 	    octstr_append_cstr(keyword_regex, ")[ ]*");
 	}
 
-        if (keyword_regex != NULL && (ot->keyword_regex = gw_regex_comp(keyword_regex, REG_EXTENDED)) == NULL) {
+        if (keyword_regex != NULL && (ot->keyword_regex = gw_regex_comp(keyword_regex, regex_flag)) == NULL) {
             error(0, "Could not compile pattern '%s'", octstr_get_cstr(keyword_regex));
             octstr_destroy(keyword_regex);
             goto error;
@@ -1357,7 +1365,7 @@ static List *get_matching_translations(URLTranslationList *trans, Octstr *msg)
             debug("", 0, "no match found: %s", octstr_get_cstr(t->name));
         }
     }
-    
+
     return list;
 }
 
@@ -1373,7 +1381,6 @@ static URLTranslation *find_translation(URLTranslationList *trans, Msg *msg)
 
     /* convert tolower and try to match */
     data = octstr_duplicate(msg->sms.msgdata);
-    octstr_convert_range(data, 0, octstr_len(data), tolower);
     i = 0;
     while((i = octstr_search_char(data, 0, i)) != -1 && i < octstr_len(data) - 1) {
         octstr_delete(data, i, 1);

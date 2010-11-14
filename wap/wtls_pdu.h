@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2009 Kannel Group  
+ * Copyright (c) 2001-2010 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -56,6 +56,7 @@
 
 /* wtls_pdu.h - definitions for unpacked WTLS protocol data units
  *
+ * Nikos Balkanas, Inaccess Networks (2009)
  */
 
 #ifndef PDU_H
@@ -72,7 +73,7 @@ typedef enum wtls_pdu_modes {
 	Application_PDU
 } wtls_pdu_modes;
 
-typedef enum handshake_type{
+typedef enum handshake_type {
 	hello_request = 0,
 	client_hello = 1,
 	server_hello = 2,
@@ -100,14 +101,6 @@ typedef enum sig_algo {
 	ecdsa_sha,
 	rsa_sha,
 } SignatureAlgorithm;
-
-/*typedef enum keyex_algo {
-	rsa,
-	rsa_anon,
-	dh_anon,
-	ecdh_anon,
-	ecdh_ecdsa,
-} KeyExchangeAlgorithm;*/
 
 typedef enum keyex_suite {
 	null_k,
@@ -207,20 +200,20 @@ typedef struct eccurve {
 	Octstr *seed;
 } ECCurve;
 
-typedef struct dh_parameters{
+typedef struct dh_parameters {
 	int dh_e;
 	Octstr *dh_p;
 	Octstr *dh_g;
 } DHParameters;
 
-typedef struct ec_parameters{
+typedef struct ec_parameters {
 	ECField field;
 	/* case ec_prime_p */
 	Octstr *prime_p;
 	/* case ec_characteristic_two */
 	int m;
 	ECBasisType basis;
-		/* case ec_basis_onb : nothing*/
+   /* case ec_basis_onb : nothing */
 		/* case ec_trinomial */
 		int k;
 		/* case ec_pentanomial */
@@ -279,7 +272,7 @@ typedef struct wtls_cert {
 	Signature *signature;
 } WTLSCertificate;
 
-typedef struct rsa_secret{
+typedef struct rsa_secret {
 	int client_version;
 	List *random;
 } RSASecret;
@@ -301,13 +294,11 @@ typedef struct cert_verify {
 	Signature *signature;
 } CertificateVerify;
 
-typedef struct hello_request
-{
+typedef struct hello_request {
 	int dummy; /* nothing here */
 } HelloRequest;
 
-typedef struct client_hello
-{
+typedef struct client_hello {
 	int clientversion;
 	Random *random;
 	Octstr *session_id;
@@ -319,9 +310,7 @@ typedef struct client_hello
 	int krefresh;
 } ClientHello;
 
-
-typedef struct server_hello
-{
+typedef struct server_hello {
 	int serverversion;
 	Random *random;
 	Octstr *session_id;
@@ -342,8 +331,7 @@ typedef struct certificate {
 	Octstr *x968_certificate;
 } Certificate;
 
-typedef struct server_key_exchange
-{
+typedef struct server_key_exchange {
 	ParameterSpecifier *param_spec;
 	/* case rsa_anon */
 	RSAPublicKey *rsa_params;
@@ -353,13 +341,12 @@ typedef struct server_key_exchange
 	ECPublicKey *ecdh_params;
 } ServerKeyExchange;
 
-typedef struct client_key_exchange
-{
-	/* case rsa and rsa_anon*/
+typedef struct client_key_exchange {
+   /* case rsa and rsa_anon */
 	RSAEncryptedSecret *rsa_params;
 	/* case dh_anon */
 	DHPublicKey *dh_anon_params;
-	/* case ecdh_anon and ecdh_ecdsa*/
+   /* case ecdh_anon and ecdh_ecdsa */
 	ECPublicKey *ecdh_params;
 } ClientKeyExchange;
 
@@ -367,25 +354,66 @@ typedef struct finished {
 	Octstr *verify_data;
 } Finished;
 
-typedef struct server_hello_done
-{
+typedef struct server_hello_done {
 	int dummy; /* nothing here */
 } ServerHelloDone;
 		
-typedef struct cc
-{
+typedef struct cc {
 	int change;
 } ChangeCipher;
 
-typedef struct alert
-{
+typedef enum {
+   warning_alert = 1,
+   critical_alert,
+   fatal_alert
+} AlertLevel;
+
+typedef enum {
+   connection_close_notify = 0,
+   session_close_notify,
+   no_connection = 5,
+   unexpected_message = 10,
+   time_required,
+   bad_record_mac = 20,
+   decryption_failed,
+   record_overflow,
+   decompression_failure = 30,
+   handshake_failure = 40,
+   bad_certificate = 42,
+   unsupported_certificate,
+   certificate_revoked,
+   certificate_expired,
+   certificate_unknown,
+   illegal_parameter,
+   unknown_ca,
+   access_denied,
+   decode_error,
+   decrypt_error,
+   unknown_key_id,
+   disabled_key_id,
+   key_exchange_disabled,
+   session_not_ready,
+   unknown_parameter_index,
+   duplicate_finished_received,
+   export_restriction = 60,
+   protocol_version = 70,
+   insufficient_security,
+   internal_error = 80,
+   user_canceled = 90,
+   no_renegotiation = 100
+} AlertDescription;
+
+typedef struct alert {
 	int level;
-	int desc;
+   AlertDescription desc;
 	Octstr *chksum;
 } Alert;
 
-typedef struct handshake
-{
+typedef struct certificates {
+   List *certList;
+} Certificates;
+
+typedef struct handshake {
 	HandshakeType msg_type;
 	int length;
 	/* case hello_request */
@@ -395,7 +423,7 @@ typedef struct handshake
 	/* case server_hello */
 	ServerHello *server_hello;
 	/* case certificate */
-	Certificate *certificate;
+   Certificates *certificates;
 	/* case server_key_exchange */
 	ServerKeyExchange *server_key_exchange;
 	/* case certificate_request */
@@ -410,8 +438,7 @@ typedef struct handshake
 	Finished *finished;
 } Handshake;
 
-typedef struct application
-{
+typedef struct application {
 	Octstr *data;
 } Application;
 
@@ -419,7 +446,8 @@ typedef struct wtls_pdu {
 	int type;
 	int reserved;
 	int cipher;
-	int seqnum;
+   int snMode;
+   int seqNum;
 	int rlen;
         
 	union {
@@ -434,7 +462,8 @@ typedef struct wtls_payload {
 	int type;
 	int reserved;
 	int cipher;
-	int seqnum;
+   int snMode;
+   int seqNum;
 	int rlen;
 
 	Octstr *data;
@@ -442,17 +471,18 @@ typedef struct wtls_payload {
 
 /* Prototypes */
 wtls_PDU *wtls_pdu_create(int type);
-void wtls_pdu_destroy(wtls_PDU *msg);
-void wtls_pdu_dump(wtls_PDU *msg, int level);
-wtls_PDU *wtls_pdu_unpack(wtls_Payload *payload, WTLSMachine* wtls_machine);
-wtls_Payload *wtls_pdu_pack(wtls_PDU *pdu, WTLSMachine* wtls_machine);
+void wtls_pdu_destroy(wtls_PDU * msg);
+void wtls_pdu_dump(wtls_PDU * msg, int level);
+wtls_PDU *wtls_pdu_unpack(wtls_Payload * payload, WTLSMachine * wtls_machine);
+wtls_Payload *wtls_pdu_pack(wtls_PDU * pdu, WTLSMachine * wtls_machine);
 
-wtls_Payload *wtls_payload_unpack(Octstr *data);
-Octstr *wtls_payload_pack(wtls_Payload *payload);
-void wtls_payload_destroy(wtls_Payload *payload);
+wtls_Payload *wtls_payload_unpack(Octstr * data);
+Octstr *wtls_payload_pack(wtls_Payload * payload, int seqnum);
+void wtls_payload_dump(wtls_Payload * msg, int level);
+void wtls_pldList_destroy(List * pldList);
+void wtls_payload_destroy(wtls_Payload * payload);
 
-List* wtls_unpack_payloadlist (Octstr *data);
-Octstr* wtls_pack_payloadlist (List* payloadlist);
+List *wtls_unpack_payloadlist(Octstr * data);
+Octstr *wtls_pack_payloadlist(List * payloadlist, int seqnum);
 
-
-#endif
+#endif /* PDU_H */

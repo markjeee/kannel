@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2009 Kannel Group  
+ * Copyright (c) 2001-2010 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -93,7 +93,6 @@ void get_cert_from_file(Octstr *s, X509 **x509)
 		
         /* Check errors!!!! */
         FILE* fp;
-        Octstr* foo;
         
         /* Open the file specified by "s" */
 		filename = octstr_get_cstr(s);
@@ -118,7 +117,6 @@ void get_privkey_from_file(Octstr* s, RSA** priv_key, Octstr* passwd)
 		
         /* Check errors!!!! */
         FILE* fp;
-        Octstr* foo;
 
 		filename = octstr_get_cstr(s);
 		password = passwd != NULL ? octstr_get_cstr(passwd) : NULL;

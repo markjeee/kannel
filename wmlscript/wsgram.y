@@ -720,7 +720,7 @@ void
 yyerror(char *msg)
 {
 #if WS_DEBUG
-  fprintf(stderr, "*** %s:%d: wsc: %s - this msg will be removed ***\n",
+  fprintf(stderr, "*** %s:%ld: wsc: %s - this msg will be removed ***\n",
 	  global_compiler->input_name, global_compiler->linenum, msg);
 #endif /* WS_DEBUG */
 }
