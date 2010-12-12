@@ -1,4 +1,4 @@
-ME_DIR = File.expand_path('..', __FILE__)
+LOCAL_DIR = File.expand_path("~/local")
 
 module Utils
   def self.push_cd(dir, &block)
@@ -17,7 +17,7 @@ end
 task :configure do
   system(
 <<EOS
-./configure --prefix=#{File.join(ME_DIR, 'out')}
+./configure --prefix=#{LOCAL_DIR}
 EOS
          )
 end
