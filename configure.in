@@ -1,7 +1,7 @@
 dnl /* ==================================================================== 
 dnl  * The Kannel Software License, Version 1.0 
 dnl  * 
-dnl  * Copyright (c) 2001-2010 Kannel Group  
+dnl  * Copyright (c) 2001-2014 Kannel Group  
 dnl  * Copyright (c) 1998-2001 WapIT Ltd.   
 dnl  * All rights reserved. 
 dnl  * 
@@ -138,7 +138,7 @@ case "$host" in
     # location libs and includes.
     found=0
     SDK=""
-    for loc in "MacOSX10.5.sdk" "MacOSX10.4u.sdk" "MacOSX10.4.0.sdk" "MacOSX10.3.9.sdk" \
+    for loc in "MacOSX10.7.sdk" "MacOSX10.6.sdk" "MacOSX10.5.sdk" "MacOSX10.4u.sdk" "MacOSX10.4.0.sdk" "MacOSX10.3.9.sdk" \
 	           "MacOSX10.3.0.sdk" "MacOSX10.2.8.sdk" "MacOSX10.1.5.sdk"
   	do 
       if test "$found" = "0" ; then
@@ -239,6 +239,9 @@ AC_CHECK_HEADERS([net/if.h], [], [],
    # include <sys/socket.h>
    #endif
   ])
+AC_CHECK_HEADERS([sys/ucontext.h], [AC_DEFINE(HAVE_UCONTEXT)],
+  [AC_MSG_WARN(System lacks ucontext.h - user context support)]
+)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 
@@ -252,7 +255,7 @@ AM_ICONV
 
 dnl Checks for library functions.
 
-AC_CHECK_FUNCS(gettimeofday select socket strdup getopt_long localtime_r gmtime_r backtrace srandom)
+AC_CHECK_FUNCS(gettimeofday select socket strdup getopt_long localtime_r gmtime_r backtrace srandom initgroups strtoll strtoq)
 AC_CHECK_FUNC(getopt, [], [AC_LIBOBJ([utils/attgetopt])])
 
 dnl Check if we have reentrant gethostbyname and which one
@@ -297,6 +300,14 @@ GW_HAVE_FUNC_FROM(stdio.h, getopt, HAVE_GETOPT_IN_STDIO_H,
 GW_HAVE_FUNC_FROM(unistd.h, getopt, HAVE_GETOPT_IN_UNISTD_H,
     	    	  [Does <unistd.h> declare getopt()?])
 
+dnl POSIX nftw()
+
+AC_CHECK_HEADERS(ftw.h, [
+  AC_CHECK_FUNC(nftw, [ 
+    AC_DEFINE(HAVE_NFTW)
+  ])
+])
+
 
 dnl POSIX regular expression check
 
@@ -308,7 +319,7 @@ AC_CHECK_HEADERS(regex.h, [
 ])
 
 
-dnl Misfeature checks
+dnl Misc feature checks
 
 AC_CONFIG_SECTION([Checking for POSIX threads support])
 
@@ -342,7 +353,15 @@ dnl Checking pthread_spin support
 dnl
 AC_MSG_CHECKING([for pthread_spinlock support])
 AC_TRY_COMPILE([#include <pthread.h>], [
+#ifdef __INTERIX
+/*
+ * interix has experimental spinlock support and this doesn't work very well
+ * therefore disable it for now
+ */
+pthread_spinlock_t_failed lock;
+#else
 pthread_spinlock_t lock;
+#endif
 pthread_spin_init(&lock, 0);
 pthread_spin_lock(&lock);
 pthread_spin_unlock(&lock);
@@ -485,6 +504,24 @@ for loc in /usr /usr/local /sw /opt/local; do
       fi
     done
   fi    
+done
+AC_SUBST(XML_DCL)
+found=""
+for loc in /usr /usr/local /sw /opt/local; do
+  if test "x$found" = "x" ; then 
+    for file in ${loc}/lib/sgml/stylesheet/dsssl/docbook/nwalsh/dtds/decls/xml.dcl \
+    ${loc}/lib/sgml/stylesheets/nwalsh-modular/dtds/decls/xml.dcl \
+    ${loc}/share/sgml/docbook/dsssl-stylesheets-1.*/dtds/decls/xml.dcl \
+    ${loc}/share/sgml/docbook/dsssl-stylesheets/dtds/decls/xml.dcl \
+    ${loc}/share/sgml/docbook/stylesheet/dsssl/modular/dtds/decls/xml.dcl \
+        ${loc}/share/sgml/docbook/dsssl/modular/dtds/decls/xml.dcl \
+        ${loc}/share/sgml/dsssl/docbook-dsssl-nwalsh/dtds/decls/xml.dcl \
+        ${loc}/share/dsssl/docbook-dsssl/dtds/decls/xml.dcl ; do
+      if test "x$found" = "x" ; then 
+    AC_CHECK_FILE($file,XML_DCL=$file; found=1)
+      fi
+    done
+  fi
 done
 
 dnl Implement --enable-warnings option.
@@ -826,6 +863,14 @@ if test "$ssl" = "yes" ; then
         ssllib="$loc"
       fi
     done
+    if test "x$sslib" = "x"; then
+      for lib in libssl.a libssl.so libssl.dylib; do
+        name=`gcc -print-file-name=$lib`
+        if test -f "$name"; then
+          ssllib=`dirname $name`
+        fi
+      done
+    fi
     for loc in /usr/include/ssl /usr/include/openssl /usr/local/ssl/include \
                /usr/local/openssl/include; do
       if test -d "$loc"; then
@@ -1071,7 +1116,7 @@ else
       AC_MSG_WARN([Unable to find sqlite3 in path for SQLite3 support])
     else 
       AC_MSG_CHECKING([sqlite3 version])
-      sqlite3_version=`$SQLITE3 -version`
+      sqlite3_version=`$SQLITE3 -version | awk '{print $1}'`
       AC_MSG_RESULT([$sqlite3_version])
     fi
 fi
@@ -1127,6 +1172,8 @@ else
           AC_CHECK_LIB(wtc9,wtcstu,[ LIBS="$LIBS -lwtc9" ], true)
         )
 
+		AC_CHECK_FUNC(OCIPing, [AC_DEFINE(HAVE_OCIPING, 1, [Do we have OCIPing])])
+
     AC_DEFINE(HAVE_ORACLE, 1, [Do we have Oracle])
     AC_MSG_CHECKING([whether to compile with Oracle support])
     AC_MSG_RESULT(yes)
@@ -1180,9 +1227,9 @@ else
     else
     	dnl pg_config found
     	AC_MSG_CHECKING([PostgreSQL version])
-    	pgsql_version=`$PGSQL_CONFIG --version`
+    	pgsql_version=`$PGSQL_CONFIG --version | awk '{print $2}'`
     	AC_MSG_RESULT([$pgsql_version])
-    	AC_MSG_CHECKING([PostgreSQL libs])
+    	AC_MSG_CHECKING([PostgreSQL libdir])
     	if $PGSQL_CONFIG --libdir &>/dev/null ; then
     		LIBS="$LIBS -L`$PGSQL_CONFIG --libdir`"
     		pg_libdir=`$PGSQL_CONFIG --libdir`
@@ -1191,12 +1238,13 @@ else
         AC_MSG_CHECKING([PostgreSQL includes])
         if $PGSQL_CONFIG --includedir &>/dev/null ; then
             CFLAGS="$CFLAGS -I`$PGSQL_CONFIG --includedir`"
+            CPPFLAGS="$CPPFLAGS -I`$PGSQL_CONFIG --includedir`"
             pg_incdir=`$PGSQL_CONFIG --includedir`
             AC_MSG_RESULT([$pg_incdir])
         fi
     fi
     
-    AC_CHECK_HEADERS(postgresql/libpq-fe.h)
+    AC_CHECK_HEADERS(libpq-fe.h)
     AC_CHECK_LIB(pq, PQconnectdb, [])
     AC_DEFINE(HAVE_PGSQL)
     AC_MSG_CHECKING([whether to compile with PostgreSQL support])
@@ -1207,11 +1255,80 @@ fi
   AC_MSG_RESULT(disabled)
 ])
 
+
+dnl Implement the --with-redis option. This will set HAVE_REDIS in gw-config.h
+dnl accordingly and enable the usage of the hiredis routines.
+
+AC_MSG_CHECKING([whether to compile with Redis support])
+AC_ARG_WITH(redis,
+[  --with-redis            enable Redis storage @<:@disabled@:>@], [
+if test "$withval" != yes ; then
+    AC_MSG_RESULT(disabled)
+else
+    dnl Implement the --with-redis-dir option.
+    AC_ARG_WITH(redis-dir,
+    [  --with-redis-dir=DIR    where to look for Redis libs and header files
+                          DIR points to the installation @<:@/usr/local/redis@:>@],
+    [
+        redisloc=""
+        if test -d "$withval" ; then
+        redisloc="$withval"
+        fi
+    ])
+    
+    AC_MSG_RESULT(searching)
+    AC_PATH_PROG(REDIS_CONFIG, redis_config, no, [$PATH:$redisloc/bin:$redisloc])
+    if test "$REDIS_CONFIG" = "no"; then
+        found=""
+        for loc in $redisloc /usr /usr/local ; do
+            if test "x$found" = "x" ; then
+                AC_MSG_CHECKING([for Redis include files in])
+                AC_MSG_RESULT($loc)
+                AC_CHECK_FILE("$loc/hiredis.h",
+                  [CFLAGS="$CFLAGS -I$loc"; LIBS="$LIBS -L$loc -lhiredis"]; found=1,
+                  [AC_CHECK_FILE("$loc/include/hiredis/hiredis.h",
+                    [CFLAGS="$CFLAGS -I$loc/include/hiredis"; LIBS="$LIBS -L$loc/lib -lhiredis"]; found=1
+                  )]
+                )
+            fi
+        done
+        if test "x$found" != "x1" ; then
+            AC_MSG_ERROR([Unable to find hiredis.h, please provide a --with-redis-dir=<dir> location])
+        fi
+    else
+        dnl redis_config found
+        REDIS_LIBS=""
+        if test -z "$REDIS_LIBS" ; then
+            REDIS_LIBS=`$REDIS_CONFIG --libs`
+            AC_MSG_CHECKING([redis libs])
+            AC_MSG_RESULT([$REDIS_LIBS])
+            AC_CHECK_LIB(hiredis, [ LIBS="$LIBS $REDIS_LIBS" ],
+                [AC_MSG_ERROR([Unable to find Redis client libraries])], [ $REDIS_LIBS ])
+        fi
+        AC_MSG_CHECKING([redis includes])
+        if $REDIS_CONFIG --include &>/dev/null ; then
+            REDIS_CFLAGS=`$REDIS_CONFIG --include`
+        else
+            REDIS_CFLAGS=`$REDIS_CONFIG --cflags`
+        fi
+        CFLAGS="$CFLAGS $REDIS_CFLAGS"
+        AC_MSG_RESULT([$REDIS_CFLAGS])
+    fi
+    AC_CHECK_HEADERS(hiredis/hiredis.h)
+    AC_DEFINE(HAVE_REDIS)
+    AC_MSG_CHECKING([whether to compile with Redis support])
+    AC_MSG_RESULT(yes)
+    REDIS="yes"
+fi
+],[
+  AC_MSG_RESULT(disabled)
+])
+
 dnl Checking for FreeTDS Ct-Lib support
 AC_MSG_CHECKING([whether to compile with FreeTDS Ct-Lib support])
 AC_ARG_WITH(mssql,
-[  --with-mssql[=DIR]        Include FreeTDS Ct-Lib support.  DIR is the FreeTDS
-                          install directory, defaults to /usr/local.], [
+[  --with-mssql[=DIR]        enable FreeTDS Ct-Lib storage support @<:@disabled@:>@
+                          DIR points to the installation @<:@/usr/local@:>@], [
     if test "$withval" = "yes"; then
         withval=/usr/local
     fi
@@ -1245,7 +1362,7 @@ dnl Implement the --with-wtls option.
 dnl Check to see if we should include WTLS support, and which library to use.
 
 AC_ARG_WITH(wtls,
-[  --with-wtls@<:@=TYPE@:>@      select WTLS version to use: openssl/baltimore], 
+[  --with-wtls@<:@=TYPE@:>@      select WTLS version to use: @<:@openssl|baltimore@:>@], 
 [ AC_CONFIG_SECTION([Configuring WTLS support]) 
   AC_MSG_CHECKING([for WTLS library])
   AC_MSG_RESULT($withval)
@@ -1269,10 +1386,70 @@ AC_ARG_WITH(wtls,
 ])
 
 
+AC_CONFIG_SECTION([Configuring for gSOAP support])
+AC_MSG_CHECKING([whether to compile with SOAP support])
+AC_ARG_WITH(gsoap,
+[  --with-gsoap@<:@=DIR@:>@      enable gSOAP web services SMSC module support @<:@disabled@:>@
+                          DIR points to the gSOAP share directory @<:@/usr/share/gsoap@:>@], [
+  if test "x$withval" = "xyes"; then
+    for loc in /usr/share/gsoap /usr/local/share/gsoap; do
+      if test -d "$loc/import" && test -d "$loc/plugin"; then
+        GSOAP_SHARE=$loc
+        AC_MSG_RESULT($GSOAP_SHARE)
+      fi
+    done
+    if test "x$GSOAP_SHARE" = "x"; then
+      AC_MSG_RESULT(not found)
+      AC_MSG_ERROR(Unable to find gSOAP's import and/or plugin directory)
+    fi
+  else  
+    if test -d "$withval/import" && test -d "$withval/plugin"; then
+      GSOAP_SHARE="$withval"
+      AC_MSG_RESULT($withval)
+    else
+      AC_MSG_RESULT(not found)
+      AC_MSG_ERROR(Unable to find gSOAP's import at $withval/import and/or plugin at $withval/plugin)
+    fi
+  fi
+  gsoap_ver_required="2.8.4"
+
+  AC_PATH_PROGS(WSDL2H, wsdl2h, no)
+  if test "$WSDL2H" = "no"; then
+    AC_MSG_ERROR([Unable to find gSOAP's wsdl2h in path for SOAP support])
+  fi
+  AC_PATH_PROGS(SOAPCPP, soapcpp2, no)
+  if test "$SOAPCPP" = "no"; then
+    AC_MSG_ERROR([Unable to find gSOAP's soapcpp2 in path for SOAP support])
+  fi
+
+  AC_MSG_CHECKING([gSOAP version])
+  gsoap_version=`$SOAPCPP -v &> /tmp/gsoap.tmp && cat /tmp/gsoap.tmp | grep "C and C++" | awk '{print $NF}'`
+  AC_MSG_RESULT([$gsoap_version])
+  gsoap_version_str=`echo $gsoap_version | grep -e "^[[0-9]]*\.[[0-9]]*\.[[0-9]]*$"`
+  if test "$gsoap_version_str" = ""; then
+    AC_MSG_WARN([gSOAP version $gsoap_version contains alphanumeric characters. Version MAYBE too old!])
+  else 
+    AC_CHECK_VERSION($gsoap_version, $gsoap_ver_required, [], 
+    [
+      AC_MSG_ERROR([gSOAP version $gsoap_version is too old. You MUST have at least $gsoap_ver_required])
+    ])
+  fi
+
+  SOAP_INCLUDE="include soap/Makefile"
+  AC_DEFINE(HAVE_GSOAP)
+  AC_SUBST(WSDL2H)
+  AC_SUBST(SOAPCPP)
+  AC_SUBST(SOAP_INCLUDE)
+  AC_SUBST(GSOAP_SHARE)
+],[
+  AC_MSG_RESULT(disabled)
+])
+
+
 dnl Final Output
 
 AC_CONFIG_SECTION([Generating output files]) 
-AC_OUTPUT(gwlib/gw_uuid_types.h Makefile)
+AC_OUTPUT(gwlib/gw_uuid_types.h Makefile soap/Makefile)
 
 
 dnl LICENSE notice

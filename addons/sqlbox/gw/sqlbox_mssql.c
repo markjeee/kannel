@@ -121,6 +121,8 @@ Msg *mssql_fetch_msg()
             id = get_mssql_octstr_col(0);
             /* save fields in this row as msg struct */
             msg = msg_create(sms);
+            /* we abuse the foreign_id field in the message struct for our sql_id value */
+            msg->sms.foreign_id = get_mssql_octstr_col(0);
             msg->sms.sender     = get_mssql_octstr_col(2);
             msg->sms.receiver   = get_mssql_octstr_col(3);
             msg->sms.udhdata    = get_mssql_octstr_col(4);
@@ -186,7 +188,7 @@ void mssql_save_msg(Msg *msg, Octstr *momt /*, Octstr smsbox_id */)
         st_num(msg->sms.mclass), st_num(msg->sms.mwi), st_num(msg->sms.coding), st_num(msg->sms.compress),
         st_num(msg->sms.validity), st_num(msg->sms.deferred), st_num(msg->sms.dlr_mask), st_str(msg->sms.dlr_url),
         st_num(msg->sms.pid), st_num(msg->sms.alt_dcs), st_num(msg->sms.rpi), st_str(msg->sms.charset),
-        st_str(msg->sms.boxc_id), st_str(msg->sms.binfo), st_str(msg->sms.meta_data));
+        st_str(msg->sms.boxc_id), st_str(msg->sms.binfo), st_str(msg->sms.meta_data), st_str(msg->sms.foreign_id));
 #if defined(SQLBOX_TRACE)
      debug("SQLBOX", 0, "sql: %s", octstr_get_cstr(sql));
 #endif
@@ -291,6 +293,8 @@ found:
     res->sql_leave = mssql_leave;
     res->sql_fetch_msg = mssql_fetch_msg;
     res->sql_save_msg = mssql_save_msg;
+    res->sql_fetch_msg_list = NULL;
+    res->sql_save_list = NULL;
     return res;
 }
 #endif

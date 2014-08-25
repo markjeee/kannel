@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- June 11, 2005 -->
+<wsdl:definitions
+   name="parlayx_sms_receive_interface"
+   targetNamespace="http://www.csapi.org/wsdl/parlayx/sms/receive/v2_1/interface"
+   xmlns="http://schemas.xmlsoap.org/wsdl/"
+   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+   xmlns:parlayx_sms_receive="http://www.csapi.org/wsdl/parlayx/sms/receive/v2_1/interface"
+   xmlns:parlayx_common_faults="http://www.csapi.org/wsdl/parlayx/common/v2_0/faults"
+   xmlns:parlayx_sms_xsd="http://www.csapi.org/schema/parlayx/sms/v2_1"
+   xmlns:parlayx_common_xsd="http://www.csapi.org/schema/parlayx/common/v2_1"
+   xmlns:parlayx_sms_receive_local_xsd="http://www.csapi.org/schema/parlayx/sms/receive/v2_1/local">
+
+   <wsdl:import namespace="http://www.csapi.org/wsdl/parlayx/common/v2_0/faults" location="parlayx_common_faults_2_0.wsdl"/>
+
+   <wsdl:types>
+      <xsd:schema elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.csapi.org/schema/parlayx/sms/receive/v2_1/local">
+         <xsd:import namespace="http://www.csapi.org/schema/parlayx/sms/v2_1" schemaLocation="parlayx_sms_types_2_1.xsd"/>
+         <xsd:import namespace="http://www.csapi.org/schema/parlayx/common/v2_1" schemaLocation="parlayx_common_types_2_1.xsd"/>
+
+         <xsd:element name="getReceivedSms" type="parlayx_sms_receive_local_xsd:getReceivedSms"/>
+         <xsd:complexType name="getReceivedSms">
+            <xsd:sequence>
+               <xsd:element name="registrationIdentifier" type="xsd:string"/>
+            </xsd:sequence>
+         </xsd:complexType>
+
+         <xsd:element name="getReceivedSmsResponse" type="parlayx_sms_receive_local_xsd:getReceivedSmsResponse"/>
+         <xsd:complexType name="getReceivedSmsResponse">
+            <xsd:sequence>
+               <xsd:element name="result" type="parlayx_sms_xsd:SmsMessage" minOccurs="0" maxOccurs="unbounded"/>
+            </xsd:sequence>
+         </xsd:complexType>
+      </xsd:schema>
+   </wsdl:types>
+
+   <wsdl:message name="ReceiveSms_getReceivedSmsRequest">
+      <wsdl:part name="parameters" element="parlayx_sms_receive_local_xsd:getReceivedSms"/>
+   </wsdl:message>
+
+   <wsdl:message name="ReceiveSms_getReceivedSmsResponse">
+      <wsdl:part name="result" element="parlayx_sms_receive_local_xsd:getReceivedSmsResponse"/>
+   </wsdl:message>
+
+   <wsdl:portType name="ReceiveSms">
+      <wsdl:operation name="getReceivedSms">
+         <wsdl:input message="parlayx_sms_receive:ReceiveSms_getReceivedSmsRequest"/>
+         <wsdl:output message="parlayx_sms_receive:ReceiveSms_getReceivedSmsResponse"/>
+         <wsdl:fault name="ServiceException" message="parlayx_common_faults:ServiceException"/>
+         <wsdl:fault name="PolicyException" message="parlayx_common_faults:PolicyException"/>
+      </wsdl:operation>
+   </wsdl:portType>
+</wsdl:definitions>

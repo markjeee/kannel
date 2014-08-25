@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -57,8 +57,8 @@
 /*
  * gw/bb_alog.c -- encapsulate custom access log logic and escape code parsing
  *
- * Stipe Tolj <stolj@wapme.de>
- * Alexander Malysh <a.malysh@centrium.de>
+ * Stipe Tolj <stolj at kannel dot org>
+ * Alexander Malysh <amalysh at kannel dot org>
  */
 
 #include "gwlib/gwlib.h"
@@ -103,6 +103,7 @@ static Octstr *custom_log_format = NULL;
  *   %T - the time of the message, in UNIX epoch timestamp format
  *   %I - the internal message ID
  *   %F - the foreign (smsc-provided) message ID
+ *   %x - smsbox-id, identifying the smsbox connection
  *
  * Most escape codes should be compatible with escape codes used in
  * sms-service groups.
@@ -145,7 +146,7 @@ static Octstr *get_pattern(SMSCConn *conn, Msg *msg, const char *message)
 
     nextarg = 1;
 
-    while(*pattern != '\0') {
+    while (*pattern != '\0') {
         n = strcspn(pattern, "%");
         octstr_append_data(result, pattern, n);
         pattern += n;
@@ -156,177 +157,182 @@ static Octstr *get_pattern(SMSCConn *conn, Msg *msg, const char *message)
         pattern++;
         
         switch (*pattern) {
-	case 'k':
-	    if (num_words <= 0)
+            case 'k':
+                if (num_words <= 0)
+                    break;
+                octstr_append(result, gwlist_get(word_list, 0));
                 break;
-	    octstr_append(result, gwlist_get(word_list, 0));
-	    break;
 
-	case 's':
-	    if (nextarg >= num_words)
+            case 's':
+                if (nextarg >= num_words)
+                    break;
+                octstr_append(result, gwlist_get(word_list, nextarg));
+                ++nextarg;
                 break;
-	    octstr_append(result, gwlist_get(word_list, nextarg));
-	    ++nextarg;
-	    break;
 
-	case 'S':
-	    if (nextarg >= num_words)
+            case 'S':
+                if (nextarg >= num_words)
+                    break;
+                temp = gwlist_get(word_list, nextarg);
+                for (i = 0; i < octstr_len(temp); ++i) {
+                    if (octstr_get_char(temp, i) == '*')
+                        octstr_append_char(result, '~');
+                    else
+                        octstr_append_char(result, octstr_get_char(temp, i));
+                }
+                ++nextarg;
                 break;
-	    temp = gwlist_get(word_list, nextarg);
-	    for (i = 0; i < octstr_len(temp); ++i) {
-		if (octstr_get_char(temp, i) == '*')
-		    octstr_append_char(result, '~');
-		else
-		    octstr_append_char(result, octstr_get_char(temp, i));
-	    }
-	    ++nextarg;
-	    break;
 
-	case 'r':
-	    for (j = nextarg; j < num_words; ++j) {
-		if (j != nextarg)
-		    octstr_append_char(result, '+');
-		octstr_append(result, gwlist_get(word_list, j));
-	    }
-	    break;
+            case 'r':
+                for (j = nextarg; j < num_words; ++j) {
+                    if (j != nextarg)
+                        octstr_append_char(result, '+');
+                    octstr_append(result, gwlist_get(word_list, j));
+                }
+                break;
     
-	case 'l':
-            if (message)
-	        octstr_append_cstr(result, message);
-	    break;
+            case 'l':
+                if (message)
+                    octstr_append_cstr(result, message);
+                break;
 
-	case 'P':
-            if (msg->sms.receiver)
-	        octstr_append(result, msg->sms.receiver);
-	    break;
+            case 'P':
+                if (msg->sms.receiver)
+                    octstr_append(result, msg->sms.receiver);
+                break;
 
-	case 'p':
-            if (msg->sms.sender)
-	        octstr_append(result, msg->sms.sender);
-	    break;
+            case 'p':
+                if (msg->sms.sender)
+                    octstr_append(result, msg->sms.sender);
+                break;
 
-	case 'a':
-	    for (j = 0; j < num_words; ++j) {
-                if (j > 0)
-                    octstr_append_char(result, ' ');
-                octstr_append(result, gwlist_get(word_list, j));
-            }
-            break;
+            case 'a':
+                for (j = 0; j < num_words; ++j) {
+                    if (j > 0)
+                        octstr_append_char(result, ' ');
+                    octstr_append(result, gwlist_get(word_list, j));
+                }
+                break;
 
-	case 'b':
-            if (text)
-	        octstr_append(result, text);
-	    break;
+            case 'b':
+                if (text)
+                    octstr_append(result, text);
+                break;
 
-	case 'L':
-	    octstr_append_decimal(result, octstr_len(msg->sms.msgdata));
-	    break;
+            case 'L':
+                octstr_append_decimal(result, octstr_len(msg->sms.msgdata));
+                break;
 
-	case 't':
-	    tm = gw_gmtime(msg->sms.time);
-	    octstr_format_append(result, "%04d-%02d-%02d %02d:%02d:%02d",
-				 tm.tm_year + 1900,
-				 tm.tm_mon + 1,
-				 tm.tm_mday,
-				 tm.tm_hour,
-				 tm.tm_min,
-				 tm.tm_sec);
-	    break;
+            case 't':
+                tm = gw_gmtime(msg->sms.time);
+                octstr_format_append(result, "%04d-%02d-%02d %02d:%02d:%02d",
+                        tm.tm_year + 1900,
+                        tm.tm_mon + 1,
+                        tm.tm_mday,
+                        tm.tm_hour,
+                        tm.tm_min,
+                        tm.tm_sec);
+                break;
 
-	case 'T':
-	    if (msg->sms.time != MSG_PARAM_UNDEFINED)
-	        octstr_format_append(result, "%ld", msg->sms.time);
-	    break;
+            case 'T':
+                if (msg->sms.time != MSG_PARAM_UNDEFINED)
+                    octstr_format_append(result, "%ld", msg->sms.time);
+                break;
 
-	case 'i':
-	    if (conn && smscconn_id(conn))
-	        octstr_append(result, smscconn_id(conn));
-	    else if (conn && smscconn_name(conn))
-	        octstr_append(result, smscconn_name(conn));
-	    else if (msg->sms.smsc_id)
-	        octstr_append(result, msg->sms.smsc_id);
-	    break;
+            case 'i':
+                if (conn && smscconn_id(conn))
+                    octstr_append(result, smscconn_id(conn));
+                else if (conn && smscconn_name(conn))
+                    octstr_append(result, smscconn_name(conn));
+                else if (msg->sms.smsc_id)
+                    octstr_append(result, msg->sms.smsc_id);
+                break;
 
-	case 'I':
-	    if (!uuid_is_null(msg->sms.id)) {
-                char id[UUID_STR_LEN + 1];
-                uuid_unparse(msg->sms.id, id);
-	        octstr_append_cstr(result, id);
-            }
-	    break;
+            case 'I':
+                if (!uuid_is_null(msg->sms.id)) {
+                    char id[UUID_STR_LEN + 1];
+                    uuid_unparse(msg->sms.id, id);
+                    octstr_append_cstr(result, id);
+                }
+                break;
 
-	case 'n':
-	    if (msg->sms.service != NULL)
-	        octstr_append(result, msg->sms.service);
-	    break;
+            case 'n':
+                if (msg->sms.service != NULL)
+                    octstr_append(result, msg->sms.service);
+                break;
 
-	case 'd':
-	    octstr_append_decimal(result, msg->sms.dlr_mask);
-	    break;
+            case 'd':
+                octstr_append_decimal(result, msg->sms.dlr_mask);
+                break;
 
-	case 'R':
-        if (msg->sms.dlr_url != NULL)
-            octstr_append(result, msg->sms.dlr_url);
-        break;
+            case 'R':
+                if (msg->sms.dlr_url != NULL)
+                    octstr_append(result, msg->sms.dlr_url);
+                break;
 
-    case 'D': /* meta_data */
-        if (msg->sms.meta_data != NULL)
-	        octstr_append(result, msg->sms.meta_data);
-        break;
+            case 'D': /* meta_data */
+                if (msg->sms.meta_data != NULL)
+                    octstr_append(result, msg->sms.meta_data);
+                break;
 
-    case 'c':
-	    octstr_append_decimal(result, msg->sms.coding);
-	    break;
+            case 'c':
+                octstr_append_decimal(result, msg->sms.coding);
+                break;
 
-	case 'm':
-	    octstr_append_decimal(result, msg->sms.mclass);
-	    break;
+            case 'm':
+                octstr_append_decimal(result, msg->sms.mclass);
+                break;
 
-	case 'C':
-	    octstr_append_decimal(result, msg->sms.compress);
-	    break;
+            case 'C':
+                octstr_append_decimal(result, msg->sms.compress);
+                break;
 
-	case 'M':
-	    octstr_append_decimal(result, msg->sms.mwi);
-	    break;
+            case 'M':
+                octstr_append_decimal(result, msg->sms.mwi);
+                break;
 
-	case 'u':
-	    if (octstr_len(udh)) {
-                octstr_append(result, udh);
-	    }
-	    break;
+            case 'u':
+                if (octstr_len(udh)) {
+                    octstr_append(result, udh);
+                }
+                break;
 
-	case 'U':
-	    octstr_append_decimal(result, octstr_len(msg->sms.udhdata));
-	    break;
+            case 'U':
+                octstr_append_decimal(result, octstr_len(msg->sms.udhdata));
+                break;
 
-	case 'B':  /* billing identifier/information */
-	    if (octstr_len(msg->sms.binfo)) {
-                octstr_append(result, msg->sms.binfo);
-            }
-            break;
+            case 'B':  /* billing identifier/information */
+                if (octstr_len(msg->sms.binfo)) {
+                    octstr_append(result, msg->sms.binfo);
+                }
+                break;
 
-	case 'A':  /* account */
-	    if (octstr_len(msg->sms.account)) {
-                octstr_append(result, msg->sms.account);
-            }
-            break;
+            case 'A':  /* account */
+                if (octstr_len(msg->sms.account)) {
+                    octstr_append(result, msg->sms.account);
+                }
+                break;
 
-	case 'F': /* the foreign (smsc-provided) message ID */
-	    if (msg->sms.foreign_id != NULL)
-	        octstr_append(result, msg->sms.foreign_id);
-	    break;
+            case 'F': /* the foreign (smsc-provided) message ID */
+                if (msg->sms.foreign_id != NULL)
+                    octstr_append(result, msg->sms.foreign_id);
+                break;
 
-        /* XXX add more here if needed */
+            case 'x': /* the boxc_id, hence the smsbox-id of the message */
+                if (msg->sms.boxc_id != NULL)
+                    octstr_append(result, msg->sms.boxc_id);
+                break;
 
-	case '%':
-	    octstr_format_append(result, "%%");
-	    break;
+                /* XXX add more here if needed */
 
-	default:
-	    warning(0, "Unknown escape code (%%%c) within custom-log-format, skipping!", *pattern);
-            octstr_format_append(result, "%%%c", *pattern);
-	    break;
+            case '%':
+                octstr_format_append(result, "%%");
+                break;
+
+            default:
+                warning(0, "Unknown escape code (%%%c) within custom-log-format, skipping!", *pattern);
+                octstr_format_append(result, "%%%c", *pattern);
+                break;
         } /* switch(...) */
     
         pattern++;

@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -172,11 +172,15 @@ static Cfg *init_wapbox(Cfg *cfg)
 
     if ((s = cfg_get(grp, octstr_imm("syslog-level"))) != NULL) {
         long level;
-	
+        Octstr *facility;
+        if ((facility = cfg_get(grp, octstr_imm("syslog-facility"))) != NULL) {
+            log_set_syslog_facility(octstr_get_cstr(facility));
+            octstr_destroy(facility);
+        }
         if (octstr_compare(s, octstr_imm("none")) == 0) {
             log_set_syslog(NULL, 0);
             debug("wap", 0, "syslog parameter is none");
-        } else if (octstr_parse_long(&level, s, 0, 0) == -1) {
+        } else if (octstr_parse_long(&level, s, 0, 10) > 0) {
             log_set_syslog("wapbox", level);
             debug("wap", 0, "syslog parameter is %ld", level);
         }
@@ -405,8 +409,8 @@ static Msg *pack_sms_datagram(WAPEvent *dgram)
     msg->sms.mwi = MWI_UNDEF;
     msg->sms.coding = DC_8BIT;
     msg->sms.mclass = MC_UNDEF;
-    msg->sms.validity = 1440;
-    msg->sms.deferred = -1;
+    msg->sms.validity = time(NULL) + 1440;
+    msg->sms.deferred = SMS_PARAM_UNDEFINED;
     if (dgram->u.T_DUnitdata_Req.service_name != NULL)
         msg->sms.service = octstr_duplicate(dgram->u.T_DUnitdata_Req.service_name);
     
@@ -771,9 +775,12 @@ int main(int argc, char **argv)
 
         /* block infinite for reading messages */
         ret = read_from_bearerbox(&msg, INFINITE_TIME);
-        if (ret == -1)
+        if (ret == -1) {
+            error(0, "Bearerbox is gone, restarting");
+            program_status = shutting_down;
+            restart = 1;
             break;
-        else if (ret == 1) /* timeout */
+        } else if (ret == 1) /* timeout */
             continue;
         else if (msg == NULL) /* just to be sure, may not happens */
             break;
@@ -857,14 +864,13 @@ int main(int argc, char **argv)
      * Otherwise we will fail while trying to connect to bearerbox!
      */
     if (restart) {
-        gwthread_sleep(5.0);
+        gwthread_sleep(10.0);
+        /* now really restart */
+        restart_box(argv);
     }
 
+    log_close_all();
     gwlib_shutdown();
-
-    /* now really restart */
-    if (restart)
-        execvp(argv[0], argv);
 
     return 0;
 }

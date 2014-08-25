@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -73,8 +73,33 @@
 Octstr *whitelist, *blacklist;
 Octstr *reply_text = NULL;
 
-int verbose, run, port;
+int verbose, port;
 int ssl = 0;   /* indicate if SSL-enabled server should be used */
+static volatile sig_atomic_t run;
+static List *extra_headers = NULL;
+
+static void split_headers(Octstr *headers, List **split)
+{
+    long start;
+    long pos;
+
+    *split = gwlist_create();
+    start = 0;
+    for (pos = 0; pos < octstr_len(headers); pos++) {
+        if (octstr_get_char(headers, pos) == '\n') {
+            Octstr *line;
+
+            if (pos == start) {
+                /* Skip empty lines */
+                start = pos + 1;
+                continue;
+            }
+            line = octstr_copy(headers, start, pos - start);
+            start = pos + 1;
+            gwlist_append(*split, line);
+        }
+    }
+}
 
 static void client_thread(void *arg) 
 {
@@ -209,6 +234,9 @@ static void client_thread(void *arg)
             }
         }
 
+        if (extra_headers != NULL)
+        	http_header_combine(resph, extra_headers);
+
         /* return response to client */
         http_send_reply(client, status, resph, reply_body);
 
@@ -256,6 +284,9 @@ static void help(void) {
     info(0, "    file that is used for whitelist");
     info(0, "-b black_list");
     info(0, "    file that is used for blacklist");
+    info(0, "-H filename");
+    info(0, "    read HTTP headers from file 'filename' and add them to");
+    info(0, "    the request for url 'url'");
     info(0, "specific URIs with special functions are:");
     info(0, "  /quite - shutdown the HTTP server");
     info(0, "  /whitelist - provides the -w whitelist as response");
@@ -274,7 +305,6 @@ static void help(void) {
 
 static void sigterm(int signo) {
     run = 0;
-    http_close_all_ports();
     debug("test.gwlib", 0, "Signal %d received, quitting.", signo);
 }
 
@@ -293,6 +323,7 @@ int main(int argc, char **argv) {
     int white_asked,
         black_asked;
     long threads[MAX_THREADS];
+    FILE *fp;
 
     gwlib_init();
 
@@ -300,6 +331,7 @@ int main(int argc, char **argv) {
     sigemptyset(&act.sa_mask);
     act.sa_flags = 0;
     sigaction(SIGTERM, &act, NULL);
+    sigaction(SIGINT, &act, NULL);
 
     port = 8080;
     use_threads = 1;
@@ -314,7 +346,7 @@ int main(int argc, char **argv) {
 
     reply_text = octstr_create("Sent.");
 
-    while ((opt = getopt(argc, argv, "hqv:p:t:f:l:sc:k:b:w:r:")) != EOF) {
+    while ((opt = getopt(argc, argv, "hqv:p:t:f:l:sc:k:b:w:r:H:")) != EOF) {
 	switch (opt) {
 	case 'v':
 	    log_set_output_level(atoi(optarg));
@@ -386,6 +418,23 @@ int main(int argc, char **argv) {
         reply_text = octstr_create(optarg);
         break;
 
+	case 'H': {
+		Octstr *cont;
+
+        fp = fopen(optarg, "a");
+        if (fp == NULL)
+            panic(0, "Cannot open header text file %s", optarg);
+        cont = octstr_read_file(optarg);
+        if (cont == NULL)
+            panic(0, "Cannot read header text");
+        debug("", 0, "headers are");
+        octstr_dump(cont, 0);
+        split_headers(cont, &extra_headers);
+        fclose(fp);
+        octstr_destroy(cont);
+        break;
+	}
+
 	case '?':
 	default:
 	    error(0, "Invalid option %c", opt);
@@ -447,6 +496,7 @@ int main(int argc, char **argv) {
         gwthread_join(threads[i]);
 
     octstr_destroy(reply_text);
+    gwlist_destroy(extra_headers, octstr_destroy_item);
 
     debug("test.http", 0, "Program exiting normally.");
     gwlib_shutdown();

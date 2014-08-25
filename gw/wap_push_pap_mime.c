@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -94,6 +94,7 @@ static Octstr *make_close_delimiter(Octstr *boundary);
 static Octstr *make_part_delimiter(Octstr *boundary);
 static Octstr *make_start_delimiter(Octstr *dash_boundary);
 static int pass_data_headers(Octstr **body_part, List **data_headers);
+static int check_data_x_wap_application_id_header(Octstr **body_part, List **data_headers, Octstr *boundary);
 static int check_data_content_type_header(Octstr **body_part, List **data_headers, Octstr *boundary);
 static int pass_optional_header(Octstr **body_part, char *name, List **content_headers,
                                 Octstr *boundary);
@@ -576,8 +577,15 @@ static int pass_data_headers(Octstr **body_part, List **data_headers)
 {
     *data_headers = http_create_empty_headers();
 
+    /* Transform X-WAP-Application headers as per PPG 6.1.2.1.
+     * Note that missing header means that wml.ua is assumed. */
+    if (check_data_x_wap_application_id_header(body_part, data_headers, octstr_imm("\r\n\r\n")) == 0) {
+    	warning(0, "MIME: %s: X-Wap-Application-Id header missing, assuming 'wml.ua'", __func__);
+    	gwlist_append(*data_headers, octstr_create("X-Wap-Application-Id: wml.ua"));
+    }
+
     if (check_data_content_type_header(body_part, data_headers, octstr_imm("\r\n\r\n")) == 0) {
-        warning(0, "MIME: pass_data_headers: Content-Type header missing"); 
+        warning(0, "MIME: %s: Content-Type header missing", __func__);
         return 0;
     }
         
@@ -592,25 +600,69 @@ static int pass_data_headers(Octstr **body_part, List **data_headers)
     if (pass_extension_headers(body_part, data_headers, octstr_imm("\r\n\r\n")) == 0)
         goto operror;
    
+    /*
+     * XXX: TODO: This assumes that there are no further headers prefixing
+     * the MIME body. Which MAY not be the case. We SHOULD rather move all
+     * headers to the data_headers and ensure by this that there are no
+     * left overs.
+     */
     octstr_delete(*body_part, 0, octstr_len(octstr_imm("\r\n")));   
 
     return 1;
 
 operror:
-    warning(0, "MIME: pass_data_headers: an unparsable optional header");
+    warning(0, "MIME: pass_data_headers: an unparseable optional header");
     return 0;
 }
 
 /*
- * Checks if body_part contains a Content-Type header. Tranfers this header to
+ * Checks if body_part contains a X-Wap-Application-Id header. Transfers this header to
+ * a list content_headers.
+ * Return 1, when X-Wap-Application-Id header was found, 0 otherwise
+ */
+static int check_data_x_wap_application_id_header(Octstr **body_part, List **content_headers,
+                                                  Octstr *boundary)
+{
+    long header_pos, next_header_pos;
+    Octstr *content_header;
+    long message_start_pos;
+
+    header_pos = next_header_pos = -1;
+    content_header = octstr_create("X-Wap-Application-Id");
+    message_start_pos = octstr_search(*body_part, boundary, 0);
+
+    if ((header_pos = octstr_case_nsearch(*body_part, content_header, 0,
+    		message_start_pos)) < 0) {
+        goto error;
+    }
+    if ((next_header_pos = pass_field_value(body_part, &content_header,
+    		header_pos + octstr_len(content_header))) < 0) {
+        goto error;
+    }
+    if ((next_header_pos = parse_terminator(*body_part, next_header_pos)) < 0) {
+        goto error;
+    }
+
+    octstr_delete(*body_part, header_pos, next_header_pos - header_pos);
+    gwlist_append(*content_headers, octstr_duplicate(content_header));
+    octstr_destroy(content_header);
+
+    return 1;
+
+error:
+    octstr_destroy(content_header);
+    return 0;
+}
+
+/*
+ * Checks if body_part contains a Content-Type header. Transfers this header to
  * a list content_headers. (Only part before 'boundary').
  * Return 1, when Content-Type headers was found, 0 otherwise
  */
 static int check_data_content_type_header(Octstr **body_part, List **content_headers,
                                           Octstr *boundary)
 {
-    long header_pos,
-         next_header_pos;
+    long header_pos, next_header_pos;
     Octstr *content_header;
     long message_start_pos;
 
@@ -622,8 +674,8 @@ static int check_data_content_type_header(Octstr **body_part, List **content_hea
              message_start_pos)) < 0) {
         goto error;
     }
-    if ((next_header_pos = pass_field_value(body_part, &content_header, 
-	    header_pos + octstr_len(content_header))) < 0) {
+    if ((next_header_pos = pass_field_value(body_part, &content_header,
+    		header_pos + octstr_len(content_header))) < 0) {
         goto error;
     }
     if ((next_header_pos = parse_terminator(*body_part, next_header_pos)) < 0) {
@@ -649,10 +701,8 @@ error:
 static int pass_optional_header(Octstr **body_part, char *name, List **content_headers,
                                 Octstr *boundary)
 {
-    long content_pos,
-         next_header_pos;
-    Octstr *osname,
-           *osvalue;
+    long content_pos, next_header_pos;
+    Octstr *osname, *osvalue;
     long message_start_pos;
 
     content_pos = next_header_pos = -1;
@@ -660,13 +710,12 @@ static int pass_optional_header(Octstr **body_part, char *name, List **content_h
     osvalue = octstr_create("");
     message_start_pos = octstr_search(*body_part, boundary, 0);
 
-    if ((content_pos = octstr_case_nsearch(*body_part, osname, 0, message_start_pos)) < 0) 
+    if ((content_pos = octstr_case_nsearch(*body_part, osname, 0, message_start_pos)) < 0)
         goto noheader;
-    if ((next_header_pos = pass_field_value(body_part, &osvalue, 
-	     content_pos + octstr_len(osname))) < 0)
+    if ((next_header_pos = pass_field_value(body_part, &osvalue,
+    		content_pos + octstr_len(osname))) < 0)
         goto error;   
-    if ((next_header_pos = 
-	     parse_terminator(*body_part, next_header_pos)) == 0)
+    if ((next_header_pos = parse_terminator(*body_part, next_header_pos)) == 0)
         goto error;
 
     drop_separator(&osvalue, &next_header_pos);
@@ -724,15 +773,13 @@ static long octstr_drop_leading_blanks(Octstr **header_value)
  */
 static int pass_extension_headers(Octstr **body_part, List **content_headers, Octstr *boundary)
 {
-    long next_field_part_pos,
-         count;  
+    long next_field_part_pos;
     Octstr *header_name,
            *header_value; 
     long next_content_part_pos;
 
     header_name = octstr_create("");
     header_value = octstr_create("");
-    count = 0;
     next_field_part_pos = 0;
     next_content_part_pos = octstr_search(*body_part, boundary, 0);
 

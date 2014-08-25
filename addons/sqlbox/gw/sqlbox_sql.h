@@ -16,6 +16,8 @@ struct server_type {
     void (*sql_leave) ();
     Msg *(*sql_fetch_msg) ();
     void (*sql_save_msg) (Msg *, Octstr *);
+    int  (*sql_fetch_msg_list) (List *, long);
+    void (*sql_save_list) (List *, Octstr *, int);
 };
 
 struct sqlbox_db_queries {
@@ -38,6 +40,8 @@ extern
 struct server_type *sql_type;
 
 #define gw_sql_fetch_msg sql_type->sql_fetch_msg
+#define gw_sql_fetch_msg_list sql_type->sql_fetch_msg_list
+#define gw_sql_save_list sql_type->sql_save_list
 #define gw_sql_save_msg(message, table) \
     do { \
         octstr_url_encode(message->sms.msgdata); \
@@ -55,6 +59,6 @@ if (query != NULL) { \
     octstr_destroy(sql); \
 }
 
-//#define SQLBOX_TRACE
+#undef SQLBOX_TRACE
 
 #endif

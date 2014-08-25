@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -1462,7 +1462,7 @@ static List *negotiate_capabilities(List *req_caps)
 static void check_application_headers(List **headers, 
                                       List **application_headers)
 {
-    List *inh;
+    List *inh = NULL;
     int i;
     long len;
     Octstr *appid_name, *coded_octstr;

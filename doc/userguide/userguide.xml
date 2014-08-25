@@ -1,6 +1,6 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook V3.1//EN"
-     [
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+                      "http://docbook.org/xml/4.2/docbookx.dtd" [
 <!ENTITY figtype "#FIGTYPE#">
 <!ENTITY timestamp "#DATE#">
 <!ENTITY version "#VERSION#">
@@ -25,8 +25,8 @@
 			<jobtitle>Chairman &amp; CTO</jobtitle>
 			<orgname>Global Networks Inc.</orgname>
 			<address> <email>andreas@fink.org</email>
-				<otheraddr>http://www.smsrelay.com</otheraddr>
-				<otheraddr>http://www.gni.ch</otheraddr>
+				<otheraddr>http://www.smsrelay.com/</otheraddr>
+				<otheraddr>http://www.gni.ch/</otheraddr>
 			</address>
 		</affiliation>
 	</author>
@@ -48,7 +48,7 @@
 			<orgname>Tolj System Architecture</orgname>
 			<address> 
 				<email>stolj@kannel.org</email>
-				<otheraddr>http://www.kannel.org</otheraddr>
+				<otheraddr>http://www.tolj.org/</otheraddr>
 			</address>
 		</affiliation>
 	</author>
@@ -60,7 +60,7 @@
 			<orgname>Global Networks Inc.</orgname>
 			<address> 
 				<email>as@gni.ch</email>
-				<otheraddr>http://www.gni.ch</otheraddr>
+				<otheraddr>http://www.gni.ch/</otheraddr>
 			</address>
 		</affiliation>
 	</author>
@@ -72,10 +72,22 @@
 			<orgname>GTX Ltd.</orgname>
 			<address> 
 				<email>amalysh at kannel.org</email>
-				<otheraddr>http://www.gtx-messaging.com</otheraddr>
+				<otheraddr>http://www.gtx-messaging.com/</otheraddr>
 			</address>
 		</affiliation>
 	</author>
+    <author>
+        <firstname>Alejandro</firstname>
+        <surname>Guerrieri</surname>
+        <affiliation>
+            <jobtitle>Senior System Architect</jobtitle>
+            <orgname>3Cinteractive, L.L.C.</orgname>
+            <address> 
+                <email>aguerrieri@kannel.org</email>
+                <otheraddr>http://www.3cinteractive.com/</otheraddr>
+            </address>
+        </affiliation>
+    </author>
 	<author>
 		<firstname>Lars</firstname>
 		<surname>Wirzenius</surname>
@@ -449,7 +461,7 @@
 	chapter will explain how the gateway is configured.</para>
 
 	<note><para>If you are upgrading from a previous version, please look at
-	<xref linkend="upgrading-notes"> for any important information.</para></note>
+	<xref linkend="upgrading-notes"/> for any important information.</para></note>
 
 <sect1>
 <title>Getting the source code</title>
@@ -536,7 +548,7 @@
 	<para>If either command writes out an error message and stops
 	before it finishes its job, you have a problem, and you either
 	need to fix it yourself, if you can, or report the
-	problem to the Kannel project. See <xref linkend="bug-reporting">
+	problem to the Kannel project. See <xref linkend="bug-reporting"/>
 	for details.</para>
 	
 	<para>For detailed instruction on using the configuration
@@ -647,6 +659,14 @@
         <listitem><para><literal>--with-oracle-libs=</literal><replaceable>DIR</replaceable>
 
             Where to look for Oracle OCI-Library files.</para></listitem>
+
+        <listitem><para><literal>--with-redis</literal>
+                
+            Enable using Redis for DBPool and DLR support. Requires the hiredis library.</para></listitem>
+            
+            <listitem><para><literal>--with-redis-dir=</literal><replaceable>DIR</replaceable>
+                
+                Where to look for the hiredis library and header files.</para></listitem>
 
 	<!-- XXX DAVI add openssl and others in here -->
 
@@ -1218,6 +1238,12 @@ admin-password = f00bar
      </entry></row>
     <row><entry><literal>admin-allow-ip</literal></entry></row>
 
+     <row><entry><literal>smsbox-interface (o)</literal></entry>
+     <entry>string</entry>
+     <entry valign="bottom">
+        If this is set, the smsbox listener will only bind
+        to a specified address. For example: "127.0.0.1".
+     </entry></row>
 
     <row><entry><literal>smsbox-port (c)</literal></entry>
      <entry>port-number</entry>
@@ -1327,6 +1353,24 @@ admin-password = f00bar
 		  custom log format is used the standard format will be:
 		  <literal>"%t %l [SMSC:%i] [SVC:%n] [ACT:%A] [BINF:%B] [FID:%F] [META:%D] [from:%p] [to:%P] 
 		           [flags:%m:%c:%M:%C:%d] [msg:%L:%b] [udh:%U:%u]"</literal>
+     </entry></row>
+
+    <row><entry><literal>syslog-level</literal></entry>
+     <entry>number</entry>
+     <entry valign="bottom">
+	 Messages of this log level or higher will also be
+	 sent to syslog, the UNIX system log daemon. If not explicitly
+         set with <literal>syslog-facility</literal>, it logs under the
+         'daemon' category. The default is not to use syslog, and you can
+         set that explicitly by setting <literal>syslog-level</literal>
+	 to 'none'.
+     </entry></row>
+
+    <row><entry><literal>syslog-facility</literal></entry>
+     <entry>string</entry>
+     <entry valign="bottom">
+         The syslog facility to send the syslog entries to. The
+         default is 'daemon'.
      </entry></row>
 
     <row><entry><literal>unified-prefix</literal></entry>
@@ -1471,11 +1515,33 @@ admin-password = f00bar
     <row><entry><literal>dlr-storage</literal></entry>
      <entry>type</entry>
      <entry valign="bottom">
-        Defines the way DLRs are stored. If you have build-in external 
-          DLR storage support, i.e. using MySQL you may define here the
-          alternative storage type like 'mysql'. Supported types are:
-          internal, mysql, pgsql, sdb, mssql and oracle. By default this
-          is set to 'internal'.
+        Defines the way DLRs are stored. Natively in-memory storage is 
+        supported, which is very fast, but has no persistancy. This means 
+        you will loose all your temporary DLR information on bearebox 
+        re-start. In addition a spool directory approach is natively 
+        supported, which garantees persistancy with a reasonable 
+        performance, depending on your disk IO performance.
+        If you have build-in external DLR storage support, i.e. using 
+        MySQL you may define here the alternative storage type like 
+        <literal>mysql</literal>. 
+        Supported types are:
+        <literal>internal</literal>, 
+        <literal>spool</literal>, 
+        <literal>mysql</literal>,
+        <literal>pgsql</literal>,
+        <literal>sdb</literal>,
+        <literal>mssql</literal>,
+        <literal>sqlite3</literal>,
+        <literal>oracle</literal> and
+        <literal>redis</literal>.
+        By default this is set to <literal>internal</literal>.
+     </entry></row>
+
+    <row><entry><literal>dlr-spool</literal></entry>
+     <entry>filename</entry>
+     <entry valign="bottom">
+        Depends on <literal>dlr-storage = spool</literal> option used, it 
+        is the spool directory to use for DLR storage data.
      </entry></row>
 
      <row><entry><literal>maximum-queue-length</literal></entry>
@@ -1507,14 +1573,14 @@ admin-password = f00bar
         <entry>POSIX regular expression</entry>
         <entry valign="bottom">
         A regular expression defining the set of accepted senders.
-        See section on <xref linkend="regular-expressions"> for details.
+        See section on <xref linkend="regular-expressions"/> for details.
         </entry>   
      </row>
      <row><entry><literal>black-list-regex</literal></entry>
         <entry>POSIX regular expression</entry>
         <entry valign="bottom">
         A regular expression defining the set of rejected senders.
-        See section on <xref linkend="regular-expressions"> for details.
+        See section on <xref linkend="regular-expressions"/> for details.
         </entry>   
      </row>
 
@@ -1956,10 +2022,12 @@ commands never arrive nor can you restart it via WAP anymore.</para>
  		  Beware that you loose the smsbox connections in such a case.
    </entry></row>
 
-	<row><entry><literal>loglevel</literal></entry>
+	<row><entry><literal>log-level</literal></entry>
    <entry valign="bottom">
         Set Kannel log-level of log-files while running. This allows
-		  you to change the current log-level of the log-files on the fly.
+		you to change the current log-level of the log-files on the fly.
+		This includes the main event log and the SMSC specific logs, if
+		any exist.
    </entry></row>
 
 	<row><entry><literal>reload-lists</literal></entry>
@@ -1967,6 +2035,12 @@ commands never arrive nor can you restart it via WAP anymore.</para>
         Re-loads the 'white-list' and 'black-list' URLs provided in the
         core group. This allows Kannel to keep running while the remote
         lists change and signal bearerbox to re-load them on the fly.
+   </entry></row>
+
+    <row><entry><literal>remove-message</literal></entry>
+   <entry valign="bottom">
+        Removes the message with the give <literal>id</literal> (an UUID)
+        from the local storage subsystem.
    </entry></row>
 
   </tbody>
@@ -2105,17 +2179,6 @@ bearerbox-host = localhost
     <row><entry><literal>log-level</literal></entry>
      <entry>number 0..5</entry></row>
 
-    <row><entry><literal>syslog-level</literal></entry>
-     <entry>number</entry>
-     <entry valign="bottom">
-	 Messages of this log level or higher will also be
-	 sent to syslog, the UNIX system log daemon.  The wapbox
-	 logs under the 'daemon' category.
-	 The default is not to use syslog, and you can set that
-	 explicitly by setting <literal>syslog-level</literal>
-	 to 'none'.
-     </entry></row>
-
     <row><entry><literal>access-log</literal></entry>
      <entry>filename</entry>
      <entry valign="bottom">
@@ -2140,7 +2203,25 @@ bearerbox-host = localhost
           anything else will use local time. Default is local time.
      </entry></row>
 
-	 <row><entry><literal>smart-errors</literal></entry>
+    <row><entry><literal>syslog-level</literal></entry>
+     <entry>number</entry>
+     <entry valign="bottom">
+	 Messages of this log level or higher will also be
+	 sent to syslog, the UNIX system log daemon. If not explicitly
+         set with <literal>syslog-facility</literal>, it logs under the
+         'daemon' category. The default is not to use syslog, and you can
+         set that explicitly by setting <literal>syslog-level</literal>
+	 to 'none'.
+     </entry></row>
+
+    <row><entry><literal>syslog-facility</literal></entry>
+     <entry>string</entry>
+     <entry valign="bottom">
+         The syslog facility to send the syslog entries to. The
+         default is 'daemon'.
+     </entry></row>
+
+    <row><entry><literal>smart-errors</literal></entry>
      <entry>bool</entry>
      <entry valign="bottom">
 	 If set wapbox will return a valid WML deck describing the 
@@ -2198,6 +2279,134 @@ bearerbox-host = localhost
 </chapter>
 
 
+<chapter id="wtls">
+<title>Setting up wtls security</title>
+
+	<para>This chapter tells you how to set Kannel up to handle wtls traffic.
+	</para>
+
+	<para><literal>wtls</literal> group is optional and single. The prerequisites for this group
+		are to have defined a wapbox group, and a pair of SSL certificates
+		available. Instructions on how to create self-signed 1024-bit RSA
+		certificates are in <xref linkend="certificates"/>.
+	</para>
+	<para>Current imlementation provides for the following functionality:</para>
+	<para>
+		<orderedlist numeration="upperalpha">
+			<listitem><para>Supported MACs:</para>
+				<itemizedlist>
+						<listitem><para>SHA_0</para></listitem>
+						<listitem><para>SHA_40</para></listitem>
+						<listitem><para>SHA_80</para></listitem>
+						<listitem><para>SHA_NOLIMIT</para></listitem>
+						<listitem><para>MD5_40</para></listitem>
+						<listitem><para>MD5_80</para></listitem>
+						<listitem><para>MD5_NOLIMIT</para></listitem>
+				</itemizedlist>
+				<para>Missing:</para>
+				<itemizedlist>
+						<listitem><para>SHA_XOR_40</para></listitem>
+				</itemizedlist>
+			</listitem>
+			<listitem><para>Supported Ciphers:</para>
+				<itemizedlist>
+						<listitem><para>RC5_CBC_40</para></listitem>
+						<listitem><para>RC5_CBC_56</para></listitem>
+						<listitem><para>RC5_CBC</para></listitem>
+						<listitem><para>DES_CBC</para></listitem>
+						<listitem><para>DES_CBC_40</para></listitem>
+				</itemizedlist>
+				<para>Missing:</para>
+				<itemizedlist>
+						<listitem><para>NULL_bulk</para></listitem>
+						<listitem><para>TRIPLE_DES_CBC_EDE</para></listitem>
+						<listitem><para>IDEA_CBC_40</para></listitem>
+						<listitem><para>IDEA_CBC_56</para></listitem>
+						<listitem><para>IDEA_CBC</para></listitem>
+				</itemizedlist>
+			</listitem>
+			<listitem><para>Supported Keys:</para>
+				<itemizedlist>
+						<listitem><para>RSA_anon</para></listitem>
+				</itemizedlist>
+				<para>Missing:</para>
+				<itemizedlist>
+						<listitem><para>RSA_anon_512</para></listitem>
+						<listitem><para>RSA_anon_768</para></listitem>
+						<listitem><para>RSA_NOLIMIT</para></listitem>
+						<listitem><para>RSA_512</para></listitem>
+						<listitem><para>RSA_768</para></listitem>
+						<listitem><para>ECDH_anon</para></listitem>
+						<listitem><para>ECDH_anon_113</para></listitem>
+						<listitem><para>ECDH_anon_131</para></listitem>
+						<listitem><para>ECDH_ECDSA_NOLIMIT</para></listitem>
+				</itemizedlist>
+				<para>Keys might seem a shortcoming, but all mobiles support
+					RSA_anon. Some of the other RSA_anon keys (i.e. RSA_anon_512,
+					RSA_anon_768) are propably supported as well, just haven't been
+					tested yet.</para>
+			</listitem>
+			<listitem><para>All wtls states except:</para>
+				<itemizedlist>
+						<listitem><para>Suspend/Resume wtls session</para></listitem>
+						<listitem><para>Cipher change when already connected. In practice
+							this is handled through another client hello, while
+							already connected to the same client</para></listitem>
+				</itemizedlist>
+			</listitem>
+	</orderedlist></para>
+
+	<para>The simplest working <literal>wtls</literal> group looks like this:
+<programlisting>
+group = wtls
+certificate-file = /etc/kannel/server.crt
+privatekey-file = /etc/kannel/server.key
+</programlisting>
+
+	Can also be the same single combined pem file with both certificate and
+	privatekey parts. The complete variable list for the <literal>wtls</literal> group is:</para>
+
+<sect1>
+<title>Wtls configuration</title>
+ <table frame="none">
+  <title>Wtls Group Variables</title>
+  <tgroup cols="3">
+  <thead>
+   <row>
+     <entry>Variable</entry>
+     <entry>Value</entry>
+     <entry>Description</entry>
+   </row>
+  </thead>
+  <tbody>
+   <row><entry><literal>group (m)</literal></entry>
+     <entry><literal>wtls</literal></entry>
+     <entry valign="bottom">
+       This is mandatory variable
+     </entry></row>
+
+   <row><entry><literal>certificate-file (m)</literal></entry>
+     <entry><literal>filename</literal></entry>
+     <entry valign="bottom">
+       Public key SSL certificate.
+     </entry></row>
+
+   <row><entry><literal>privatekey-file (m)</literal></entry>
+     <entry><literal>filename</literal></entry>
+     <entry valign="bottom">
+       Private key SSL certificate.
+     </entry></row>
+
+   <row><entry><literal>privatekey-password (o)</literal></entry>
+     <entry><literal>Phrase</literal></entry>
+     <entry valign="bottom">
+       Optional. Needed only if private key was created with a passphrase.
+     </entry></row>
+   </tbody>
+  </tgroup>
+ </table>
+</sect1>
+</chapter>
 
 <chapter id="msisdn-provisioning">
 <title>Setting up MSISDN provisioning for WAP gateway</title>
@@ -2660,7 +2869,7 @@ secret-nas = radius
         <entry valign="bottom">
         SMS messages with SMSC ID equal to any of the IDs in this set of SMSC IDs
         are always routed to this SMSC. 
-        See section on <xref linkend="regular-expressions"> for details.
+        See section on <xref linkend="regular-expressions"/> for details.
         </entry>   
      </row>
 
@@ -2669,7 +2878,7 @@ secret-nas = radius
         <entry valign="bottom">
         SMS messages with SMSC ID equal to any of the IDs in this set of SMSC IDs
         are never routed to this SMSC. 
-        See section on <xref linkend="regular-expressions"> for details.
+        See section on <xref linkend="regular-expressions"/> for details.
         </entry>   
      </row>
 
@@ -2678,7 +2887,7 @@ secret-nas = radius
         <entry valign="bottom">
         SMS messages with SMSC ID in this set of SMSC IDs are sent to this SMSC
         as preferred.
-        See section on <xref linkend="regular-expressions"> for details.
+        See section on <xref linkend="regular-expressions"/> for details.
         </entry>   
      </row>
 
@@ -2687,7 +2896,7 @@ secret-nas = radius
         <entry valign="bottom">
         A set of phone number prefixes which are accepted to be
         sent through this SMSC. 
-        See section on <xref linkend="regular-expressions"> for details.
+        See section on <xref linkend="regular-expressions"/> for details.
         </entry>   
      </row>
 
@@ -2696,7 +2905,7 @@ secret-nas = radius
         <entry valign="bottom">
         A set of phone number prefixes which may not be
         sent through this SMSC. 
-        See section on <xref linkend="regular-expressions"> for details.
+        See section on <xref linkend="regular-expressions"/> for details.
         </entry>   
      </row>
 
@@ -2706,7 +2915,7 @@ secret-nas = radius
         As <literal>denied-prefix-regex</literal>, but SMS messages with receiver matching 
         any of these prefixes are preferably sent through this
         SMSC. In a case of multiple preferences, one is selected at random.
-        See section on <xref linkend="regular-expressions"> for details.
+        See section on <xref linkend="regular-expressions"/> for details.
         </entry>   
      </row>
 
@@ -2719,12 +2928,15 @@ secret-nas = radius
         </entry>   
      </row>
 
-     <row><entry><literal>meta-data</literal></entry>
-        <entry>string</entry>
-        <entry valign="bottom">url-encoded string with properly formatted meta-data pair(s)..
-        See <xref linkend="meta-data"> for an explanation about meta-data configuration and encoding.
-        </entry>   
+     <row><entry><literal>dead-start</literal></entry>
+        <entry><literal>boolean</literal></entry>
+        <entry valign="bottom">
+        Optional, defines if the SMSC connection type is started in disconnected mode (dead).
+        This allows SMSC to be connected at a later time with the add-smsc HTTP administration command. 
+        If set to 'true' the connection will start as 'dead' and will require a start-smsc command 
+        to activate it. Defaults to 'false' if not present.</entry>
      </row>
+
   </tbody>
   </tgroup>
  </table>
@@ -2853,7 +3065,7 @@ my-number = "12345"
 <sect2>
 <title>CMG UCP/EMI 4.0 and 3.5</title>
 
-  <warning><para>See <xref linkend="upgrading-notes"> for changes.</para></warning>
+  <warning><para>See <xref linkend="upgrading-notes"/> for changes.</para></warning>
   <para>Kannel supports two types of connections with CMG SMS centers:
   direct TCP/IP connections ( <literal>emi</literal>) and ISDN/modem 
   (X.25) connection (<literal>emi_x25</literal>).</para>
@@ -2948,6 +3160,13 @@ smsc-password = bar
      <entry valign="bottom">
        Optional port number in which to bind the connection in our
      end. TCP/IP connection only.
+     </entry></row>
+
+   <row><entry><literal>our-receiver-port</literal></entry>
+     <entry><literal>port-number</literal></entry>
+     <entry valign="bottom">
+       Optional port number allowing to specify our port when connecting
+       an SMSC. TCP/IP connection only.
      </entry></row>
 
    <row><entry><literal>receive-port</literal></entry>
@@ -3113,10 +3332,10 @@ smsc-password = bar
 </sect2>
 
 <sect2>
-<title>SMPP 3.4</title>
+<title>SMPP 3.3, 3.4 and 5.0</title>
 
    <para>This implements Short Message Peer to Peer (SMPP) Protocol
-   3.4 in a manner that should also be compatible with 3.3. Sample
+   5.0, with most used support for 3.4 and full support for 3.3. Sample
    configuration:</para>
 
 <programlisting>
@@ -3124,7 +3343,6 @@ group = smsc
 smsc = smpp
 host = 123.123.123.123
 port = 600
-receive-port = 700 
 smsc-username = "STT"
 smsc-password = foo
 system-type = "VMA"
@@ -3149,8 +3367,7 @@ address-range = ""
      <entry><literal>port-number</literal></entry>
      <entry valign="bottom">
        The port number for the TRANSMITTER connection to the SMSC. 
-       May be the same as receive-port. 
-		 Use value 0 to disable this I/O thread.
+       If set, receive-port must be ommited or set to 0.
      </entry></row>
 
    <row><entry><literal>use-ssl</literal></entry>
@@ -3170,12 +3387,12 @@ address-range = ""
    <row><entry><literal>transceiver-mode</literal></entry>
      <entry>bool</entry>
      <entry valign="bottom">
-       Attempt to use a TRANSCEIVER mode connection
-       to the SM-SC. It uses the standard transmit 'port',
-       there is no need to set 'receive-port'.
-       This is a SMPP 3.4 only feature and will not work
-       on an earlier SM-SC.
-       This will try a bind_transceiver only and will not attempt
+       Use a TRANSCEIVER mode connection to the SMSC. 
+       It uses the standard transmit 'port' to define the port
+       to connect to.
+       This is a SMPP 3.4 and 5.0 feature and will not work
+       on an earlier SMSC using SMPP 3.3.
+       This will do a bind_transceiver only and will not attempt
        to fall back to doing transmit and receive on the same connection.
       </entry></row>
 
@@ -3183,15 +3400,14 @@ address-range = ""
      <entry><literal>port-number</literal></entry>
      <entry valign="bottom">
        The port number for the RECEIVER connection to the SMSC. 
-       May be the same as port.
-		 Use value 0 to disable this I/O thread.
+       If set, port must be ommited or set to 0.
      </entry></row>
 
    <row><entry><literal>smsc-username (m)</literal></entry>
      <entry><literal>string</literal></entry>
      <entry valign="bottom">
        The 'username' of the Messaging Entity connecting to the
-       SM-SC. If the SM-SC operator reports that the "TELEPATH
+       SMSC. If the SMSC operator reports that the "TELEPATH
        SYSTEM MANAGER TERMINAL" view "Control.Apps.View" value 
        "Name:" is "SMPP_ZAPVMA_T" for the transmitter and 
        "SMPP_ZAPVMA_R" for the receiver the smsc-username value 
@@ -3212,8 +3428,10 @@ address-range = ""
    <row><entry><literal>system-type (m)</literal></entry>
      <entry><literal>string</literal></entry>
      <entry valign="bottom">
-       Usually you can get away with "VMA" which stands for
-       Voice Mail Activation.
+       Optional; used to categorize the type of ESME that is binding 
+       to the SMSC. Examples include "VMS" (voice mail system) and "OTA" 
+       (over-the-air activation system). If not set, defaults to 
+       "VMA" (voice mail alerting).
      </entry></row>
 
    <row><entry><literal>service-type</literal></entry>
@@ -3224,16 +3442,22 @@ address-range = ""
        influence SMS routing (for example). The SMSC operator may
        also refer to this as the "profile ID". The maximum length of the
        service type is 6, according to the SMPP specification v3.4.
+       Defined values are: "CMT" (cellular messaging), "CPT" (cellular
+       paging), "VMN" (voice mail notification), "VMA" (voice mail
+       alerting), "WAP" (wireless application protocol), "USSD"
+       (unstructured supplementary services data), "CBS" (cell broadcast
+       service) and "GUTS" (generic UDP transport service). Other values
+       may be defined mutually between the SMSC and the ESME application.
      </entry></row>
 
    <row><entry><literal>interface-version</literal></entry>
      <entry><literal>number</literal></entry>
      <entry valign="bottom">
        Change the "interface version" parameter sent from Kannel to
-       a value other then 0x34 (for SMPP v3.4). the value entered here
+       a value other then 0x34 (for SMPP v3.4). The value entered here
        should be the hexadecimal representation of the interface version
-       parameter. for example, the default (if not set) is "34" which stands
-       for 0x34. for SMPP v3.3 set to "33".
+       parameter. For example, the default (if not set) is "34" which stands
+       for 0x34. For SMPP v3.3 set to "33". For SMPP v5.0 set to "50".
      </entry></row>
 
    <row><entry><literal>address-range (m)</literal></entry>
@@ -3282,7 +3506,7 @@ address-range = ""
       <entry><literal>number</literal></entry>
       <entry valign="bottom">
       Optional, source address TON setting for the link.
-		(Defaults to 0).
+		(Defaults to 2).
      </entry></row>
 
     <row><entry><literal>source-addr-npi</literal></entry>
@@ -3305,7 +3529,7 @@ address-range = ""
       <entry><literal>number</literal></entry>
       <entry valign="bottom">
       Optional, destination address TON setting for the link.
-		(Defaults to 0).
+		(Defaults to 2).
      </entry></row>
 
     <row><entry><literal>dest-addr-npi</literal></entry>
@@ -3407,6 +3631,14 @@ address-range = ""
      <entry valign="bottom">
      	 How long the message will be valid, i.e., how long the SMSC will try
      	 try to send the message to the recipient. Defined in minutes.
+     </entry></row>
+
+   <row><entry><literal>esm-class</literal></entry>
+     <entry><literal>number</literal></entry>
+     <entry valign="bottom">
+       Change the "esm_class" parameter sent from Kannel. 
+       Accepted values are 0 (Default SMSC Mode) and 3 (Store and Forward). 
+       Defaults to 3.
      </entry></row>
 
    </tbody></tgroup></informaltable>
@@ -3656,9 +3888,9 @@ smsc-password = foo
     <row><entry><literal>priority</literal></entry>
       <entry><literal>number</literal></entry>
       <entry valign="bottom">
-      Optional, sets the default priority of messages transmitted 
-		over this smsc link. (Defaults to 0, which is the highest
-		priority)
+      Optional, sets the default priority of messages transmitted
+      over this smsc link.
+      (Defaults to 0, which is the lowest priority).
      </entry></row>
 
    </tbody></tgroup></informaltable>
@@ -3668,7 +3900,7 @@ smsc-password = foo
 <sect2>
 <title>GSM modem</title>
 
-  <warning><para>See <xref linkend="upgrading-notes"> for changes.</para></warning>
+  <warning><para>See <xref linkend="upgrading-notes"/> for changes.</para></warning>
 
   <para>This driver allows a GSM Modem or Phone to be connected to Kannel 
   and work as a virtual SMSC</para>
@@ -3825,7 +4057,7 @@ pin = 2345
 
    <para>Modem definitions are now multiple groups present in kannel.conf,
    either directly or, for example, by including the example
-   modems.conf. (See <xref linkend="includes" endterm="includes.title">)
+   modems.conf. (See <xref linkend="includes" endterm="includes.title"/>)
    </para>
 
  <informaltable frame="none">
@@ -3890,6 +4122,13 @@ pin = 2345
      <entry valign="bottom">
      	Optional AT command to enable hardware handshake.
 	Defaults to "AT+IFC=2,2"
+     </entry></row>
+
+   <row><entry><literal>hardware-flow-control</literal></entry>
+     <entry><literal>boolean</literal></entry>
+     <entry valign="bottom">
+     	Optionally disable hardware handshake on the computer side by setting it to false.
+	Defaults to true.
      </entry></row>
 
    <row><entry><literal>need-sleep</literal></entry>
@@ -4062,6 +4301,102 @@ sim-buffering = true          This will tell kannel to search for messages in
 
 
 <sect2>
+<title>GSMA OneAPI v1.0 ParlayX SMS SOAP</title>
+
+   <para>This implements the GSMA OneAPI v1.0 ParlayX SMS SOAP/XML interface
+   in two flavors, the Ericsson SDP (service delivery platform) ParlayX and
+   the GSMA OneAPI v1.0 SOAP interfaces.</para>
+
+  <para>Example configuration for the Ericsson SDP variant:</para>
+
+<programlisting>
+group = smsc
+smsc = parlayx
+system-type = ericsson-sdp
+port = 10000
+connect-allow-ip = 10.11.12.13
+send-url = http://host/location
+dlr-url = http://our-host:10000/dlr-location
+smsc-username = tester
+smsc-password = foobar
+</programlisting>
+
+ <informaltable frame="none">
+  <tgroup cols="3"><thead><row>
+     <entry>Variable</entry>
+     <entry>Value</entry>
+     <entry>Description</entry>
+   </row></thead><tbody>
+
+   <row><entry><literal>system-type (m)</literal></entry>
+     <entry><literal>string</literal></entry>
+     <entry valign="bottom">
+        Type of ParlayX connection. Currently supported are: 
+        'oneapi-v1', 'ericsson-sdp'. 
+        The variants have the same ParlayX SOAP XML PDUs, but differ in the
+        authentication scheme they use, where 'ericsson-sdp' uses WS-Security 
+        via wsse and 'oneapi-v1' uses plain HTTP basic authentication.
+     </entry></row>
+
+   <row><entry><literal>port (m)</literal></entry>
+     <entry><literal>port-number</literal></entry>
+     <entry valign="bottom">
+       Port number in which Kannel listens to (MO and DLR) messages 
+       from other SOAP service side.
+     </entry></row>
+
+   <row><entry><literal>send-url (m)</literal></entry>
+     <entry><literal>url</literal></entry>
+     <entry valign="bottom">
+       Location of the SOAP service to send MT messages.
+     </entry></row>
+
+   <row><entry><literal>dlr-url (m)</literal></entry>
+     <entry><literal>url</literal></entry>
+     <entry valign="bottom">
+       Location of our side SOAP service for DLR notifications.
+     </entry></row>
+
+   <row><entry><literal>smsc-username (m)</literal></entry>
+     <entry><literal>string</literal></entry>
+     <entry valign="bottom">
+       Username associated for the SOAP service connection.
+     </entry></row>
+
+   <row><entry><literal>smsc-password (m)</literal></entry>
+     <entry><literal>string</literal></entry>
+     <entry valign="bottom">
+       Password associated for the SOAP service username.
+     </entry></row>
+
+   <row><entry><literal>use-ssl</literal></entry>
+   <entry><literal>boolean</literal></entry>
+   <entry valign="bottom">
+      Defines whether listen port should use SSL.
+   </entry></row>
+
+   <row><entry><literal>connect-allow-ip</literal></entry>
+     <entry><literal>IP-list</literal></entry>
+     <entry valign="bottom">
+       IPs allowed to use this SOAP service interface. If not set, 
+       "127.0.0.1" (localhost) is the only host allowed to connect.
+       Typically you will allow the IP of the other side SOAP service
+       here.
+     </entry></row>
+
+   <row><entry><literal>window</literal></entry>
+   <entry><literal>boolean</literal></entry>
+   <entry valign="bottom">
+      Number of concurrent sending threads. If not set,
+      one thread is used.
+   </entry></row>
+
+   </tbody></tgroup></informaltable>
+
+</sect2>
+
+
+<sect2>
 <title>Fake SMSC</title>
 
   <para>Fake SMSC is a simple protocol to test out Kannel. It is not
@@ -4197,6 +4532,14 @@ send-url = "http://localhost:20022"
      <entry valign="bottom">
        Password for username, if needed.
      </entry></row>
+
+   <row><entry><literal>max-pending-submits</literal></entry>
+     <entry><literal>number</literal></entry>
+     <entry valign="bottom">
+       Optional the maximum number of outstanding (i.e. acknowledged)
+       requests. As a guideline it is recommended that no more than
+       10 (default) requests are outstanding at any time.
+    </entry></row>
    </tbody></tgroup></informaltable>
 
 <sect3>
@@ -4320,6 +4663,13 @@ send-url = "http://localhost:20022"
        used on incoming requests.
      </entry></row>
 
+   <row><entry><literal>generic-param-dlr-err (o)</literal></entry>
+     <entry><literal>string</literal></entry>
+     <entry valign="bottom">
+       Overrides the default parameter for the 'dlr-err' field
+       used on incoming requests.
+     </entry></row>
+
    <row><entry><literal>generic-param-dlr-url (o)</literal></entry>
      <entry><literal>string</literal></entry>
      <entry valign="bottom">
@@ -4382,13 +4732,20 @@ send-url = "http://localhost:20022"
        Overrides the default parameter for the 'foreign-id' field
        used on incoming requests.
      </entry></row>
+     
+   <row><entry><literal>generic-param-meta-data (o)</literal></entry>
+     <entry><literal>string</literal></entry>
+     <entry valign="bottom">
+       Overrides the default parameter for the 'meta-data' field
+       used on incoming requests.
+     </entry></row>
 
    <row><entry><literal>generic-message-sent (o)</literal></entry>
      <entry><literal>string</literal></entry>
      <entry valign="bottom">
        It allows you to set the text returned when a succesful request is made.
        If not set, defaults to 'Sent.'. Note that you can use all sms service escapes
-       here, see <xref linkend="escapecodes" endterm="escapecodes.title"> for details.
+       here, see <xref linkend="escapecodes" endterm="escapecodes.title"/> for details.
      </entry></row>
 
    <row><entry><literal>generic-status-sent (o)</literal></entry>
@@ -4493,12 +4850,12 @@ features to expect from a driver, and to help identify areas where
 drivers need to be updated.  Currently most of the entries are
 marked as "not tested" because the table is still new.</para>
 
-<table frame="ALL">
+<table>
  <title>SMSC driver features</title>
  <tgroup cols="13" align="center">
-  <colspec colname="first" colnum="1" align="center">
-  <colspec colname="last" colnum="13">
-  <spanspec spanname="feature" namest="first" nameend="last">
+  <colspec colname="first" colnum="1" align="center"/>
+  <colspec colname="last" colnum="13"/>
+  <spanspec spanname="feature" namest="first" nameend="last"/>
   <thead>
    <row>
      <entry>Feature</entry>
@@ -4749,12 +5106,12 @@ marked as "not tested" because the table is still new.</para>
  </tgroup>
 </table>
 
-<table frame="ALL">
+<table>
  <title>SMSC driver internal features</title>
  <tgroup cols="13" align="center">
-  <colspec colname="first" colnum="1" align="center">
-  <colspec colname="last" colnum="13">
-  <spanspec spanname="feature" namest="first" nameend="last">
+  <colspec colname="first" colnum="1" align="center"/>
+  <colspec colname="last" colnum="13"/>
+  <spanspec spanname="feature" namest="first" nameend="last"/>
   <thead>
    <row>
      <entry>Feature</entry>
@@ -4829,7 +5186,7 @@ marked as "not tested" because the table is still new.</para>
     <entry>y</entry>
     <entry>y</entry>
     <entry>y?</entry>
-    <entry>y?<footnoteref linkend="nomarkod"></entry>
+    <entry>y?<footnoteref linkend="nomarkod"/></entry>
     <entry>?</entry>
    </row>
 
@@ -5067,7 +5424,7 @@ marked as "not tested" because the table is still new.</para>
 
 <informaltable frame="none">
  <tgroup cols="2">
-  <colspec colnum="1" align="left">
+  <colspec colnum="1" align="left"/>
   <thead>
    <row><entry>Symbol</entry><entry>Meaning</entry></row>
   </thead>
@@ -5434,6 +5791,176 @@ field-boxc-id = boxc
 
     </sect2>
 
+	<sect2>
+	<title>SQLite3 DLR storage</title>
+	<para>To store DLR information into a SQLite3 database you may use the
+	<literal>dlr-storage = sqlite3</literal> configuration directive in the
+	<literal>core</literal> group.
+	</para>
+	<para>In addition to that you must have a <literal>dlr-db</literal>
+	group defined that specifies the table field names that are used to the
+	DLR attributes and a <literal>sqlite3-connection</literal> group that
+	defines the connection to the SQLite3 database itself.
+	</para>
+	<para>Here is the example configuration:
+
+<programlisting>
+group = sqlite3-connection
+id = mydlr
+database = /path/to/file
+max-connections = 1
+
+group = dlr-db
+id = mydlr
+table = dlr
+field-smsc = smsc
+field-timestamp = ts
+field-destination = destination
+field-source = source
+field-service = service
+field-url = url
+field-mask = mask
+field-status = status
+field-boxc-id = boxc
+</programlisting>
+
+	</para>
+
+	</sect2>
+
+    <sect2>
+        <title>Redis DLR storage</title>
+        <para>To store DLR information using the Redis (http://www.redis.io) keystore, you should set the
+            <literal>dlr-storage = redis</literal> configuration directive in the
+            <literal>core</literal> group.
+        </para>
+        <para>In addition, you must have a <literal>dlr-db</literal> group defined that specifies 
+            the key and hash field names that are used to store the DLR attributes and a 
+            <literal>redis-connection</literal> group that defines the connection to the Redis server.
+        </para>
+        <para>
+            Since Redis is a keystore and not a SQL database, keys and not tables are used to store 
+            DLR attributes. For ease of configuration, the same configuration parameters in the <literal>dlr-db</literal> 
+            group that are used to define SQL tables in other DLR storage engines are used to configure
+            key names in Redis. DLRs are stored as Redis hash keys with a separate key 
+            for each DLR. Key names are in the format 
+            <literal>&lt;table&gt;:&lt;smsc&gt;:&lt;timestamp&gt;</literal>. Some SMSCs also append the 
+            destination to the DLR keyname resulting DLR keynames in the format 
+            <literal>&lt;table&gt;:&lt;smsc&gt;:&lt;timestamp&gt;:&lt;destination&gt;</literal>. You can
+            specify the <literal>&lt;table&gt;</literal> portion of the keyname by specifying the
+            <literal>table</literal> value in the <literal>dlr-db</literal> group.</para>
+        <para>
+            In addition to one key per DLR, an additional key with a name in the format
+            <literal>&lt;table&gt;:Count</literal> is created to maintain a count of the total
+            number of outstanding DLRs.
+        </para>
+        
+        <para>Here is the example configuration from
+            <literal>doc/examples/dlr-redis.conf</literal>:
+            
+            <programlisting>
+                group = redis-connection
+                id = mydlr
+                host = localhost
+                port = 6379
+                #password = foo
+                database = 2
+                idle-timeout = 3600
+                max-connections = 1
+                
+                group = dlr-db
+                id = mydlr
+                ttl = 604800
+                table = dlr
+                field-smsc = smsc
+                field-timestamp = ts
+                field-destination = destination
+                field-source = source
+                field-service = service
+                field-url = url
+                field-mask = mask
+                field-status = status
+                field-boxc-id = boxc
+            </programlisting>
+            
+        </para>
+        
+        <sect3>
+            <title>Redis connection configuration</title>
+            
+            <para>To define a Redis connection you need to specify a
+                <literal>redis-connection</literal> group as follows:
+            </para>
+            
+            <table frame="none">
+                <title>Redis Connection Group Variables</title>
+                <tgroup cols="3">
+                    <thead>
+                        <row>
+                            <entry>Variable</entry>
+                            <entry>Value</entry>
+                            <entry>Description</entry>
+                        </row>
+                    </thead>
+                    <tbody>
+                        <row><entry><literal>group</literal></entry>
+                            <entry><literal>redis-connection</literal></entry>
+                            <entry valign="bottom">
+                                This is a mandatory variable
+                            </entry></row>
+                        
+                        <row><entry><literal>id (m)</literal></entry>
+                            <entry><literal>string</literal></entry>
+                            <entry valign="bottom">
+                                An optional name or id to identify this Redis connection
+                                for internal reference with other Redis related configuration
+                                groups. Any string is acceptable, but semicolon ';' may cause
+                                problems, so avoid it and any other special non-alphabet characters.
+                            </entry></row>
+                        
+                        <row><entry><literal>host (m)</literal></entry>
+                            <entry>hostname or IP</entry>
+                            <entry valign="bottom">
+                                Hostname or IP of a server running Redis to connect to.
+                            </entry></row>
+                        
+                        <row><entry><literal>password</literal></entry>
+                            <entry>password</entry>
+                            <entry valign="bottom">
+                                If the Redis server is secured with a password in redis.conf, it must be 
+                                specified here. By default, Redis servers are unsecured and in that case,
+                                this parameter may be ommitted.</entry></row>
+                        
+                        <row><entry><literal>database</literal></entry>
+                            <entry>integer</entry>
+                            <entry valign="bottom">
+                                The numeric ID (0-15) of the Redis database to use. Ideally this database
+                                should be dedicated to storing Redis DLRs since a separate key wil be created
+                                for each DLR. If this variable is ommitted, the default database (0) will be used.
+                            </entry></row>
+                        
+                        <row><entry><literal>idle-timeout</literal></entry>
+                            <entry>integer</entry>
+                            <entry valign="bottom">
+                                The number of seconds that Redis should hold the connection open without any
+                                traffic. Some Redis servers are configured to disconnect idle clients very
+                                quickly, and if this is the case you should set this value to something more
+                                reasonable. If ommitted, the Redis server-wide timeout from redis.conf will 
+                                apply.
+                            </entry></row>
+                        
+                        <row><entry><literal>max-connections</literal></entry>
+                            <entry>integer</entry>
+                            <entry valign="bottom">
+                                How many connections should be opened to the Redis server.
+                            </entry></row>
+                        
+                    </tbody>
+                </tgroup>
+            </table>
+        </sect3>
+	</sect2>
+    
         <sect2>
 	<title>DLR database field configuration</title>
 	<para>For external database storage of DLR information in relational
@@ -5651,6 +6178,13 @@ ssl-certkey-file
 		  specific smsbox instance, i.e. SMPP or EMI proxying boxes.
      </entry></row>
 
+     <row><entry><literal>sendsms-interface (o)</literal></entry>
+     <entry>string</entry>
+     <entry valign="bottom">
+        If this is set, the sendsms HTTP interface will only bind
+        to a specified address. For example: "127.0.0.1".
+     </entry></row>
+
     <row><entry><literal>sendsms-port (c)</literal></entry>
      <entry>port-number</entry>
      <entry valign="bottom">
@@ -5726,6 +6260,24 @@ ssl-certkey-file
 
     <row><entry><literal>access-log</literal></entry>
      <entry>filename</entry></row>
+
+    <row><entry><literal>syslog-level</literal></entry>
+     <entry>number</entry>
+     <entry valign="bottom">
+	 Messages of this log level or higher will also be
+	 sent to syslog, the UNIX system log daemon. If not explicitly
+         set with <literal>syslog-facility</literal>, it logs under the
+         'daemon' category. The default is not to use syslog, and you can
+         set that explicitly by setting <literal>syslog-level</literal>
+	 to 'none'.
+     </entry></row>
+
+    <row><entry><literal>syslog-facility</literal></entry>
+     <entry>string</entry>
+     <entry valign="bottom">
+         The syslog facility to send the syslog entries to. The
+         default is 'daemon'.
+     </entry></row>
 
     <row><entry><literal>white-list</literal></entry>
      <entry>URL</entry>
@@ -5809,7 +6361,7 @@ ssl-certkey-file
         Defines the set of accepted destinations of SMS messages. If a 
 	destination of an SMS message is not in this set, any message 
 	received from the HTTP interface is rejected. 
-        See section on <xref linkend="regular-expressions"> for details.
+        See section on <xref linkend="regular-expressions"/> for details.
         </entry>   
      </row>
      <row><entry><literal>black-list-regex</literal></entry>
@@ -5817,7 +6369,7 @@ ssl-certkey-file
         <entry valign="bottom">
         As white-list-regex, but SMS messages to numbers within in this set are
         automatically discarded.
-        See section on <xref linkend="regular-expressions"> for details.
+        See section on <xref linkend="regular-expressions"/> for details.
         </entry>   
      </row>
      <row><entry><literal>max-pending-requests</literal></entry>   
@@ -6059,7 +6611,7 @@ get-url = "http://%S"
      This field may be used to enable service-selection based on a regular expression.
      You can define either keyword or keyword-regex in configuration, but not both in
      the same sms-service. keyword-regex is case sensitive.
-     See section on <xref linkend="regular-expressions"> for details.
+     See section on <xref linkend="regular-expressions"/> for details.
    </entry></row>
 
    <row><entry><literal>aliases</literal></entry>
@@ -6103,7 +6655,7 @@ get-url = "http://%S"
         Requested URL. As above, but request is done as XML POST.
 	Always matches the keyword, regardless of pattern matching.
 	See notes on POST other where and <xref
-	    linkend="postxml" endterm="postxml.title">
+	    linkend="postxml" endterm="postxml.title"/>
      </entry></row>
 
    <row><entry><literal>file (c)</literal></entry>
@@ -6250,7 +6802,7 @@ get-url = "http://%S"
      <entry valign="bottom">
         Request reply can include special X-Kannel headers but these
         are only accepted if this variable is set to true. See
-	<xref linkend="xkannel" endterm="xkannel.title">.
+	<xref linkend="xkannel" endterm="xkannel.title"/>.
      </entry></row>
 
    <row><entry><literal>assume-plain-text</literal></entry>
@@ -6349,7 +6901,7 @@ get-url = "http://%S"
         <footnote><para>Even if this service is denied,
 	Kannel still searches for other service which accepts the message,
 	or default service.</para></footnote>
-        See section on <xref linkend="regular-expressions"> for details.
+        See section on <xref linkend="regular-expressions"/> for details.
         </entry>   
      </row>
 
@@ -6360,7 +6912,7 @@ get-url = "http://%S"
         <footnote><para>Even if this service is denied,
 	Kannel still searches for other service which accepts the message,
 	or default service.</para></footnote>
-        See section on <xref linkend="regular-expressions"> for details.
+        See section on <xref linkend="regular-expressions"/> for details.
         </entry>   
      </row>
 
@@ -6372,7 +6924,7 @@ get-url = "http://%S"
 	Kannel still searches for another service which accepts the message.
 	This way there could be several services with the same keyword and
 	different results.</para></footnote>
-        See section on <xref linkend="regular-expressions"> for details.
+        See section on <xref linkend="regular-expressions"/> for details.
         </entry>   
      </row>
 
@@ -6381,7 +6933,7 @@ get-url = "http://%S"
         <entry valign="bottom">
         A set of phone number prefixes of sender-numbers which may
         not use this service.
-        See section on <xref linkend="regular-expressions"> for details.
+        See section on <xref linkend="regular-expressions"/> for details.
         </entry>   
      </row>
 
@@ -6392,7 +6944,7 @@ get-url = "http://%S"
         may receive data sent by this service. This can be used to
         allow only inbound SMS to certain shortcut numbers to be allowed
 	to this service.
-        See section on <xref linkend="regular-expressions"> for details.
+        See section on <xref linkend="regular-expressions"/> for details.
         </entry>   
      </row>
 
@@ -6401,7 +6953,7 @@ get-url = "http://%S"
         <entry valign="bottom">
         A set of phone number prefixes of receiver-numbers which may not
         receive data sent by this service.
-        See section on <xref linkend="regular-expressions"> for details.
+        See section on <xref linkend="regular-expressions"/> for details.
         </entry>   
      </row>
 
@@ -6410,7 +6962,7 @@ get-url = "http://%S"
         <entry valign="bottom">
         Defines a set of accepted senders of SMS messages. If a 
 	sender of an SMS message is not in this list, the message is rejected.
-        See section on <xref linkend="regular-expressions"> for details.
+        See section on <xref linkend="regular-expressions"/> for details.
         </entry>   
      </row>
 
@@ -6419,7 +6971,39 @@ get-url = "http://%S"
         <entry valign="bottom">
         As white-list-regex, but SMS messages from these numbers are
         automatically discarded.
-        See section on <xref linkend="regular-expressions"> for details.
+        See section on <xref linkend="regular-expressions"/> for details.
+        </entry>   
+     </row>
+
+     <row><entry><literal>alt-charset</literal></entry>
+        <entry>string</entry>
+        <entry valign="bottom">
+        Defines which character encoding is used for the SMS message when
+        passed to a remote HTTP application. This includes how the SMS message
+        text is send in the HTTP GET parameter list and in the HTTP POST bidy.
+        Uses <literal>iconv()</literal> routines to convert from and to that 
+        specific character set encoding. 
+        See your local <literal>iconv_open(3)</literal> manual page for the 
+        supported character encodings and the type strings that should be 
+        presented for this directive.
+        </entry>   
+     </row>
+
+     <row><entry><literal>dlr-url</literal></entry>
+        <entry>string (URL)</entry>
+        <entry valign="bottom">
+        Optional Defines a default URL which is fetched for DLR event, if no 
+        specific X-Kannel HTTP header parameter is returned by the HTTP response.
+        </entry>   
+     </row>
+
+     <row><entry><literal>dlr-mask</literal></entry>
+        <entry>number (bit mask)</entry>
+        <entry valign="bottom">
+        Optional. Defines a default DLR event bit mask which is used in 
+        combination with the <literal>dlr-url</literal> config directive, 
+        if no specific X-Kannel HTTP header parameter is returned by the 
+        HTTP response.
         </entry>   
      </row>
 
@@ -6513,7 +7097,7 @@ the delivery report URL value
 </entry></row>
 
 <row><entry><literal>%D</literal></entry><entry>
-meta-data from the SMSC. See <xref linkend="meta-data"> for more into.
+meta-data from the SMSC. See <xref linkend="meta-data"/> for more into.
 </entry></row>
 
 <row><entry><literal>%A</literal></entry><entry>
@@ -6585,6 +7169,30 @@ the SMS to the SIM card. Other SMSC types than AT do not
 set this field so it will be empty.
 </entry></row>
 
+<row><entry><literal>%x</literal></entry><entry>
+the smsbox-id of the message, identifying from which smsbox connection
+the message is originating. (Only available withing the
+<literal>access-log-format</literal> directive)
+</entry></row>
+
+<row><entry><literal>%v</literal></entry><entry>
+Validity period in minutes. Available only if SMSC supports
+and sent this value.
+</entry></row>
+
+<row><entry><literal>%V</literal></entry><entry>
+Deferred in minutes. Available only if SMSC supports
+and sent this value.
+</entry></row>
+
+<row><entry><literal>%#</literal></entry><entry>
+This allows to pass meta-data individual parameters into urls.
+The syntax is as follows: <literal>%#group#parameter#</literal>
+For example: <literal>%#smpp#my_param#</literal> would be replaced 
+with the value 'my_param' from the group 'smpp' coming inside the 
+meta_data field.
+</entry></row>
+
 </tbody>
 </tgroup>
 </table>
@@ -6646,7 +7254,7 @@ text = "No action specified"
 	<row>
 	<entry><literal>text/xml</literal></entry>
 	<entry>Processed as a POST-XML. See <xref
-	    linkend="postxml" endterm="postxml.title"></entry>
+	    linkend="postxml" endterm="postxml.title"/></entry>
 	</row>
 	
 	<row>
@@ -7101,7 +7709,7 @@ text = "No action specified"
         <entry valign="bottom">
         A set of phone numbers which are accepted to be
         sent using this username. 
-        See section on <xref linkend="regular-expressions"> for details.
+        See section on <xref linkend="regular-expressions"/> for details.
         </entry>
      </row>
 
@@ -7110,7 +7718,7 @@ text = "No action specified"
         <entry valign="bottom">
         A set of phone numbers which may not
         send using this username. 
-        See section on <xref linkend="regular-expressions"> for details.
+        See section on <xref linkend="regular-expressions"/> for details.
         </entry>
      </row>
 
@@ -7120,7 +7728,7 @@ text = "No action specified"
         Defines a set of accepted destinations of SMS messages. If a 
 	destination of an SMS message is not in this list, any message 
 	received from the HTTP interface is rejected. 
-        See section on <xref linkend="regular-expressions"> for details.
+        See section on <xref linkend="regular-expressions"/> for details.
         </entry>
      </row>
 
@@ -7129,7 +7737,7 @@ text = "No action specified"
         <entry valign="bottom">
         As <literal>white-list-regex</literal>, but SMS messages originating from 
         a number matching the pattern are discarded.
-        See section on <xref linkend="regular-expressions"> for details.
+        See section on <xref linkend="regular-expressions"/> for details.
         </entry>
      </row>
 
@@ -7763,6 +8371,7 @@ the Kannel configuration, or 'Authorization failed' is returned.
    <entry>number</entry>
    <entry valign="bottom">
      Optional. Sets the Priority value (range 0-3 is allowed).
+     (Defaults to 0, which is the lowest priority).
    </entry></row>
 
   </tbody>
@@ -8307,7 +8916,7 @@ allow-ip = 62.254.217.163
         <entry valign="bottom">
              Defines the set of phone-numbers accepting pushes from this 
              pi.
-        See section on <xref linkend="regular-expressions"> for details.
+        See section on <xref linkend="regular-expressions"/> for details.
         </entry>   
      </row>
 
@@ -8316,7 +8925,7 @@ allow-ip = 62.254.217.163
         <entry valign="bottom">
              Defines the set of phone-numbers rejecting pushes from this 
              pi.
-        See section on <xref linkend="regular-expressions"> for details.
+        See section on <xref linkend="regular-expressions"/> for details.
         </entry>   
      </row>
 
@@ -8324,14 +8933,14 @@ allow-ip = 62.254.217.163
         <entry>POSIX regular expression</entry>
         <entry valign="bottom">
              Set of phone number prefixes allowed in pushes coming from this pi. 
-        See section on <xref linkend="regular-expressions"> for details.
+        See section on <xref linkend="regular-expressions"/> for details.
         </entry>   
      </row>
      <row><entry><literal>denied-list-regex</literal></entry>
         <entry>POSIX regular expression</entry>
         <entry valign="bottom">
              Set of phone number prefixes denied in pushes coming from this pi. 
-        See section on <xref linkend="regular-expressions"> for details.
+        See section on <xref linkend="regular-expressions"/> for details.
         </entry>   
      </row>
 
@@ -8845,6 +9454,60 @@ ssl-server-key-file = "/etc/kannel/key1.pem"
 
 </appendix>
 
+<appendix id="certificates">
+<title>Certificate generation</title>
+
+	<para>This appendix includes pertinent information about required SSL
+		certificate genaration, where needed.
+	</para>
+
+<sect1>
+	<title>Self-signed 1024-bit RSA SSL certificates using openssl</title>
+	<para>
+		<orderedlist numeration="arabic">
+			<listitem><para>Generate private key:</para>
+				<para><literal>openssl genrsa -des3 -out server.key 1024</literal></para>
+				<para>You will be asked for a passphrase.</para></listitem>
+
+			<listitem><para>Generate a certificate request:</para>
+				<para><literal>
+					openssl req -new -key server.key -out server.csr
+				</literal></para>
+				<para>Several questions follow. At the end you may send server.csr
+					to a certificate authority, which in turn will sign it and
+					generate the certificate for you, or you can sign it yourself.
+			</para></listitem>
+
+			<listitem><para>Remove passphrase from key:</para>
+				<para><literal>cp server.key server.key.org</literal>
+				</para>
+				<para><literal>openssl rsa -in server.key.org -out server.key
+				</literal></para>
+				<para><literal>rm server.key.org</literal></para>
+			</listitem>
+
+			<listitem><para>Self-sign the certificate:</para>
+				<para>If you chose not to send the request to a Certificate
+					Authority, you will need to sign it yourself. This one is good
+					for 1 year:</para>
+				<para><literal>openssl x509 -req -days 365 -in server.csr -signkey
+					server.key -out server.crt</literal></para>
+		</listitem>
+
+			<listitem><para>Move keys to desired location:</para>
+				<para><literal>mv server.crt /etc/kannel/public/server.crt</literal>
+				</para>
+				<para><literal>mv server.key /etc/kannel/private/server.key
+				</literal></para>
+				<para><literal>mv server.csr /etc/ianwap/private/ianwap.csr (key
+					request)</literal></para>
+			</listitem>
+		</orderedlist>
+	</para>
+	<para>Update configuration accordingly</para>
+</sect1>
+
+</appendix>
 <appendix>
 <title>Using the fake WAP sender</title>
 
@@ -9030,7 +9693,7 @@ test/fakesmsc -m 1 "100 500 udh %0eudh+stuff+here main+message"
  </table>
 
     <para>In addition, fakesmsc accepts all common Kannel <xref
-    linkend="arguments" endterm="arguments.title"> like 
+    linkend="arguments" endterm="arguments.title"/> like 
     <literal>--verbosity</literal>.</para>
 
 </sect3>
@@ -9176,7 +9839,7 @@ test/fakesmsc -m 1 "100 500 udh %0eudh+stuff+here main+message"
        </para>
 
 	<screen><userinput>
-	test/test_ppg -q http://ppg-host-name:ppg-port?username=ppg-username'&'
+	test/test_ppg -q http://ppg-host-name:ppg-port?username=ppg-username'&amp;'
 	password=ppg-password [content_file] [control_file]
 	</userinput></screen>
    
@@ -9530,7 +10193,7 @@ test/fakesmsc -m 1 "100 500 udh %0eudh+stuff+here main+message"
     <title>Regular Expressions</title>
     <para>Note: this is not intended to be an introduction to regular expressions (short: regex) but a 
     description of their application within Kannel. For general information regarding regexes
-    please refer to <xref linkend="Biblio-regexp">.
+    please refer to <xref linkend="Biblio-regexp"/>.
     </para>
     <sect1>
         <title>Syntax and semantics of the regex configuration parameter</title>
@@ -9905,7 +10568,7 @@ smsc-id = a;b;c
      <entry>meta-data</entry>
      <entry valign="bottom">
 	     Meta-data used to send this message.
-             See <xref linkend="meta-data"> for an explanation about meta-data.
+             See <xref linkend="meta-data"/> for an explanation about meta-data.
      </entry></row>
 
      <row><entry>from</entry>
@@ -9993,13 +10656,13 @@ smsc-id = a;b;c
                         <para>Mobile Terminated - a SMS from application to mobile</para>
                 </glossdef></glossentry>
                 <glossentry id="MWI"><glossterm>MWI</glossterm><glossdef>
-                        <para>Message Waiting Indicator (See <xref linkend="Biblio-3GPP-23038">)</para>
+                        <para>Message Waiting Indicator (See <xref linkend="Biblio-3GPP-23038"/>)</para>
                 </glossdef></glossentry>
                 <glossentry id="MCLASS"><glossterm>MClass</glossterm><glossdef>
-                        <para>Message Class (See <xref linkend="Biblio-3GPP-23038">)</para>
+                        <para>Message Class (See <xref linkend="Biblio-3GPP-23038"/>)</para>
                 </glossdef></glossentry>
                 <glossentry id="CODING"><glossterm>Coding</glossterm><glossdef>
-                        <para>Message Coding (See <xref linkend="Biblio-3GPP-23038">)</para>
+                        <para>Message Coding (See <xref linkend="Biblio-3GPP-23038"/>)</para>
                 </glossdef></glossentry>
         </glossdiv>
 

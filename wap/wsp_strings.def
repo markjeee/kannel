@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -101,9 +101,16 @@
 
 /**** End of preprocessor magic.  Tables start here. ****/
 
+/*
+ * Wireless Session Protocol (WSP) 1.0 values.
+ *
+ * Document: OMA-WAP-TS-WSP-V1_0-20020920-C
+ * URL: http://technical.openmobilealliance.org/technical/release_program/docs/Browser_Protocol_Stack/V2_1-20050204/OMA-WAP-TS-WSP-V1_0-20020920-C.pdf
+ */
+
 /* Table 39. Header Field Name Assignments. Note that headers Accept-Charset, Accept-Encoding,
- * Cache-Control and Content-Range are defined twice. First ones should be used only for com-
- * pability reasons. */
+ * Cache-Control and Content-Range are defined twice. First ones should be used only for
+ * compatibility reasons. */
 NAMED(header,
 VNSTRING(WSP_1_1, "Accept", WSP_HEADER_ACCEPT)
 VNSTRING(WSP_1_1, "Accept-Charset", WSP_HEADER_ACCEPT_CHARSET)
@@ -187,99 +194,110 @@ VNSTRING(WSP_1_5, "X-Wap-Loc-Delivery", WSP_HEADER_X_WAP_LOC_DELIVERY)
  * Now they are maintained by OMNA, see URL
  * 
  * http://www.openmobilealliance.org/tech/omna/index.htm (depricated)
- * http://www.openmobilealliance.org/Technical/omna/omna-wsp-content-type.aspx
+ * http://technical.openmobilealliance.org/tech/omna/omna-wsp-content-type.aspx
+ *
+ * NOTE: The assigned numbers in the above URL start with 0x00, where
+ * the binary token values in the WBXML content start with 0x80.
  */
 LINEAR(content_type,
-VSTRING(WSP_1_1, "*/*")
-VSTRING(WSP_1_1, "text/*")
-VSTRING(WSP_1_1, "text/html")
-VSTRING(WSP_1_1, "text/plain")
-VSTRING(WSP_1_1, "text/x-hdml")
-VSTRING(WSP_1_1, "text/x-ttml")
-VSTRING(WSP_1_1, "text/x-vCalendar")
-VSTRING(WSP_1_1, "text/x-vCard")
-VSTRING(WSP_1_1, "text/vnd.wap.wml")
-VSTRING(WSP_1_1, "text/vnd.wap.wmlscript")
-VSTRING(WSP_1_1, "application/vnd.wap.catc")
-VSTRING(WSP_1_1, "multipart/*")
-VSTRING(WSP_1_1, "multipart/mixed")
-VSTRING(WSP_1_1, "multipart/form-data")
-VSTRING(WSP_1_1, "multipart/byteranges")
-VSTRING(WSP_1_1, "multipart/alternative")
-VSTRING(WSP_1_1, "application/*")
-VSTRING(WSP_1_1, "application/java-vm")
-VSTRING(WSP_1_1, "application/x-www-form-urlencoded")
-VSTRING(WSP_1_1, "application/x-hdmlc")
-VSTRING(WSP_1_1, "application/vnd.wap.wmlc")
-VSTRING(WSP_1_1, "application/vnd.wap.wmlscriptc")
-VSTRING(WSP_1_1, "application/vnd.wap.wsic")
-VSTRING(WSP_1_1, "application/vnd.wap.uaprof")
-VSTRING(WSP_1_1, "application/vnd.wap.wtls-ca-certificate")
-VSTRING(WSP_1_1, "application/vnd.wap.wtls-user-certificate")
-VSTRING(WSP_1_1, "application/x-x509-ca-cert")
-VSTRING(WSP_1_1, "application/x-x509-user-cert")
-VSTRING(WSP_1_1, "image/*")
-VSTRING(WSP_1_1, "image/gif")
-VSTRING(WSP_1_1, "image/jpeg")
-VSTRING(WSP_1_1, "image/tiff")
-VSTRING(WSP_1_1, "image/png")
-VSTRING(WSP_1_1, "image/vnd.wap.wbmp")
-VSTRING(WSP_1_1, "application/vnd.wap.multipart.*")
-VSTRING(WSP_1_1, "application/vnd.wap.multipart.mixed")
-VSTRING(WSP_1_1, "application/vnd.wap.multipart.form-data")
-VSTRING(WSP_1_1, "application/vnd.wap.multipart.byteranges")
-VSTRING(WSP_1_1, "application/vnd.wap.multipart.alternative")
-VSTRING(WSP_1_1, "application/xml")
-VSTRING(WSP_1_1, "text/xml")
-VSTRING(WSP_1_1, "application/vnd.wap.wbxml")
-VSTRING(WSP_1_1, "application/x-x968-cross-cert")
-VSTRING(WSP_1_1, "application/x-x968-ca-cert")
-VSTRING(WSP_1_1, "application/x-x968-user-cert")
-VSTRING(WSP_1_1, "text/vnd.wap.si")
-VSTRING(WSP_1_2, "application/vnd.wap.sic")
-VSTRING(WSP_1_2, "text/vnd.wap.sl")
-VSTRING(WSP_1_2, "application/vnd.wap.slc")
-VSTRING(WSP_1_2, "text/vnd.wap.co")
-VSTRING(WSP_1_2, "application/vnd.wap.coc")
-VSTRING(WSP_1_2, "application/vnd.wap.multipart.related")
-VSTRING(WSP_1_2, "application/vnd.wap.sia")
-VSTRING(WSP_1_3, "text/vnd.wap.connectivity-xml")
-VSTRING(WSP_1_3, "application/vnd.wap.connectivity-wbxml")
-VSTRING(WSP_1_4, "application/pkcs7-mime")
-VSTRING(WSP_1_4, "application/vnd.wap.hashed-certificate")
-VSTRING(WSP_1_4, "application/vnd.wap.signed-certificate")
-VSTRING(WSP_1_4, "application/vnd.wap.cert-response")
-VSTRING(WSP_1_4, "application/xhtml+xml")
-VSTRING(WSP_1_4, "application/wml+xml")
-VSTRING(WSP_1_4, "text/css")
-VSTRING(WSP_1_4, "application/vnd.wap.mms-message")
-VSTRING(WSP_1_4, "application/vnd.wap.rollover-certificate")
-VSTRING(WSP_1_5, "application/vnd.wap.locc+wbxml") 
-VSTRING(WSP_1_5, "application/vnd.wap.loc+xml")
-VSTRING(WSP_1_5, "application/vnd.syncml.dm+wbxml") 
-VSTRING(WSP_1_5, "application/vnd.syncml.dm+xml") 
-VSTRING(WSP_1_5, "application/vnd.syncml.notification") 
-VSTRING(WSP_1_5, "application/vnd.wap.xhtml+xml") 
-VSTRING(WSP_1_5, "application/vnd.wv.csp.cir") 
-VSTRING(WSP_1_5, "application/vnd.oma.dd+xml") 
-VSTRING(WSP_1_5, "application/vnd.oma.drm.message") 
-VSTRING(WSP_1_5, "application/vnd.oma.drm.content")
-VSTRING(WSP_1_5, "application/vnd.oma.drm.rights+xml") 
-VSTRING(WSP_1_5, "application/vnd.oma.drm.rights+wbxml")
-VSTRING(WSP_1_5, "application/vnd.wv.csp+xml")
-VSTRING(WSP_1_5, "application/vnd.wv.csp+wbxml")
-VSTRING(WSP_1_5, "application/vnd.syncml.ds.notification")
-VSTRING(WSP_1_6, "audio/*")
-VSTRING(WSP_1_6, "video/*") 
-VSTRING(WSP_1_6, "application/vnd.oma.dd2+xml")
-VSTRING(WSP_1_6, "application/mikey") 
+VSTRING(WSP_1_1, "*/*")											/* 0x80 */
+VSTRING(WSP_1_1, "text/*")										/* 0x81 */
+VSTRING(WSP_1_1, "text/html")									/* 0x82 */
+VSTRING(WSP_1_1, "text/plain")									/* 0x83 */
+VSTRING(WSP_1_1, "text/x-hdml")									/* 0x84 */
+VSTRING(WSP_1_1, "text/x-ttml")									/* 0x85 */
+VSTRING(WSP_1_1, "text/x-vCalendar")							/* 0x86 */
+VSTRING(WSP_1_1, "text/x-vCard")								/* 0x87 */
+VSTRING(WSP_1_1, "text/vnd.wap.wml")							/* 0x88 */
+VSTRING(WSP_1_1, "text/vnd.wap.wmlscript")						/* 0x89 */
+VSTRING(WSP_1_1, "application/vnd.wap.catc")					/* 0x8A */
+VSTRING(WSP_1_1, "multipart/*")									/* 0x8B */
+VSTRING(WSP_1_1, "multipart/mixed")								/* 0x8C */
+VSTRING(WSP_1_1, "multipart/form-data")							/* 0x8D */
+VSTRING(WSP_1_1, "multipart/byteranges")						/* 0x8E */
+VSTRING(WSP_1_1, "multipart/alternative")						/* 0x8F */
+VSTRING(WSP_1_1, "application/*")								/* 0x90 */
+VSTRING(WSP_1_1, "application/java-vm")							/* 0x91 */
+VSTRING(WSP_1_1, "application/x-www-form-urlencoded")			/* 0x92 */
+VSTRING(WSP_1_1, "application/x-hdmlc")							/* 0x93 */
+VSTRING(WSP_1_1, "application/vnd.wap.wmlc")					/* 0x94 */
+VSTRING(WSP_1_1, "application/vnd.wap.wmlscriptc")				/* 0x95 */
+VSTRING(WSP_1_1, "application/vnd.wap.wsic")					/* 0x96 */
+VSTRING(WSP_1_1, "application/vnd.wap.uaprof")					/* 0x97 */
+VSTRING(WSP_1_1, "application/vnd.wap.wtls-ca-certificate")		/* 0x98 */
+VSTRING(WSP_1_1, "application/vnd.wap.wtls-user-certificate")	/* 0x99 */
+VSTRING(WSP_1_1, "application/x-x509-ca-cert")					/* 0x9A */
+VSTRING(WSP_1_1, "application/x-x509-user-cert")				/* 0x9B */
+VSTRING(WSP_1_1, "image/*")										/* 0x9C */
+VSTRING(WSP_1_1, "image/gif")									/* 0x9D */
+VSTRING(WSP_1_1, "image/jpeg")									/* 0x9E */
+VSTRING(WSP_1_1, "image/tiff")									/* 0x9F */
+VSTRING(WSP_1_1, "image/png") 									/* 0xA0 */
+VSTRING(WSP_1_1, "image/vnd.wap.wbmp") 							/* 0xA1 */
+VSTRING(WSP_1_1, "application/vnd.wap.multipart.*") 			/* 0xA2 */
+VSTRING(WSP_1_1, "application/vnd.wap.multipart.mixed") 		/* 0xA3 */
+VSTRING(WSP_1_1, "application/vnd.wap.multipart.form-data") 	/* 0xA4 */
+VSTRING(WSP_1_1, "application/vnd.wap.multipart.byteranges") 	/* 0xA5 */
+VSTRING(WSP_1_1, "application/vnd.wap.multipart.alternative") 	/* 0xA6 */
+VSTRING(WSP_1_1, "application/xml") 							/* 0xA7 */
+VSTRING(WSP_1_1, "text/xml") 									/* 0xA8 */
+VSTRING(WSP_1_1, "application/vnd.wap.wbxml") 					/* 0xA9 */
+VSTRING(WSP_1_1, "application/x-x968-cross-cert")				/* 0xAA */
+VSTRING(WSP_1_1, "application/x-x968-ca-cert") 					/* 0xAB */
+VSTRING(WSP_1_1, "application/x-x968-user-cert") 				/* 0xAC */
+VSTRING(WSP_1_1, "text/vnd.wap.si") 							/* 0xAD */
+VSTRING(WSP_1_2, "application/vnd.wap.sic") 					/* 0xAE */
+VSTRING(WSP_1_2, "text/vnd.wap.sl")								/* 0xAF */
+VSTRING(WSP_1_2, "application/vnd.wap.slc")						/* 0xB0 */
+VSTRING(WSP_1_2, "text/vnd.wap.co")								/* 0xB1 */
+VSTRING(WSP_1_2, "application/vnd.wap.coc")						/* 0xB2 */
+VSTRING(WSP_1_2, "application/vnd.wap.multipart.related")		/* 0xB3 */
+VSTRING(WSP_1_2, "application/vnd.wap.sia")						/* 0xB4 */
+VSTRING(WSP_1_3, "text/vnd.wap.connectivity-xml")				/* 0xB5 */
+VSTRING(WSP_1_3, "application/vnd.wap.connectivity-wbxml")		/* 0xB6 */
+VSTRING(WSP_1_4, "application/pkcs7-mime")						/* 0xB7 */
+VSTRING(WSP_1_4, "application/vnd.wap.hashed-certificate")		/* 0xB8 */
+VSTRING(WSP_1_4, "application/vnd.wap.signed-certificate")		/* 0xB9 */
+VSTRING(WSP_1_4, "application/vnd.wap.cert-response")			/* 0xBA */
+VSTRING(WSP_1_4, "application/xhtml+xml")						/* 0xBB */
+VSTRING(WSP_1_4, "application/wml+xml")							/* 0xBC */
+VSTRING(WSP_1_4, "text/css")									/* 0xBD */
+VSTRING(WSP_1_4, "application/vnd.wap.mms-message")				/* 0xBE */
+VSTRING(WSP_1_4, "application/vnd.wap.rollover-certificate")	/* 0xBF */
+VSTRING(WSP_1_5, "application/vnd.wap.locc+wbxml") 				/* 0xC0 */
+VSTRING(WSP_1_5, "application/vnd.wap.loc+xml")					/* 0xC1 */
+VSTRING(WSP_1_5, "application/vnd.syncml.dm+wbxml") 			/* 0xC2 */
+VSTRING(WSP_1_5, "application/vnd.syncml.dm+xml") 				/* 0xC3 */
+VSTRING(WSP_1_5, "application/vnd.syncml.notification") 		/* 0xC4 */
+VSTRING(WSP_1_5, "application/vnd.wap.xhtml+xml") 				/* 0xC5 */
+VSTRING(WSP_1_5, "application/vnd.wv.csp.cir") 					/* 0xC6 */
+VSTRING(WSP_1_5, "application/vnd.oma.dd+xml") 					/* 0xC7 */
+VSTRING(WSP_1_5, "application/vnd.oma.drm.message") 			/* 0xC8 */
+VSTRING(WSP_1_5, "application/vnd.oma.drm.content")				/* 0xC9 */
+VSTRING(WSP_1_5, "application/vnd.oma.drm.rights+xml") 			/* 0xCA */
+VSTRING(WSP_1_5, "application/vnd.oma.drm.rights+wbxml")		/* 0xCB */
+VSTRING(WSP_1_5, "application/vnd.wv.csp+xml")					/* 0xCC */
+VSTRING(WSP_1_5, "application/vnd.wv.csp+wbxml")				/* 0xCD */
+VSTRING(WSP_1_5, "application/vnd.syncml.ds.notification")		/* 0xCE */
+VSTRING(WSP_1_6, "audio/*")										/* 0xCF */
+VSTRING(WSP_1_6, "video/*") 									/* 0xD0 */
+VSTRING(WSP_TBD, "application/vnd.oma.dd2+xml")					/* 0xD1 */
+VSTRING(WSP_TBD, "application/mikey") 							/* 0xD2 */
+VSTRING(WSP_TBD, "application/vnd.oma.dcd")						/* 0xD3 */
+VSTRING(WSP_TBD, "application/vnd.oma.dcdc")					/* 0xD4 */
+VSTRING(WSP_TBD, "text/x-vMessage")								/* 0xD5 */
+VSTRING(WSP_TBD, "application/vnd.omads-email+wbxml")			/* 0xD6 */
+VSTRING(WSP_TBD, "text/x-vBookmark")							/* 0xD7 */
+VSTRING(WSP_TBD, "application/vnd.syncml.dm.notification")		/* 0xD8 */
+VSTRING(WSP_TBD, "")											/* 0xD9 */
+VSTRING(WSP_TBD, "application/octet-stream")					/* 0xDA */
 )
 
 /* Registered WSP Content Type Codes Assignments. 
  * Now they are maintained by OMNA, see URL
  * 
  * http://www.openmobilealliance.org/tech/omna/index.htm (depricated)
- * http://www.openmobilealliance.org/Technical/omna/omna-wsp-content-type.aspx
+ * http://technical.openmobilealliance.org/tech/omna/omna-wsp-content-type.aspx
  */
 NUMBERED(content_type_registered,
 ASSIGN("application/vnd.uplanet.cacheop-wbxml", 0x0201)
@@ -316,6 +334,15 @@ ASSIGN("application/vnd.omaloc-supl-init", 0x0312)
 ASSIGN("application/vnd.oma.group-usage-list+xml", 0x0313)
 ASSIGN("application/oma-directory+xml", 0x0314)
 ASSIGN("application/vnd.docomo.pf2", 0x0315)
+ASSIGN("application/vnd.oma.drm.roap-trigger+wbxml", 0x0316)
+ASSIGN("application/vnd.sbm.mid2", 0x0317)
+ASSIGN("application/vnd.wmf.bootstrap", 0x0318)
+ASSIGN("application/vnc.cmcc.dcd+xml", 0x0319)
+ASSIGN("application/vnd.sbm.cid", 0x031A)
+ASSIGN("application/vnd.oma.bcast.provisioningtrigger", 0x031B)
+ASSIGN("application/vnd.docomo.dm", 0x031C)
+ASSIGN("application/vnd.oma.scidm.messages+xml", 0x031D)
+ASSIGN("application/vnd.innopath.wamp.notification", 0x031E)
 )
 
 /* Table 42, Character Set Assignment (partial) */
@@ -324,58 +351,59 @@ ASSIGN("application/vnd.docomo.pf2", 0x0315)
  * but the WSP standard lists these values explicitly.
  */
 NUMBERED(charset,
-ASSIGN("big5", 2026)
-ASSIGN("iso-10646-ucs-2", 1000)
-ASSIGN("iso-8859-1", 4)
-ASSIGN("iso-8859-2", 5)
-ASSIGN("iso-8859-3", 6)
-ASSIGN("iso-8859-4", 7)
-ASSIGN("iso-8859-5", 8)
-ASSIGN("iso-8859-6", 9)
-ASSIGN("iso-8859-7", 10)
-ASSIGN("iso-8859-8", 11)
-ASSIGN("iso-8859-9", 12)
-ASSIGN("shift_JIS", 17)
-ASSIGN("us-ascii", 3)
-ASSIGN("utf-8", 106)
-ASSIGN("utf-16", 1015)
+ASSIGN("big5", 2026)				/* 0x07EA */
+ASSIGN("iso-10646-ucs-2", 1000)		/* 0x03E8 */
+ASSIGN("iso-8859-1", 4)				/* 0x04 */
+ASSIGN("iso-8859-2", 5)				/* 0x05 */
+ASSIGN("iso-8859-3", 6)				/* 0x06 */
+ASSIGN("iso-8859-4", 7)				/* 0x07 */
+ASSIGN("iso-8859-5", 8)				/* 0x08 */
+ASSIGN("iso-8859-6", 9)				/* 0x09 */
+ASSIGN("iso-8859-7", 10)			/* 0x0A */
+ASSIGN("iso-8859-8", 11)			/* 0x0B */
+ASSIGN("iso-8859-9", 12)			/* 0x0C */
+ASSIGN("shift_JIS", 17)				/* 0x11 */
+ASSIGN("us-ascii", 3)				/* 0x03 */
+ASSIGN("utf-8", 106)				/* 0x6A */
+ASSIGN("utf-16", 1015)				/* 0x03F7 */
 )
 
 /* Table 38, Well-Known Parameter Assignments 
  * Now defined by OMNA, see
- * http://www.openmobilealliance.org/tech/omna/omna-wsp-header-param.htm
+ * http://www.openmobilealliance.org/tech/omna/omna-wsp-header-param.htm (depricated)
+ * http://technical.openmobilealliance.org/tech/omna/omna-wsp-header-param.aspx
  */
 NUMBERED(parameter,
-VASSIGN(WSP_1_1, "q", 0)
-VASSIGN(WSP_1_1, "charset", 1)
-VASSIGN(WSP_1_1, "level", 2)
-VASSIGN(WSP_1_1, "type", 3)
-VASSIGN(WSP_1_1, "uaprof", 4)
-VASSIGN(WSP_1_1, "name", 5)
-VASSIGN(WSP_1_1, "filename", 6)
-VASSIGN(WSP_1_1, "differences", 7)
-VASSIGN(WSP_1_1, "padding", 8)
-VASSIGN(WSP_1_2, "type", 9)
-VASSIGN(WSP_1_2, "start", 10)
-VASSIGN(WSP_1_2, "start-info", 11)
-VASSIGN(WSP_1_3, "comment", 12)
-VASSIGN(WSP_1_3, "domain", 13)
-VASSIGN(WSP_1_3, "max-age", 14)
-VASSIGN(WSP_1_3, "path", 15)
-VASSIGN(WSP_1_3, "secure", 16)
-VASSIGN(WSP_1_4, "sec", 17)
-VASSIGN(WSP_1_4, "mac", 18)
-VASSIGN(WSP_1_4, "creation-date", 19)
-VASSIGN(WSP_1_4, "modification-date", 20)
-VASSIGN(WSP_1_4, "read-date", 21)
-VASSIGN(WSP_1_4, "size", 22)
-VASSIGN(WSP_1_4, "name", 23)
-VASSIGN(WSP_1_4, "filename", 24)
-VASSIGN(WSP_1_4, "start", 25)
-VASSIGN(WSP_1_4, "start-info", 26)
-VASSIGN(WSP_1_4, "comment", 27)
-VASSIGN(WSP_1_4, "domain", 28)
-VASSIGN(WSP_1_4, "path", 29)
+VASSIGN(WSP_1_1, "q", 0x00)
+VASSIGN(WSP_1_1, "charset", 0x01)
+VASSIGN(WSP_1_1, "level", 0x02)
+VASSIGN(WSP_1_1, "type", 0x03)
+VASSIGN(WSP_1_1, "uaprof", 0x04)
+VASSIGN(WSP_1_1, "name", 0x05)
+VASSIGN(WSP_1_1, "filename", 0x06)
+VASSIGN(WSP_1_1, "differences", 0x07)
+VASSIGN(WSP_1_1, "padding", 0x08)
+VASSIGN(WSP_1_2, "type", 0x09)
+VASSIGN(WSP_1_2, "start", 0x0A)
+VASSIGN(WSP_1_2, "start-info", 0x0B)
+VASSIGN(WSP_1_3, "comment", 0x0C)
+VASSIGN(WSP_1_3, "domain", 0x0D)
+VASSIGN(WSP_1_3, "max-age", 0x0E)
+VASSIGN(WSP_1_3, "path", 0x0F)
+VASSIGN(WSP_1_3, "secure", 0x10)
+VASSIGN(WSP_1_4, "sec", 0x11)
+VASSIGN(WSP_1_4, "mac", 0x12)
+VASSIGN(WSP_1_4, "creation-date", 0x13)
+VASSIGN(WSP_1_4, "modification-date", 0x14)
+VASSIGN(WSP_1_4, "read-date", 0x15)
+VASSIGN(WSP_1_4, "size", 0x16)
+VASSIGN(WSP_1_4, "name", 0x17)
+VASSIGN(WSP_1_4, "filename", 0x18)
+VASSIGN(WSP_1_4, "start", 0x19)
+VASSIGN(WSP_1_4, "start-info", 0x1A)
+VASSIGN(WSP_1_4, "comment", 0x1B)
+VASSIGN(WSP_1_4, "domain", 0x1C)
+VASSIGN(WSP_1_4, "path", 0x1D)
 )
 
 /* 8.4.2.18, Content encoding field */
@@ -560,7 +588,7 @@ ASSIGN("zh", 0x41)  /* Chinese */
 ASSIGN("zu", 0x5c)  /* Zulu */
 )
 
-/* Well known methods, from table 34. */
+/* Table 34, Well known methods. */
 NUMBERED(method,
 ASSIGN("GET", 0x40)
 ASSIGN("OPTIONS", 0x41)
@@ -620,9 +648,9 @@ STRING("ansi-136_ghost/r_data_gsm_isdn")
  * Well known and registered push application ids, see URL
  * 
  * http://www.openmobilealliance.org/tech/omna/omna-push-app-id.htm (depricated)
- * http://www.openmobilealliance.org/Technical/omna/omna-push-app-id.aspx
+ * http://technical.openmobilealliance.org/tech/omna/omna-push-app-id.aspx
  * 
- * Note that generic id strings do not contain the "x-wap-application" prefix,
+ * NOTE: Generic id strings do not contain the "x-wap-application" prefix,
  * it's the default, otherwise an alternate is given.
  */
 NUMBERED(application_id,
@@ -641,6 +669,10 @@ ASSIGN("x-oma-application:ulp.ua", 0x10)
 ASSIGN("x-oma-application:dlota.ua", 0x11)
 ASSIGN("x-oma-application:java-ams", 0x12)
 ASSIGN("x-oma-application:bcast.ua", 0x13)
+ASSIGN("x-oma-application:dpe.ua", 0x14)
+ASSIGN("x-oma-application:cpm:ua", 0x15)
+ASSIGN("x-oma-application:evvm.ua", 0x16)
+/* vendor-specific registered values */
 ASSIGN("x-wap-microsoft:localcontent.ua", 0x8000)
 ASSIGN("x-wap-microsoft:IMclient.ua", 0x8001)
 ASSIGN("x-wap-docomo:imode.mail.ua", 0x8002)
@@ -720,6 +752,42 @@ ASSIGN("x-oma-docomo:imode.agent.ua", 0x904A)
 ASSIGN("x-wap-application:push.sia", 0x904B)
 ASSIGN("x-oma-nokia:destination.network.ua", 0x904C)
 ASSIGN("x-oma-sbm:mid2.ua", 0x904D)
+ASSIGN("x-carrieriq:avm.ctl", 0x904E)
+ASSIGN("x-oma-sbm:ms.xml.ua", 0x904F)
+ASSIGN("urn:dvb:ipdc:notification:2008", 0x9050)
+ASSIGN("x-oma-docomo:imode.mvch.ua", 0x9051)
+ASSIGN("x-oma-motorola:webui.ua", 0x9052)
+ASSIGN("x-oma-sbm:cid.ua", 0x9053)
+ASSIGN("x-oma-nokia:vcc.v1.ua", 0x9054)
+ASSIGN("x-oma-docomo:open.ctl", 0x9055)
+ASSIGN("x-oma-docomo:sp.mail.ua", 0x9056)
+ASSIGN("x-essoy-application:push.erace", 0x9057)
+ASSIGN("x-oma-docomo:open.fu", 0x9058)
+ASSIGN("x-samsung:osp.ua", 0x9059)
+ASSIGN("x-oma-docomo:imode.mchara.ua", 0x905A)
+ASSIGN("x-oma-application:scidm.ua", 0x905B)
+ASSIGN("x-oma-docomo:xmd.mail.ua", 0x905C)
+ASSIGN("x-oma-application:pal.ua", 0x905D)
+ASSIGN("x-oma-docomo:imode.relation.ua", 0x905E)
+ASSIGN("x-oma-docomo:xmd.storage.ua", 0x905F)
+ASSIGN("x-oma-docomo:xmd.lcsapp.ua", 0x9060)
+ASSIGN("x-oma-docomo:xmd.info.ua", 0x9061)
+ASSIGN("x-oma-docomo:xmd.agent.ua", 0x9062)
+ASSIGN("x-oma-docomo:xmd.sab.ua", 0x9063)
+ASSIGN("x-oma-docomo:xmd.am.ua", 0x9064)
+ASSIGN("x-oma-application:push.scws", 0x9065)
+ASSIGN("x-oma-docomo:xmd.disastermessageapp.ua", 0x9066)
+ASSIGN("x-innopath:wamp.notification", 0x9067)
+ASSIGN("x-wap-docomo:interp.ctl", 0x9068)
+ASSIGN("x-oma-kddi:apps.ua", 0x9069)
+ASSIGN("x-oma-kddi:push.ua", 0x906A)
+ASSIGN("x-oma-docomo:xmd.emdm.ua", 0x906B)
+ASSIGN("x-oma-docomo:xmd.lac.ua", 0x906C)
+ASSIGN("x-oma-docomo:xmd.osv.ua", 0x906D)
+ASSIGN("x-oma-docomo:xmd.dcs.ua", 0x906E)
+ASSIGN("x-oma-docomo:xmd.wipe.ua", 0x906F)
+ASSIGN("x-oma-docomo:xmd.vdapp.ua", 0x9070)
+ASSIGN("x-wap-3gpp:gba.andsf", 0x9071)
 )
 
 /**** More preprocessor magic ****/

@@ -1,3 +1,36 @@
+2014-04-29  Stipe Tolj  <stolj at kannel.org>
+    * doc/userguide.xml: move from DocBook V3.1 to V4.2 and fix various XML
+      tag errors. No content change.
+    * gw/Makefile.in, Makefile.in: automake generated files.
+    * Makefile.am: add $(XML_DCL) reference to the xml.dcl file.
+    * configure[.in]: we need the xml.dcl to be added to the jade execution
+      to have a clean XML tag declaration, since we are in SGML mode here.
+      
+2013-08-18  Rene Kluwen <rene dot kluwen at chimit dot nl>
+    Fixed a semantical error as where dlr's coming from smsbox were not saved
+    in the log-table, even when save-dlr is true.
+
+2013-08-11  Rene Kluwen <rene dot kluwen at chimit dot nl>
+    Implemented configuration directives: limit-per-cycle (thanks to Alejandro
+    Guerrieri for the original patch), save-dlr, save-mo, save-mt.
+    Speed improvements for messages sent via the insert-table should be
+    significant because we process batches of records both when selecting and
+    inserting as well as deleting.
+    Thanks to Rinor Hoxha for reviewing the patch.
+    Besides, this patch allows for saving of the foreign id field in the
+    sql log table (all database engines). This is backward incompatible.
+    To continue a running installation perform:
+    alter table [log-table|insert-table] add column (foreign_id VARCHAR(255) NULL);
+
+2011-05-08  Rene Kluwen <rene dot kluwen at chimit dot nl>
+    * gw/sqlbox.c
+      fixed memory leak sending messages through the send_sms table
+
+2011-03-09  Alex Guerrieri <aguerrieri at kannel dot org>
+    * gw/sqlbox_[mssql|mysql|oracle|pgsql|sdb|sqlite|sqlite3].h: Fixed
+      segmentation fault when running on 64-bit environments. Thanks
+      Andreas Fink for identifying the reason behind the problem.
+
 2010-11-11  Alex Guerrieri <aguerrieri at kannel dot org>
     * COMPATIBILITY BREAKER: Extended Stipe's patch to url-encode the udhdata
       field as well, making it possible to send wap-push and other binary

@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -1029,7 +1029,6 @@ static void cgw_listener(void *arg)
 static void cgw_receiver(SMSCConn *conn, Connection *server)
 {
     PrivData *privdata = conn->data;
-    Octstr *str = NULL;
     struct cgwop *cgwop;
 
     while (1) {
@@ -1041,8 +1040,6 @@ static void cgw_receiver(SMSCConn *conn, Connection *server)
             error(0, "cgw: receive connection broken");
             return ;
         }
-        if (conn->is_stopped)
-	    str = NULL;
 
         cgwop = cgw_read_op(conn->data, conn, server, 0);
 
@@ -1068,7 +1065,7 @@ static int cgw_handle_op(SMSCConn *conn, Connection *server, struct cgwop *cgwop
 {
     PrivData *privdata = conn->data;
     Msg *msg = NULL;
-    Octstr *from, *app, *sid, *to, *msgtype, *msgdata; /* for messages */
+    Octstr *from, *sid, *to, *msgdata; /* for messages */
     Octstr *msid, *status, *txt;    		       /* delivery reports */
     Octstr *clid;    		       		       /* for acks */
     struct cgwop *reply = NULL;
@@ -1079,10 +1076,8 @@ static int cgw_handle_op(SMSCConn *conn, Connection *server, struct cgwop *cgwop
     if (cgwop == NULL) return 0;
 
     from = cgwop_get(cgwop, octstr_imm("from"));
-    app = cgwop_get(cgwop, octstr_imm("app"));
     sid = cgwop_get(cgwop, octstr_imm("session-id"));
     to = cgwop_get(cgwop, octstr_imm("to"));
-    msgtype = cgwop_get(cgwop, octstr_imm("type"));
     msgdata = cgwop_get(cgwop, octstr_imm("msg"));
     txt = cgwop_get(cgwop, octstr_imm("txt"));
 
@@ -1181,7 +1176,7 @@ static int cgw_handle_op(SMSCConn *conn, Connection *server, struct cgwop *cgwop
             octstr_append_char(ts, '-');
             octstr_append_decimal(ts, trn);
 
-            dlr_add(conn->id, ts, msg);
+            dlr_add(conn->id, ts, msg, 0);
 
             octstr_destroy(ts);
             privdata->dlr[trn] = 1;

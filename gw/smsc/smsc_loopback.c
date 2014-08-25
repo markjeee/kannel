@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -70,6 +70,8 @@
 #include "bb_smscconn_cb.h"
 #include "dlr.h"
 
+#define O_DESTROY(a) { octstr_destroy(a); a = NULL; }
+
 
 static int msg_cb(SMSCConn *conn, Msg *msg)
 {
@@ -86,7 +88,7 @@ static int msg_cb(SMSCConn *conn, Msg *msg)
         uuid_unparse(sms->sms.id, id);
         mid = octstr_create(id);
 
-        dlr_add(conn->id, mid, sms);
+        dlr_add(conn->id, mid, sms, 0);
         
         octstr_destroy(mid);
     }
@@ -101,9 +103,13 @@ static int msg_cb(SMSCConn *conn, Msg *msg)
     sms = msg_duplicate(msg);
     sms->sms.sms_type = mo;
     
-    /* since this is a new MO now, create an own UUID */
+    /* Since this is a new MO now, make sure that the
+     * values we have still from the MT are cleaned. */
     uuid_clear(sms->sms.id); 
-    uuid_generate(sms->sms.id); 
+    uuid_generate(sms->sms.id);
+    O_DESTROY(sms->sms.boxc_id);
+    sms->sms.dlr_mask = MSG_PARAM_UNDEFINED;
+    O_DESTROY(sms->sms.dlr_url);
     
     /* 
      * If there is a reroute-smsc-id in the config group,

@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -144,14 +144,15 @@ List *gwlist_create_real(void)
 
 void gwlist_destroy(List *list, gwlist_item_destructor_t *destructor)
 {
-    void *item;
+    long len, i;
 
     if (list == NULL)
         return;
 
     if (destructor != NULL) {
-        while ((item = gwlist_extract_first(list)) != NULL)
-            destructor(item);
+        len = gwlist_len(list); /* Using while(x != NULL) is unreliable, what if someone added NULL values? */
+        for (i = 0; i < len; i++)
+          destructor(gwlist_extract_first(list));
     }
 
     mutex_destroy(list->permanent_lock);
@@ -364,9 +365,11 @@ int gwlist_wait_until_nonempty(List *list)
     lock(list);
     while (list->len == 0 && list->num_producers > 0) {
         list->single_operation_lock->owner = -1;
+        pthread_cleanup_push((void(*)(void*))pthread_mutex_unlock, &list->single_operation_lock->mutex);
         pthread_cond_wait(&list->nonempty,
                           &list->single_operation_lock->mutex);
         list->single_operation_lock->owner = gwthread_self();
+        pthread_cleanup_pop(0);
     }
     if (list->len > 0)
         ret = 1;
@@ -429,8 +432,10 @@ void *gwlist_consume(List *list)
     ++list->num_consumers;
     while (list->len == 0 && list->num_producers > 0) {
         list->single_operation_lock->owner = -1;
+        pthread_cleanup_push((void(*)(void*))pthread_mutex_unlock, &list->single_operation_lock->mutex);
         pthread_cond_wait(&list->nonempty,
                           &list->single_operation_lock->mutex);
+        pthread_cleanup_pop(0);
         list->single_operation_lock->owner = gwthread_self();
     }
     if (list->len > 0) {
@@ -458,8 +463,10 @@ void *gwlist_timed_consume(List *list, long sec)
     ++list->num_consumers;
     while (list->len == 0 && list->num_producers > 0) {
         list->single_operation_lock->owner = -1;
+        pthread_cleanup_push((void(*)(void*))pthread_mutex_unlock, &list->single_operation_lock->mutex);
         rc = pthread_cond_timedwait(&list->nonempty,
                           &list->single_operation_lock->mutex, &abstime);
+        pthread_cleanup_pop(0);
         list->single_operation_lock->owner = gwthread_self();
         if (rc == ETIMEDOUT)
             break;

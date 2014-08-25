@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -1209,12 +1209,16 @@ Octstr *conn_read_packet(Connection *conn, int startmark, int endmark)
             unlocked_read(conn);
 
         /* Find startmark, and discard everything up to it */
-        startpos = octstr_search_char(conn->inbuf, startmark, conn->inbufpos);
-        if (startpos < 0) {
-            conn->inbufpos = octstr_len(conn->inbuf);
-            continue;
+        if (startmark >= 0) {
+            startpos = octstr_search_char(conn->inbuf, startmark, conn->inbufpos);
+            if (startpos < 0) {
+                conn->inbufpos = octstr_len(conn->inbuf);
+                continue;
+            } else {
+                conn->inbufpos = startpos;
+            }
         } else {
-            conn->inbufpos = startpos;
+           startpos = conn->inbufpos;
         }
 
         /* Find first endmark after startmark */

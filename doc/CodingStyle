@@ -7,7 +7,7 @@ Code formatting
 	
     	Follow the coding style defined by the astyle program:
 	
-	    	astyle --style=linux --pad=oper -m0 -s4
+	    	astyle --style=linux --pad-oper -m0 -s4
 
 	Tabs are 8 characters. Indents are 4.
 	

@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -287,6 +287,12 @@ Octstr *urltrans_footer(URLTranslation *t);
 
 
 /*
+ * Return the alternative charset to be used for the sms-service.
+ */
+Octstr *urltrans_alt_charset(URLTranslation *t);
+
+
+/*
  * return the name, username or password string, or NULL if not set
  * (used only with TRANSTYPE_SENDSMS)
  */
@@ -325,5 +331,9 @@ int urltrans_accept_x_kannel_headers(URLTranslation *t);
 
 int urltrans_strip_keyword(URLTranslation *t);
 int urltrans_send_sender(URLTranslation *t);
+
+/* Return DLR related values */
+Octstr *urltrans_dlr_url(URLTranslation *t);
+int urltrans_dlr_mask(URLTranslation *t);
 
 #endif

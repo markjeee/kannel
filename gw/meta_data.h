@@ -1,7 +1,7 @@
 /* ====================================================================
  * The Kannel Software License, Version 1.0
  *
- * Copyright (c) 2001-2010 Kannel Group
+ * Copyright (c) 2001-2014 Kannel Group
  * Copyright (c) 1998-2001 WapIT Ltd.
  * All rights reserved.
  *
@@ -65,6 +65,11 @@
 #ifndef META_DATA_H
 #define META_DATA_H
 
+#define METADATA_DLR_GROUP            "dlr"
+#define METADATA_DLR_GROUP_DONETIME   "donetime"
+#define METADATA_DLR_GROUP_SUBMITTIME "submittime"
+#define METADATA_DLR_GROUP_ERRORCODE  "errorcode"
+
 /**
  * Get Dictionary with all values for this group.
  */
@@ -81,5 +86,10 @@ int meta_data_set_value(Octstr *data, const char *group, const Octstr *key, cons
  * Get value for a given group and key.
  */
 Octstr *meta_data_get_value(Octstr *data, const char *group, const Octstr *key);
+/**
+ * Merge two meta data strings into one
+ */
+Octstr *meta_data_merge(const Octstr *data, const Octstr *new_data, int replace);
+
 
 #endif

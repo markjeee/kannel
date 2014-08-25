@@ -99,7 +99,7 @@ Msg *oracle_fetch_msg()
 {
     Msg *msg = NULL;
     Octstr *sql, *delet, *id;
-    List *res, *row;
+    List *res, *row, *binds = gwlist_create();
     int ret;
     DBPoolConn *pc;
 
@@ -121,6 +121,8 @@ Msg *oracle_fetch_msg()
             id = get_oracle_octstr_col(0);
             /* save fields in this row as msg struct */
             msg = msg_create(sms);
+            /* we abuse the foreign_id field in the message struct for our sql_id value */
+            msg->sms.foreign_id = get_oracle_octstr_col(0);
             msg->sms.sender     = get_oracle_octstr_col(2);
             msg->sms.receiver   = get_oracle_octstr_col(3);
             msg->sms.udhdata    = get_oracle_octstr_col(4);
@@ -152,12 +154,15 @@ Msg *oracle_fetch_msg()
                 msg->sms.boxc_id= get_oracle_octstr_col(24);
             }
             /* delete current row */
-            delet = octstr_format(SQLBOX_ORACLE_DELETE_QUERY, sqlbox_insert_table, id);
+            delet = octstr_format(SQLBOX_ORACLE_DELETE_QUERY, sqlbox_insert_table);
+
+	    gwlist_append(binds, id);         /* :1 */
 #if defined(SQLBOX_TRACE)
      debug("SQLBOX", 0, "sql: %s", octstr_get_cstr(delet));
 #endif
-            sql_update(pc, delet, NULL);
+            sql_update(pc, delet, binds);
             octstr_destroy(id);
+            gwlist_destroy(binds, NULL);
             octstr_destroy(delet);
             gwlist_destroy(row, octstr_destroy_item);
         }
@@ -170,23 +175,12 @@ Msg *oracle_fetch_msg()
 
 static Octstr *get_numeric_value_or_return_null(long int num)
 {
-    if (num == -1) {
-        return octstr_create("NULL");
-    }
     return octstr_format("%ld", num);
 }
 
 static Octstr *get_string_value_or_return_null(Octstr *str)
 {
-    if (str == NULL) {
-        return octstr_create("NULL");
-    }
-    if (octstr_compare(str, octstr_imm("")) == 0) {
-        return octstr_create("NULL");
-    }
-    octstr_replace(str, octstr_imm("\\"), octstr_imm("\\\\"));
-    octstr_replace(str, octstr_imm("\'"), octstr_imm("\\\'"));
-    return octstr_format("\'%S\'", str);
+    return octstr_format("%S", str);  
 }
 
 #define st_num(x) (stuffer[stuffcount++] = get_numeric_value_or_return_null(x))
@@ -197,6 +191,7 @@ void oracle_save_msg(Msg *msg, Octstr *momt /*, Octstr smsbox_id */)
     Octstr *sql;
     Octstr *stuffer[30];
     int stuffcount = 0;
+    List *binds = gwlist_create();
     DBPoolConn *pc;
     pc = dbpool_conn_consume(pool);
     if (pc == NULL) {
@@ -204,22 +199,44 @@ void oracle_save_msg(Msg *msg, Octstr *momt /*, Octstr smsbox_id */)
         return;
     }
 
-    sql = octstr_format(SQLBOX_ORACLE_INSERT_QUERY, sqlbox_logtable, st_str(momt), st_str(msg->sms.sender),
-        st_str(msg->sms.receiver), st_str(msg->sms.udhdata), st_str(msg->sms.msgdata), st_num(msg->sms.time),
-        st_str(msg->sms.smsc_id), st_str(msg->sms.service), st_str(msg->sms.account), st_num(msg->sms.sms_type),
-        st_num(msg->sms.mclass), st_num(msg->sms.mwi), st_num(msg->sms.coding), st_num(msg->sms.compress),
-        st_num(msg->sms.validity), st_num(msg->sms.deferred), st_num(msg->sms.dlr_mask), st_str(msg->sms.dlr_url),
-        st_num(msg->sms.pid), st_num(msg->sms.alt_dcs), st_num(msg->sms.rpi), st_str(msg->sms.charset),
-        st_str(msg->sms.boxc_id), st_str(msg->sms.binfo), st_str(msg->sms.meta_data));
+    sql = octstr_format(SQLBOX_ORACLE_INSERT_QUERY, sqlbox_logtable);
+
+    gwlist_append(binds, momt);				/*  :1 */
+    gwlist_append(binds, st_str(msg->sms.sender));	/*  :2 */
+    gwlist_append(binds, st_str(msg->sms.receiver));	/*  :3 */
+    gwlist_append(binds, st_str(msg->sms.udhdata));	/*  :4 */
+    gwlist_append(binds, st_str(msg->sms.msgdata));	/*  :5 */
+    gwlist_append(binds, st_num(msg->sms.time));	/*  :6 */
+    gwlist_append(binds, st_str(msg->sms.smsc_id));	/*  :7 */
+    gwlist_append(binds, st_str(msg->sms.service));	/*  :8 */
+    gwlist_append(binds, st_str(msg->sms.account));	/*  :9 */
+    gwlist_append(binds, st_num(msg->sms.sms_type));	/* :10 */
+    gwlist_append(binds, st_num(msg->sms.mclass));	/* :11 */
+    gwlist_append(binds, st_num(msg->sms.mwi));		/* :12 */
+    gwlist_append(binds, st_num(msg->sms.coding));	/* :13 */
+    gwlist_append(binds, st_num(msg->sms.compress));	/* :14 */
+    gwlist_append(binds, st_num(msg->sms.validity));	/* :15 */
+    gwlist_append(binds, st_num(msg->sms.deferred));	/* :16 */
+    gwlist_append(binds, st_num(msg->sms.dlr_mask));	/* :17 */
+    gwlist_append(binds, st_str(msg->sms.dlr_url));	/* :18 */
+    gwlist_append(binds, st_num(msg->sms.pid));		/* :19 */
+    gwlist_append(binds, st_num(msg->sms.alt_dcs));	/* :20 */
+    gwlist_append(binds, st_num(msg->sms.rpi));		/* :21 */
+    gwlist_append(binds, st_str(msg->sms.charset));	/* :22 */
+    gwlist_append(binds, st_str(msg->sms.boxc_id));	/* :23 */
+    gwlist_append(binds, st_str(msg->sms.binfo));	/* :24 */
+    gwlist_append(binds, st_str(msg->sms.meta_data));	/* :25 */
+    gwlist_append(binds, st_str(msg->sms.foreign_id));	/* :26 */
 #if defined(SQLBOX_TRACE)
      debug("SQLBOX", 0, "sql: %s", octstr_get_cstr(sql));
 #endif
-    sql_update(pc, sql, NULL);
+    sql_update(pc, sql, binds);
     while (stuffcount > 0) {
         octstr_destroy(stuffer[--stuffcount]);
     }
     dbpool_conn_produce(pc);
     octstr_destroy(sql);
+    gwlist_destroy(binds, NULL);
 }
 
 void oracle_leave()
@@ -312,6 +329,8 @@ found:
     res->sql_leave = oracle_leave;
     res->sql_fetch_msg = oracle_fetch_msg;
     res->sql_save_msg = oracle_save_msg;
+    res->sql_fetch_msg_list = NULL;
+    res->sql_save_list = NULL;
     return res;
 }
 #endif

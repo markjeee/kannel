@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -446,7 +446,6 @@ int cfg_read(Cfg *cfg)
     Octstr *filename; 
     CfgGroup *grp;
     long equals;
-    long lineno;
     long error_lineno;
     
     loc = loc_inc = NULL;
@@ -463,7 +462,6 @@ int cfg_read(Cfg *cfg)
     gwlist_insert(stack, 0, octstr_duplicate(cfg->filename)); 
 
     grp = NULL;
-    lineno = 0;
     error_lineno = 0;
     while (error_lineno == 0 && (loc = gwlist_extract_first(lines)) != NULL) { 
         octstr_strip_blanks(loc->line); 

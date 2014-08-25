@@ -1,0 +1,7 @@
+px1                  = "(default)"
+pxSmsSend            = "http://www.csapi.org/schema/parlayx/sms/send/v2_1/local"
+px3                  = ""
+pxCommon             = "http://www.csapi.org/schema/parlayx/common/v2_1"
+pxSms                = "http://www.csapi.org/schema/parlayx/sms/v2_1"
+pxSmsNotification    = "http://www.csapi.org/schema/parlayx/sms/notification/v2_1/local"
+pxSmsReceive         = "http://www.csapi.org/schema/parlayx/sms/receive/v2_1/local"

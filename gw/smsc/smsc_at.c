@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -95,6 +95,7 @@
 #include "sms.h"
 #include "dlr.h"
 #include "smsc_at.h"
+#include "load.h"
 
 static Octstr 			*gsm2number(Octstr *pdu);
 static unsigned char	nibble2hex(unsigned char b);
@@ -106,7 +107,6 @@ static void  at2_scan_for_telnet_escapes(PrivAT2data *privdata)
     int start;
     int a;
     int b;
-    int i;
     Octstr *hex;
    
     char answer[5];
@@ -136,7 +136,7 @@ static void  at2_scan_for_telnet_escapes(PrivAT2data *privdata)
             answer[0] = 0xFF; /* escape */
             answer[1] = 0xFC; /* wont do any option*/
             answer[2] = b;
-            i = write(privdata->fd,&answer,3);
+            write(privdata->fd,&answer,3);
             octstr_delete(privdata->ilb,pos,3);
             len -=3;
             break;
@@ -248,7 +248,17 @@ static int at2_open_device(PrivAT2data *privdata)
     tios.c_iflag |= IGNPAR; /* ignore parity */
     tios.c_iflag &= ~INPCK;
 #if defined(CRTSCTS)
-    tios.c_cflag |= CRTSCTS; /* enable hardware flow control */
+    if(privdata->modem) {
+        if(privdata->modem->hardware_flow_control) {
+            tios.c_cflag |= CRTSCTS; /* enable hardware flow control */
+        }
+        else {
+            tios.c_cflag &= ~CRTSCTS; /* disable hardware flow control */
+        }
+    }
+    else {
+        tios.c_cflag &= ~CRTSCTS; /* disable hardware flow control */
+    }
 #endif
     tios.c_cc[VSUSP] = 0; /* otherwhise we can not send CTRL Z */
 
@@ -761,7 +771,6 @@ static int at2_wait_modem_command(PrivAT2data *privdata, time_t timeout, int gt_
     time_t end_time;
     time_t cur_time;
     Msg	*msg;
-    int len;
     int cmgr_flag = 0;
 
     if (!timeout)
@@ -900,7 +909,6 @@ static int at2_wait_modem_command(PrivAT2data *privdata, time_t timeout, int gt_
         }
     }
 
-    len = octstr_len(privdata->ilb);
     /*
     error(0,"AT2[%s]: timeout. received <%s> until now, buffer size is %d, buf=%s",
           octstr_get_cstr(privdata->name),
@@ -1432,6 +1440,7 @@ reconnect:
     octstr_destroy(privdata->rawtcp_host);
     gw_prioqueue_destroy(privdata->outgoing_queue, NULL);
     gwlist_destroy(privdata->pending_incoming_messages, octstr_destroy_item);
+    load_destroy(privdata->load);
     gw_free(conn->data);
     conn->data = NULL;
     mutex_lock(conn->flow_mutex);
@@ -1474,39 +1483,34 @@ static int at2_shutdown_cb(SMSCConn *conn, int finish_sending)
 
 static long at2_queued_cb(SMSCConn *conn)
 {
-    long ret;
-    PrivAT2data *privdata = conn->data;
+    PrivAT2data *privdata;
 
-    if (conn->status == SMSCCONN_DEAD) /* I'm dead, why would you care ? */
-        return -1;
-
-    ret = gw_prioqueue_len(privdata->outgoing_queue);
-
-    /* use internal queue as load, maybe something else later */
-    conn->load = ret;
-    return ret;
-}
+    privdata = conn->data;
+    conn->load = (privdata ? (conn->status != SMSCCONN_DEAD ?        
+                  gw_prioqueue_len(privdata->outgoing_queue) : 0) : 0);
+    return conn->load;               
+} 
 
 
 static void at2_start_cb(SMSCConn *conn)
 {
-    PrivAT2data *privdata = conn->data;
+    PrivAT2data *privdata;
 
+    privdata = conn->data;
     if (conn->status == SMSCCONN_DISCONNECTED)
         conn->status = SMSCCONN_ACTIVE;
-    
+
     /* in case there are messages in the buffer already */
-    gwthread_wakeup(privdata->device_thread);
+    gwthread_wakeup(privdata->device_thread); 
     debug("smsc.at2", 0, "AT2[%s]: start called", octstr_get_cstr(privdata->name));
-}
+}   
 
 static int at2_add_msg_cb(SMSCConn *conn, Msg *sms)
 {
-    PrivAT2data *privdata = conn->data;
-    Msg *copy;
+    PrivAT2data *privdata;
 
-    copy = msg_duplicate(sms);
-    gw_prioqueue_produce(privdata->outgoing_queue, copy);
+    privdata = conn->data;
+    gw_prioqueue_produce(privdata->outgoing_queue, msg_duplicate(sms));
     gwthread_wakeup(privdata->device_thread);
     return 0;
 }
@@ -1627,6 +1631,9 @@ int smsc_at2_create(SMSCConn *conn, CfgGroup *cfg)
     privdata->validityperiod = cfg_get(cfg, octstr_imm("validityperiod"));
     if (cfg_get_integer((long *) &privdata->max_error_count,  cfg, octstr_imm("max-error-count")) == -1)
         privdata->max_error_count = -1;
+
+    privdata->load = load_create_real(0);
+    load_add_interval(privdata->load, 1);
 
     conn->data = privdata;
     conn->name = octstr_format("AT2[%s]", octstr_get_cstr(privdata->name));
@@ -1755,7 +1762,6 @@ static Octstr *gsm2number(Octstr *pdu)
 	unsigned char a;
 	unsigned char b;
 	int ton;
-	int npi;
     int len;
 	int pos;
 
@@ -1765,7 +1771,6 @@ static Octstr *gsm2number(Octstr *pdu)
 		return octstr_create("");
 		
     ton = octstr_get_char(pdu,pos++);
-    npi = ton & 0x0F;
     ton =  (ton >> 4) & 0x07;
 
 	switch(ton)
@@ -2207,11 +2212,18 @@ static void at2_send_messages(PrivAT2data *privdata)
 {
     Msg *msg;
 
-    if (privdata->modem->enable_mms && gw_prioqueue_len(privdata->outgoing_queue) > 1)
+    if (privdata->modem->enable_mms && gw_prioqueue_len(privdata->outgoing_queue) > 1)                  
         at2_send_modem_command(privdata, "AT+CMMS=2", 0, 0);
 
-    if ((msg = gw_prioqueue_remove(privdata->outgoing_queue)))
-        at2_send_one_message(privdata, msg);
+    if (privdata->conn->throughput > 0 && load_get(privdata->load, 0) >= privdata->conn->throughput) {
+      debug("bb.sms.at2", 0, "AT2[%s]: throughput limit exceeded (load: %.02f, throughput: %.02f)",
+            octstr_get_cstr(privdata->conn->id), load_get(privdata->load, 0), privdata->conn->throughput);
+    } else {
+      if ((msg = gw_prioqueue_remove(privdata->outgoing_queue))) {                 
+          load_increase(privdata->load);
+          at2_send_one_message(privdata, msg);
+      }
+    }
 }
 
 
@@ -2315,7 +2327,7 @@ static void at2_send_one_message(PrivAT2data *privdata, Msg *msg)
                     else {
                         Octstr *dlrmsgid = octstr_format("%d", msg_id);
 
-                        dlr_add(privdata->conn->id, dlrmsgid, msg);
+                        dlr_add(privdata->conn->id, dlrmsgid, msg, 0);
 
                         O_DESTROY(dlrmsgid);
 
@@ -2378,24 +2390,25 @@ static Octstr *at2_pdu_encode(Msg *msg, PrivAT2data *privdata)
      * see GSM 03.40 section 9.2.3.12
      * defaults to 24 hours = 167 if not set 
      */
-    if (msg->sms.validity >= 0) {
-        if (msg->sms.validity > 635040)
+    if (msg->sms.validity != MSG_PARAM_UNDEFINED) {
+        long val = (msg->sms.validity - time(NULL)) / 60;
+        if (val > 635040)
             setvalidity = 255;
-        if (msg->sms.validity >= 50400 && msg->sms.validity <= 635040)
-            setvalidity = (msg->sms.validity - 1) / 7 / 24 / 60 + 192 + 1;
-        if (msg->sms.validity > 43200 && msg->sms.validity < 50400)
+        if (val >= 50400 && val <= 635040)
+            setvalidity = (val - 1) / 7 / 24 / 60 + 192 + 1;
+        if (val > 43200 && val < 50400)
             setvalidity = 197;
-        if (msg->sms.validity >= 2880 && msg->sms.validity <= 43200)
-            setvalidity = (msg->sms.validity - 1) / 24 / 60 + 166 + 1;
-        if (msg->sms.validity > 1440 && msg->sms.validity < 2880)
+        if (val >= 2880 && val <= 43200)
+            setvalidity = (val - 1) / 24 / 60 + 166 + 1;
+        if (val > 1440 && val < 2880)
             setvalidity = 168;
-        if (msg->sms.validity >= 750 && msg->sms.validity <= 1440)
-            setvalidity = (msg->sms.validity - 720 - 1) / 30 + 143 + 1;
-        if (msg->sms.validity > 720 && msg->sms.validity < 750)
+        if (val >= 750 && val <= 1440)
+            setvalidity = (val - 720 - 1) / 30 + 143 + 1;
+        if (val > 720 && val < 750)
             setvalidity = 144;
-        if (msg->sms.validity >= 5 && msg->sms.validity <= 720)
-            setvalidity = (msg->sms.validity - 1) / 5 - 1 + 1;
-        if (msg->sms.validity < 5)
+        if (val >= 5 && val <= 720)
+            setvalidity = (val - 1) / 5 - 1 + 1;
+        if (val < 5)
             setvalidity = 0;
     } else
         setvalidity = (privdata->validityperiod != NULL ? 
@@ -2451,6 +2464,7 @@ static Octstr *at2_pdu_encode(Msg *msg, PrivAT2data *privdata)
         octstr_append(buffer, msg->sms.msgdata);
     } else {
         int offset = 0;
+        Octstr *msgdata;
 
         /*
          * calculate the number of fill bits needed to align
@@ -2461,11 +2475,13 @@ static Octstr *at2_pdu_encode(Msg *msg, PrivAT2data *privdata)
             offset = (((nbits / 7) + 1) * 7 - nbits) % 7; /* Fill bits */
         }
 
-        charset_utf8_to_gsm(msg->sms.msgdata);
+        msgdata = octstr_duplicate(msg->sms.msgdata);
+        charset_utf8_to_gsm(msgdata);
         
-        if ((temp = at2_encode7bituncompressed(msg->sms.msgdata, offset)) != NULL)
+        if ((temp = at2_encode7bituncompressed(msgdata, offset)) != NULL)
             octstr_append(buffer, temp);
         O_DESTROY(temp);
+        octstr_destroy(msgdata);
     }
 
     /* convert PDU to HEX representation suitable for the AT2 command set */
@@ -2488,12 +2504,12 @@ static Octstr *at2_encode7bituncompressed(Octstr *source, int offset)
     int MSBmask[8] = { 0x00, 0x40, 0x60, 0x70, 0x78, 0x7C, 0x7E, 0x7F };
     int destRemain = (int)ceil((octstr_len(source) * 7.0 + offset) / 8.0);
     int i = (offset?8-offset:7), iStore = offset;
-    int posT, posS;
+    int posS;
     Octstr *target = octstr_create("");
     int target_chr = 0, source_chr;
 
     /* start packing the septet stream into an octet stream */
-    for (posS = 0, posT = 0; (source_chr = octstr_get_char(source, posS++)) != -1;) {
+    for (posS = 0; (source_chr = octstr_get_char(source, posS++)) != -1;) {
         /* grab least significant bits from current septet and 
          * store them packed to the right */
         target_chr |= (source_chr & LSBmask[i]) << iStore;
@@ -2837,6 +2853,8 @@ static ModemDef *at2_read_modems(PrivAT2data *privdata, Octstr *file, Octstr *id
             modem->message_start = 1;
 
         cfg_get_bool(&modem->enable_mms, grp, octstr_imm("enable-mms"));
+        modem->hardware_flow_control = 1;
+        cfg_get_bool(&modem->hardware_flow_control, grp, octstr_imm("hardware-flow-control"));
 
         /*	
         if (modem->message_storage == NULL)

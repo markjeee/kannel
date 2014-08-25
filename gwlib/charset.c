@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -596,7 +596,7 @@ int charset_convert(Octstr* string, char* charset_from, char* charset_to)
     if (!charset_from || !charset_to || !string) /* sanity check */
         return -1;
 
-    if (octstr_len(string) < 1)
+    if (octstr_len(string) < 1 || strcasecmp(charset_from, charset_to) == 0)
         return 0; /* we are done, nothing to convert */
         
     cd = iconv_open(charset_to, charset_from);

@@ -15,17 +15,17 @@ figs = $(figsrcs:.fig=.png)  $(figsrcs:.fig=.ps)
 
 .xml.html:
 	sed "s/#FIGTYPE#/.png/;s/#VERSION#/${VERSION}/;s/#DATE#/`date +%Y.%m.%d`/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
-	${JADE} -V nochunks -t sgml -d $(HTML_DSL) $*.tmp > $@
+	${JADE} -V nochunks -t sgml -d $(HTML_DSL) $(XML_DCL) $*.tmp > $@
 	rm -f $*.tmp
 
 .xml.rtf:
 	sed "s/#FIGTYPE#/.ps/;s/#VERSION#/${VERSION}/;s/#DATE#/`date +%Y.%m.%d`/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
-	cd `dirname $<` && $(JADE) -o `basename $*`.rtf -t rtf -d $(TEX_DSL) `basename $*`.tmp
+	cd `dirname $<` && $(JADE) -o `basename $*`.rtf -t rtf -d $(TEX_DSL) $(XML_DCL) `basename $*`.tmp
 	rm -f $*.tmp
 
 .xml.ps:
 	sed "s/#FIGTYPE#/.ps/;s/#VERSION#/${VERSION}/;s/#DATE#/`date +%Y.%m.%d`/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
-	$(JADE) -o $*.tex -t tex -d $(TEX_DSL) $*.tmp
+	$(JADE) -o $*.tex -t tex -d $(TEX_DSL) $(XML_DCL) $*.tmp
 	rm -f $*.tmp
 	cd `dirname $<` && $(JADETEX) `basename $*`.tex >/dev/null || true
 	cd `dirname $<` && $(JADETEX) `basename $*`.tex >/dev/null || true
@@ -37,7 +37,7 @@ figs = $(figsrcs:.fig=.png)  $(figsrcs:.fig=.ps)
 
 .xml.pdf:
 	sed "s/#FIGTYPE#/.png/;s/#VERSION#/${VERSION}/;s/#DATE#/`date +%Y.%m.%d`/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
-	$(JADE) -o $*.tex -t tex -d $(TEX_DSL) $*.tmp
+	$(JADE) -o $*.tex -t tex -d $(TEX_DSL) $(XML_DCL) $*.tmp
 	rm -f $*.tmp
 	cd `dirname $<` && $(JADETEX) `basename $*`.tex >/dev/null || true
 	cd `dirname $<` && $(JADETEX) `basename $*`.tex >/dev/null || true

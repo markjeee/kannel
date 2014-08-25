@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -105,7 +105,7 @@
  *   receive-port = <number>	- port number to bind our server on (Default: disabled - MT only)
  *   xml-files = "MT.xml;MO.xml;DLR.xml" - XML templates for generation of MT messages 
  *                                         and MO and DLR responses
- *   xmlspec-files = "MT.spec;MO.spec;DLR.spec" - XML path spec files for parsing of MT ´
+ *   xmlspec-files = "MT.spec;MO.spec;DLR.spec" - XML path spec files for parsing of MT Â¥
  *                                                response and MO and DLR submission
  *   alt-charset = "character map" - charset in which a text message is received (default UTF-8)
  *
@@ -1173,7 +1173,7 @@ static void soap_read_response(SMSCConn *conn)
         sprintf(tmpid,"%lld",msgID);
         debug("bb.soap.read_response",0,"SOAP[%s]: ACK - id: %lld", octstr_get_cstr(privdata->name), msgID);
 
-        dlr_add(conn->id, octstr_imm(tmpid), msg);
+        dlr_add(conn->id, octstr_imm(tmpid), msg, 0);
 
         /* send msg back to bearerbox for recycling */
         bb_smscconn_sent(conn, msg, NULL);
@@ -2838,23 +2838,19 @@ Octstr* soap_msgdata_attribute(Msg* msg, PrivData* privdata)
 /* validity in 30 minutes increment */
 Octstr* soap_o2o_validity30_attribute(Msg* msg)
 {
-    return octstr_format("%ld",(msg->sms.validity != SMS_PARAM_UNDEFINED ? 
-			 msg->sms.validity : SOAP_DEFAULT_VALIDITY) / 30);
+    return octstr_format("%ld",(msg->sms.validity != SMS_PARAM_UNDEFINED ? (msg->sms.validity - time(NULL))/60 : SOAP_DEFAULT_VALIDITY) / 30);
 }
 
 /* date on which the message's validity expires */
 Octstr* soap_mobitai_validity_date_attribute(Msg* msg)
 {
-    return date_create_iso(msg->sms.time+(60*msg->sms.validity));
+    return date_create_iso(msg->sms.validity);
 }
 
 /* validity in seconds */
 Octstr* soap_bouyg_validity_attribute(Msg* msg)
 {
-    if(msg->sms.validity >= 0)
-	return octstr_format("%d", 60*msg->sms.validity);
-    else
-	return octstr_format("%d", 0);
+    return octstr_format("%d", msg->sms.validity - time(NULL));
 }
 
 Octstr* soap_o2o_date_attribute(Msg* msg)

@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -537,18 +537,18 @@ static struct emimsg *msg_to_emimsg(Msg *msg, int trn, PrivData *privdata)
 	emimsg->fields[E50_AMSG] = str;
     }
 
-    if (msg->sms.validity >= 0) {
-	tm = gw_localtime(time(NULL) + msg->sms.validity * 60);
+    if (msg->sms.validity != SMS_PARAM_UNDEFINED) {
+	tm = gw_localtime(msg->sms.validity);
 	sprintf(p, "%02d%02d%02d%02d%02d",
 	    tm.tm_mday, tm.tm_mon + 1, tm.tm_year % 100, 
 	    tm.tm_hour, tm.tm_min);
 	str = octstr_create(p);
 	emimsg->fields[E50_VP] = str;
     }
-    if (msg->sms.deferred >= 0) {
+    if (msg->sms.deferred != SMS_PARAM_UNDEFINED) {
 	str = octstr_create("1");
 	emimsg->fields[E50_DD] = str;
-	tm = gw_localtime(time(NULL) + msg->sms.deferred * 60);
+	tm = gw_localtime(msg->sms.deferred);
 	sprintf(p, "%02d%02d%02d%02d%02d",
 	    tm.tm_mday, tm.tm_mon + 1, tm.tm_year % 100, 
 	    tm.tm_hour, tm.tm_min);
@@ -1113,7 +1113,7 @@ static int emi2_handle_smscreq(SMSCConn *conn, Connection *server)
 				    info(0,"EMI2[%s]: uhhh m is NULL, very bad",
 					 octstr_get_cstr(privdata->name));
 				} else if (DLR_IS_ENABLED_DEVICE(m->sms.dlr_mask)) {
-				    dlr_add((conn->id ? conn->id : privdata->name), ts, m);
+				    dlr_add((conn->id ? conn->id : privdata->name), ts, m, 1);
 				}
 				octstr_destroy(ts);
 				octstr_destroy(adc);

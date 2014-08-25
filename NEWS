@@ -1,9 +1,61 @@
-NEWS about Kannel: Open Source WAP and SMS Gateway version 1.5.0
+NEWS about Kannel: Open Source WAP and SMS Gateway version 1.4.4
 
-This is a DEVELOPMENT version. It should be usable for production systems.
+This is a STABLE version. It should be usable for production systems.
 Please do report problems to the Kannel bug tracking system available at 
 http://bugs.kannel.org/ or send a mail to <devel@kannel.org> (the development 
 mailing list).
+
+
+Changes since version 1.5.0 devel: 
+
+[*** Beware that the version move from 1.5.0 devel to 1.4.4 stable contains 
+numerous change sets, with major bug fixes and improvements. Following is a 
+summary of the main issues. For a complete and detailed set of changes please 
+refer to the specific ChangeLog in the doc/ directory of the distribution. ***]
+
+Compatibility breakers:
+
+  * SMPP config directives can have ONLY ONE session, either config directive
+    'port' or 'receive-port' can be set to identify if this is a bind as
+    transmitter or receiver. Configurations with both config directives will
+    PANIC at startup time.
+
+New features:
+
+  * Added DLR support for redis.
+  
+  * Added DLR support for spool directories.
+  
+  * Added DLR support for SQLite3.
+    
+  * Added SMSC support for GSMA OneAPI/Ericsson ParlayX via gSOAP.
+   
+  * Added SMSC SMPP support for optional TLVs of response PDUs via meta-data.
+  
+  * Added 'dead-start' feature for SMSC groups.
+  
+  * Added SMSC HTTP generic support for meta-data.
+  
+  * Added smsbox support to listen to specific interfaces.
+
+Bugfixes:
+
+  * Fixed smsbox HTTP call starvation while retrying.
+  
+  * Fixed various minor memory leaks for smsbox reported by valgrind.
+  
+  * Converted various PANIC conditions to WARNING/ERROR conditions to keep
+    the operations running.
+    
+  * Fixed various issues with DLR handling.
+  
+  * Fixed various segmentation fault possibilities.
+  
+  * Fixed various internal character transcoding issues.
+  
+  * Fixed issues for smsbox shutdown.
+
+  * Fixed bearerbox MO routing logic.
 
 
 Changes since version 1.4.3: 

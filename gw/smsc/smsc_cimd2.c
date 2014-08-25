@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -846,7 +846,7 @@ static int packet_check_parameter(struct packet *packet, long pos, long len, SMS
 static int packet_check(struct packet *packet, SMSCConn *conn)
 {
     int errors = 0;
-    long pos, len, next;
+    long pos, next;
     Octstr *data;
 
     gw_assert(packet != NULL);
@@ -868,7 +868,6 @@ static int packet_check(struct packet *packet, SMSCConn *conn)
      * there is a tab, an optional two-digit checksum, and the ETX.
      * Check each parameter in turn, by skipping from tab to tab.
      */
-    len = octstr_len(data);
     /* Start at the first tab, wherever it is, so that we can still
      * check parameters if the header was weird. */
     pos = octstr_search_char(data, TAB, 0);
@@ -1393,27 +1392,28 @@ static struct packet *packet_encode_message(Msg *msg, Octstr *sender_prefix, SMS
      *
      * This code was copied from smsc_at2.c.
      */
-    if (msg->sms.validity >= 0) {
-      if (msg->sms.validity > 635040)
-	setvalidity = 255;
-      if (msg->sms.validity >= 50400 && msg->sms.validity <= 635040)
-	setvalidity = (msg->sms.validity - 1) / 7 / 24 / 60 + 192 + 1;
-      if (msg->sms.validity > 43200 && msg->sms.validity < 50400)
-	setvalidity = 197;
-      if (msg->sms.validity >= 2880 && msg->sms.validity <= 43200)
-	setvalidity = (msg->sms.validity - 1) / 24 / 60 + 166 + 1;
-      if (msg->sms.validity > 1440 && msg->sms.validity < 2880)
-	setvalidity = 168;
-      if (msg->sms.validity >= 750 && msg->sms.validity <= 1440)
-	setvalidity = (msg->sms.validity - 720 - 1) / 30 + 143 + 1;
-      if (msg->sms.validity > 720 && msg->sms.validity < 750)
-	setvalidity = 144;
-      if (msg->sms.validity >= 5 && msg->sms.validity <= 720)
-	setvalidity = (msg->sms.validity - 1) / 5 - 1 + 1;
-      if (msg->sms.validity < 5)
-	setvalidity = 0;
+    if (msg->sms.validity != MSG_PARAM_UNDEFINED) {
+        long val = (msg->sms.validity - time(NULL)) / 60;
+        if (val > 635040)
+            setvalidity = 255;
+        if (val >= 50400 && val <= 635040)
+            setvalidity = (val - 1) / 7 / 24 / 60 + 192 + 1;
+        if (val > 43200 && val < 50400)
+            setvalidity = 197;
+        if (val >= 2880 && val <= 43200)
+            setvalidity = (val - 1) / 24 / 60 + 166 + 1;
+        if (val > 1440 && val < 2880)
+            setvalidity = 168;
+        if (val >= 750 && val <= 1440)
+            setvalidity = (val - 720 - 1) / 30 + 143 + 1;
+        if (val > 720 && val < 750)
+            setvalidity = 144;
+        if (val >= 5 && val <= 720)
+            setvalidity = (val - 1) / 5 - 1 + 1;
+        if (val < 5)
+            setvalidity = 0;
 
-      packet_add_int_parm(packet, P_VALIDITY_PERIOD_RELATIVE, setvalidity, conn);
+        packet_add_int_parm(packet, P_VALIDITY_PERIOD_RELATIVE, setvalidity, conn);
     }
 
     /* Explicitly ask not to get status reports.
@@ -1975,8 +1975,8 @@ static int cimd2_submit_msg(SMSCConn *conn, Msg *msg)
     }
 
     ret = cimd2_request(packet, conn, &ts);
-    if((ret == 0) && (ts) && DLR_IS_SUCCESS_OR_FAIL(msg->sms.dlr_mask) && !pdata->no_dlr) {
-        dlr_add(conn->name, ts, msg);
+    if ((ret == 0) && (ts) && DLR_IS_SUCCESS_OR_FAIL(msg->sms.dlr_mask) && !pdata->no_dlr) {
+        dlr_add(conn->name, ts, msg, 1);
     }
     octstr_destroy(ts);
     packet_destroy(packet);

@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -325,6 +325,26 @@ void gwthread_shutdown(void)
      * still needs it to access the main thread's info. */
 }
 
+static void new_thread_cleanup(void *arg)
+{
+    struct new_thread_args *p = arg;
+
+    lock();
+    debug("gwlib.gwthread", 0, "Thread %ld (%s) terminates.",
+          p->ti->number, p->ti->name);
+    alert_joiners();
+#ifdef HAVE_LIBSSL
+    /* Clear the OpenSSL thread-specific error queue to avoid
+     * memory leaks. */
+    ERR_remove_state(gwthread_self());
+#endif /* HAVE_LIBSSL */
+    /* Must free p before signaling our exit, otherwise there is
+     * a race with gw_check_leaks at shutdown. */
+    gw_free(p);
+    delete_threadinfo();
+    unlock();
+}
+
 static void *new_thread(void *arg)
 {
     int ret;
@@ -359,22 +379,14 @@ static void *new_thread(void *arg)
     debug("gwlib.gwthread", 0, "Thread %ld (%s) maps to pid %ld.",
           p->ti->number, p->ti->name, (long) p->ti->pid);
 
+    /* set cancel cleanup function */
+    pthread_cleanup_push(new_thread_cleanup, p);
+
     (p->func)(p->arg);
 
-    lock();
-    debug("gwlib.gwthread", 0, "Thread %ld (%s) terminates.",
-          p->ti->number, p->ti->name);
-    alert_joiners();
-#ifdef HAVE_LIBSSL
-    /* Clear the OpenSSL thread-specific error queue to avoid
-     * memory leaks. */
-    ERR_remove_state(gwthread_self());
-#endif /* HAVE_LIBSSL */
-    /* Must free p before signaling our exit, otherwise there is
-     * a race with gw_check_leaks at shutdown. */
-    gw_free(p);
-    delete_threadinfo();
-    unlock();
+    pthread_cleanup_pop(0);
+
+    new_thread_cleanup(p);
 
     return NULL;
 }
@@ -551,7 +563,9 @@ void gwthread_join(long thread)
     /* The wait immediately releases the lock, and reacquires it
      * when the condition is satisfied.  So don't worry, we're not
      * blocking while keeping the table locked. */
+    pthread_cleanup_push((void(*)(void*))pthread_mutex_unlock, &threadtable_lock);
     ret = pthread_cond_wait(&exit_cond, &threadtable_lock);
+    pthread_cleanup_pop(0);
     unlock();
 
     if (ret != 0)
@@ -613,7 +627,9 @@ void gwthread_join_every(gwthread_func_t *func)
         if (!ti->joiners)
             ti->joiners = gwlist_create();
         gwlist_append(ti->joiners, &exit_cond);
+        pthread_cleanup_push((void(*)(void*))pthread_mutex_unlock, &threadtable_lock);
         ret = pthread_cond_wait(&exit_cond, &threadtable_lock);
+        pthread_cleanup_pop(0);
         if (ret != 0)
             warning(ret, "gwthread_join_all: error in pthread_cond_wait");
     }
@@ -819,15 +835,21 @@ void gwthread_sleep_micro(double dseconds)
 int gwthread_cancel(long thread)
 {
     struct threadinfo *threadinfo;
+    int ret;
     
     gw_assert(thread >= 0);
     
+    lock();
     threadinfo = THREAD(thread);
     if (threadinfo == NULL || threadinfo->number != thread) {
-        return -1;
+        ret = -1;
     } else {
-        return pthread_cancel(threadinfo->self);
+        ret = pthread_cancel(threadinfo->self);
+        debug("gwlib.gwthread", 0, "Thread %ld (%s) canceled.",
+              threadinfo->number, threadinfo->name);
     }
+    unlock();
+    return ret;
 }
 
 

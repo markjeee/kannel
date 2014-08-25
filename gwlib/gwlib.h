@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -107,14 +107,17 @@
 void gwlib_assert_init(void);
 void gwlib_init(void);
 void gwlib_shutdown(void);
+int gwlib_initialized(void);
 
 #ifdef NO_GWASSERT
 #define gwlib_assert_init() ((void) 0)
 #endif
 
-#ifdef __INTERIX
+#ifndef HAVE_STRTOLL
 #undef strtoll
-#define strtoll(A,B,C) strtoq((A),(B),(C))
+  #ifdef HAVE_STRTOQ
+    #define strtoll(A,B,C) strtoq((A),(B),(C))
+  #endif
 #endif
 
 #endif

@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -1066,13 +1066,11 @@ static int handle_push_message(HTTPClient **c, WAPEvent *e, int status)
     PPGPushMachine *pm;
     PPGSessionMachine *sm;
     WAPAddrTuple *tuple=NULL;
-    Octstr *push_data=NULL;
     Octstr *cliaddr=NULL;
     Octstr *type=NULL;
 
     List *push_headers;
    
-    push_data = e->u.Push_Message.push_data;
     push_headers = e->u.Push_Message.push_headers;
     cliaddr = e->u.Push_Message.address_value;
     session_exists = 0;
@@ -1311,7 +1309,7 @@ static PPGSessionMachine *session_machine_create(WAPAddrTuple *tuple,
 {
     PPGSessionMachine *m;
 
-    gw_assert(e->type = Push_Message);
+    gw_assert(e->type == Push_Message);
 
     m = gw_malloc(sizeof(PPGSessionMachine));
     
@@ -2176,7 +2174,7 @@ static int delivery_time_constraints(WAPEvent *e, PPGPushMachine *pm)
            *after;
     struct tm now;
    
-    gw_assert(e->type = Push_Message);
+    gw_assert(e->type == Push_Message);
     
     before = e->u.Push_Message.deliver_before_timestamp;
     after = pm->deliver_after_timestamp;
@@ -2484,7 +2482,7 @@ static PPGSessionMachine *update_session_data_with_headers(
  */
 static int confirmation_requested(WAPEvent *e)
 {
-    gw_assert(e->type = Push_Message);
+    gw_assert(e->type == Push_Message);
 
     return e->u.Push_Message.delivery_method == PAP_CONFIRMED || 
            e->u.Push_Message.delivery_method == PAP_PREFERCONFIRMED;

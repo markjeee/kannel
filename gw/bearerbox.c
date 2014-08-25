@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -377,6 +377,13 @@ static Cfg *init_bearerbox(Cfg *cfg)
     Octstr *ssl_server_key_file;
     int ssl_enabled = 0;
 #endif /* HAVE_LIBSSL */
+    Octstr *http_proxy_host = NULL;
+    long http_proxy_port = -1;
+    int http_proxy_ssl = 0;
+    List *http_proxy_exceptions = NULL;
+    Octstr *http_proxy_username = NULL;
+    Octstr *http_proxy_password = NULL;
+    Octstr *http_proxy_exceptions_regex = NULL;
 
     /* defaults: use localtime and markers for access-log */
     lf = m = 1;
@@ -389,6 +396,22 @@ static Cfg *init_bearerbox(Cfg *cfg)
             loglevel = 0;
         log_open(octstr_get_cstr(log), loglevel, GW_NON_EXCL);
         octstr_destroy(log);
+    }
+    if ((val = cfg_get(grp, octstr_imm("syslog-level"))) != NULL) {
+        long level;
+        Octstr *facility;
+        if ((facility = cfg_get(grp, octstr_imm("syslog-facility"))) != NULL) {
+            log_set_syslog_facility(octstr_get_cstr(facility));
+            octstr_destroy(facility);
+        }
+        if (octstr_compare(val, octstr_imm("none")) == 0) {
+            log_set_syslog(NULL, 0);
+        } else if (octstr_parse_long(&level, val, 0, 10) > 0) {
+            log_set_syslog("bearerbox", level);
+        }
+        octstr_destroy(val);
+    } else {
+        log_set_syslog(NULL, 0);
     }
 
     if (check_config(cfg) == -1)
@@ -432,6 +455,22 @@ static Cfg *init_bearerbox(Cfg *cfg)
         panic(0, "Could not start with store init failed.");
     octstr_destroy(val);
     octstr_destroy(log);
+
+    cfg_get_integer(&http_proxy_port, grp, octstr_imm("http-proxy-port"));
+#ifdef HAVE_LIBSSL
+    cfg_get_bool(&http_proxy_ssl, grp, octstr_imm("http-proxy-ssl"));
+#endif /* HAVE_LIBSSL */
+
+    http_proxy_host = cfg_get(grp, 
+    	    	    	octstr_imm("http-proxy-host"));
+    http_proxy_username = cfg_get(grp, 
+    	    	    	    octstr_imm("http-proxy-username"));
+    http_proxy_password = cfg_get(grp, 
+    	    	    	    octstr_imm("http-proxy-password"));
+    http_proxy_exceptions = cfg_get_list(grp,
+    	    	    	    octstr_imm("http-proxy-exceptions"));
+    http_proxy_exceptions_regex = cfg_get(grp,
+    	    	    	    octstr_imm("http-proxy-exceptions-regex"));
 
     conn_config_ssl (grp);
 
@@ -547,7 +586,19 @@ static Cfg *init_bearerbox(Cfg *cfg)
     if (cfg_get_single_group(cfg, octstr_imm("wapbox")) != NULL)
         start_wap(cfg);
 #endif
-    
+
+    if (http_proxy_host != NULL && http_proxy_port > 0) {
+    	http_use_proxy(http_proxy_host, http_proxy_port, http_proxy_ssl,
+		       http_proxy_exceptions, http_proxy_username,
+                       http_proxy_password, http_proxy_exceptions_regex);
+    }
+
+    octstr_destroy(http_proxy_host);
+    octstr_destroy(http_proxy_username);
+    octstr_destroy(http_proxy_password);
+    octstr_destroy(http_proxy_exceptions_regex);
+    gwlist_destroy(http_proxy_exceptions, octstr_destroy_item);
+
     return cfg;
 }
 
@@ -607,6 +658,8 @@ static void empty_msg_lists(void)
 
 static void dispatch_into_queue(Msg *msg)
 {
+    char id[UUID_STR_LEN + 1];
+
     gw_assert(msg != NULL),
     gw_assert(msg_type(msg) == sms);
 
@@ -621,7 +674,11 @@ static void dispatch_into_queue(Msg *msg)
             gwlist_append(incoming_sms, msg);
             break;
         default:
-            panic(0, "Not handled sms_type within store!");
+            uuid_unparse(msg->sms.id, id);
+            error(0, "Not handled sms_type %ld within store for message ID %s",
+                  msg->sms.sms_type, id);
+            msg_destroy(msg);
+            break;
     }
 }
 
@@ -676,7 +733,7 @@ int main(int argc, char **argv)
         info(0, "Gateway is now ISOLATED by startup arguments");
         gwlist_remove_producer(suspended);
     } else {
-        smsc2_resume();
+        smsc2_resume(1);
         gwlist_remove_producer(suspended);	
         gwlist_remove_producer(isolated);
     }
@@ -740,10 +797,12 @@ int main(int argc, char **argv)
     cfg_destroy(cfg);
     octstr_destroy(cfg_filename);
     dlr_shutdown();
-    gwlib_shutdown();
 
-    if (restart == 1)
-        execvp(argv[0],argv);
+    /* now really restart */
+    if (restart)
+        restart_box(argv);
+
+    gwlib_shutdown();
 
     return 0;
 }
@@ -829,7 +888,7 @@ int bb_resume(void)
     if (bb_status == BB_SUSPENDED)
         gwlist_remove_producer(suspended);
 
-    smsc2_resume();
+    smsc2_resume(0);
     bb_status = BB_RUNNING;
     gwlist_remove_producer(isolated);
     mutex_unlock(status_mutex);
@@ -879,6 +938,25 @@ int bb_reload_lists(void)
 {
     return smsc2_reload_lists();
 }
+
+int bb_remove_message(Octstr *message_id)
+{
+    Msg *msg;
+    int ret;
+
+    msg = msg_create(ack);
+    msg->ack.nack = ack_failed;
+    msg->ack.time = time(NULL);
+    uuid_parse(octstr_get_cstr(message_id), msg->ack.id);
+    ret = store_save(msg);
+    msg_destroy(msg);
+    if (ret != 0) {
+        error(0, "Could not delete message %s", octstr_get_cstr(message_id));
+        return -1;
+    }
+    return 0;
+}
+
 
 #define append_status(r, s, f, x) { s = f(x); octstr_append(r, s); \
                                     octstr_destroy(s); }

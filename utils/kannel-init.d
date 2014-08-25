@@ -9,7 +9,8 @@
 
 BOXPATH=/usr/bin
 PIDFILES=/var/run
-CONF=/etc/kannel/kannel.conf
+CONFDIR=/etc/kannel
+CONF=$CONFDIR/kannel.conf
 
 USER=kannel
 VERSION=""
@@ -50,6 +51,14 @@ case "$1" in
     echo "."
     ;;
 
+  status)
+    CORE_CONF=$(grep -r 'group[[:space:]]*=[[:space:]]*core' $CONFDIR | cut -d: -f1)
+    ADMIN_PORT=$(grep '^admin-port' $CORE_CONF | sed "s/.*=[[:space:]]*//")
+    ADMIN_PASS=$(grep '^admin-password' $CORE_CONF | sed "s/.*=[[:space:]]*//")
+    STATUS_URL="http://127.0.0.1:${ADMIN_PORT}/status.txt?password=${ADMIN_PASS}"
+    lynx -source $STATUS_URL
+    ;;
+
   reload)
     # We don't have support for this yet.
     exit 1
@@ -62,7 +71,7 @@ case "$1" in
     ;;
 
   *)
-    echo "Usage: $0 {start|stop|reload|restart|force-reload}"
+    echo "Usage: $0 {start|stop|status|reload|restart|force-reload}"
     exit 1
 
 esac

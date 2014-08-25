@@ -14,9 +14,6 @@
 
 #include "wmlscript/wsint.h"
 
-#define YYPARSE_PARAM	pctx
-#define YYLEX_PARAM	pctx
-
 /* The required yyerror() function.  This is actually not used but to
    report the internal parser errors.  All other errors are reported
    by using the `wserror.h' functions. */
@@ -108,7 +105,7 @@ WsCompilerPtr global_compiler = NULL;
 /* Options for bison. */
 
 /* Generate reentrant parser. */
-%pure_parser
+%pure-parser
 
 /* This grammar has one shift-reduce conflict.  It comes from the
    if-else statement. */

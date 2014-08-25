@@ -1,7 +1,7 @@
 /* ====================================================================
  * The Kannel Software License, Version 1.0
  *
- * Copyright (c) 2001-2010 Kannel Group
+ * Copyright (c) 2001-2014 Kannel Group
  * Copyright (c) 1998-2001 WapIT Ltd.
  * All rights reserved.
  *
@@ -55,9 +55,9 @@
  */
 
 /*
- * meta_data.h
+ * meta_data.c
  *
- * Meta Data manupilation.
+ * Meta Data manipulation.
  * 
  * Alexander Malysh <amalysh kannel.org>, 2007-2009
  */
@@ -386,4 +386,66 @@ Octstr *meta_data_get_value(Octstr *data, const char *group, const Octstr *key)
     meta_data_destroy(mdata);
 
     return ret;
+}
+
+
+Octstr *meta_data_merge(const Octstr *data, const Octstr *new_data, int replace)
+{
+	Octstr *ret = NULL;
+	struct meta_data *mdata, *new_mdata, *new_curr, *curr;
+
+	if (octstr_len(data) < 1)
+		return octstr_duplicate(new_data);
+	if (octstr_len(new_data) < 1)
+		return octstr_duplicate(data);
+
+	mdata = meta_data_unpack(data);
+	if (mdata == NULL) {
+		error(0, "meta_data_merge: Unable to parse data `%s'", octstr_get_cstr(data));
+		return octstr_duplicate(new_data);
+	}
+	new_mdata = meta_data_unpack(new_data);
+	if (new_mdata == NULL) {
+		meta_data_destroy(mdata);
+		error(0, "meta_data_merge: Unable to parse data `%s'", octstr_get_cstr(new_data));
+		return octstr_duplicate(data);
+	}
+	for (new_curr = new_mdata; new_curr != NULL; new_curr = new_curr->next) {
+		for (curr = mdata; curr != NULL; curr = curr->next) {
+			/* check group name */
+			if (octstr_compare(curr->group, new_curr->group) == 0) {
+				/* match */
+				List *keys;
+				Octstr *key;
+
+				keys = dict_keys(new_curr->values);
+				while((key = gwlist_consume(keys)) != NULL) {
+					if (replace == 0) {
+	                    dict_put_once(curr->values, key, octstr_duplicate(dict_get(new_curr->values, key)));
+					} else {
+						/* remove if any */
+						dict_put(curr->values, key, NULL);
+						dict_put(curr->values, key, octstr_duplicate(dict_get(new_curr->values, key)));
+					}
+					octstr_destroy(key);
+				}
+				gwlist_destroy(keys, octstr_destroy_item);
+				break; /* we found mdata group */
+			} else if (curr->next == NULL) {
+				/* do not match and this is last value -> add group */
+				curr->next = meta_data_create();
+				curr->next->group = octstr_duplicate(new_curr->group);
+				curr->next->values = dict_create(10, octstr_destroy_item);
+			}
+		}
+	}
+	ret = octstr_create("");
+	if (meta_data_pack(mdata, ret) == -1) {
+		octstr_destroy(ret);
+		ret = NULL;
+	}
+	meta_data_destroy(new_mdata);
+	meta_data_destroy(mdata);
+
+	return ret;
 }

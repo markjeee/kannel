@@ -1,7 +1,7 @@
 /* ====================================================================
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -142,7 +142,7 @@ static char is_safe[UCHAR_MAX + 1];
  * and discarding the lowest to bits to get rid of typical alignment
  * bits.
  */
-#define CSTR_TO_LONG(ptr)	(((long) ptr) >> 2)
+#define CSTR_TO_LONG(ptr)	(((unsigned long) ptr) >> 2)
 
 
 /*
@@ -207,9 +207,9 @@ static void urlcode_init(void)
     int i;
 
     unsigned char *safe = " 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	"abcdefghijklmnopqrstuvwxyz-_.!~*'()";
+                          "abcdefghijklmnopqrstuvwxyz-_.!~*'()";
     for (i = 0; safe[i] != '\0'; ++i)
-	is_safe[safe[i]] = 1;
+        is_safe[safe[i]] = 1;
 }
 
 
@@ -1027,6 +1027,27 @@ long octstr_search_char(const Octstr *ostr, int ch, long pos)
 }
 
 
+long octstr_rsearch_char(const Octstr *ostr, int ch, long pos)
+{
+    long i;
+
+    seems_valid(ostr);
+    gw_assert(ch >= 0);
+    gw_assert(ch <= UCHAR_MAX);
+    gw_assert(pos >= 0);
+
+    if (pos >= ostr->len)
+        return -1;
+
+    for (i = pos; i >= 0; i--) {
+        if (ostr->data[i] == ch)
+            return i;
+    }
+
+    return -1;
+}
+
+
 long octstr_search_chars(const Octstr *ostr, const Octstr *chars, long pos)
 {
     long i, j;
@@ -1126,6 +1147,40 @@ long octstr_case_nsearch(const Octstr *haystack, const Octstr *needle, long pos,
         }
         if (j == needle->len)
             return i;
+    }
+
+    return -1;
+}
+
+
+long octstr_str_search(const Octstr *haystack, const char *needle, long pos)
+{
+    int first;
+    int needle_len;
+
+    seems_valid(haystack);
+    gw_assert(pos >= 0);
+
+    /* Always "find" an empty string */
+    if (needle == NULL || needle[0] == '\0')
+        return 0;
+
+    needle_len = strlen(needle);
+
+    if (needle_len == 1)
+        return octstr_search_char(haystack, needle[0], pos);
+
+    /* For each occurrence of needle's first character in ostr,
+     * check if the rest of needle follows.  Stop if there are no
+     * more occurrences, or if the rest of needle can't possibly
+     * fit in the haystack. */
+    first = needle[0];
+    pos = octstr_search_char(haystack, first, pos);
+    while (pos >= 0 && haystack->len - pos >= needle_len) {
+        if (memcmp(haystack->data + pos,
+                   needle, needle_len) == 0)
+            return pos;
+        pos = octstr_search_char(haystack, first, pos + 1);
     }
 
     return -1;
@@ -1992,7 +2047,7 @@ static void octstr_dump_debug(const Octstr *ostr, int level)
  * the 3 log levels info(), warning() and error() that have the same
  * argument list.
  * We need to map the function calls via ## concatenation and revert
- * to the orginal function call by a define.
+ * to the original function call by a define.
  * The do-while loop emulates a function call.
  */
 
@@ -2461,18 +2516,24 @@ void octstr_format_append(Octstr *os, const char *fmt, ...)
 }
 
 
+/*
+ * Hash implementation ala Robert Sedgewick.
+ */
 unsigned long octstr_hash_key(Octstr *ostr)
 {
-    unsigned long key = 0;
-    long i;
+    unsigned long b    = 378551;
+    unsigned long a    = 63689;
+    unsigned long hash = 0;
+    unsigned long i    = 0;
+    unsigned long len = octstr_len(ostr);
+    const char *str = octstr_get_cstr(ostr);
 
-    if (ostr == NULL)
-	return 0;
+    for(i = 0; i < len; str++, i++) {
+        hash = hash*a+(*str);
+        a = a*b;
+    }
 
-    for (i = 0; i < octstr_len(ostr); i++)
-	key = key + octstr_get_char(ostr, i);
-
-    return key;
+    return (hash & 0x7FFFFFFF);
 }
 
 
@@ -2596,6 +2657,21 @@ void octstr_replace(Octstr *haystack, Octstr *needle, Octstr *repl)
         octstr_delete(haystack, p, len);
         octstr_insert(haystack, repl, p);
         p += repl_len;
+    }
+}
+
+void octstr_replace_first(Octstr *haystack, Octstr *needle, Octstr *repl)
+{
+    int p = 0;
+    long len, repl_len;
+
+    len = octstr_len(needle);
+    repl_len = octstr_len(repl);
+
+    p = octstr_search(haystack, needle, p);
+    if (p != -1) {
+        octstr_delete(haystack, p, len);
+        octstr_insert(haystack, repl, p);
     }
 }
 

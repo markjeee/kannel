@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -58,7 +58,7 @@
  * smpp_pdu.c - parse and generate SMPP PDUs
  *
  * Lars Wirzenius
- * Alexander Malysh <a.malysh@centrium.de>:
+ * Alexander Malysh <amalysh@kannel.org>:
  *     Extended optional parameters implementation.
  */
 
@@ -413,7 +413,7 @@ Octstr *smpp_pdu_pack(Octstr *smsc_id, SMPP_PDU *pdu)
         append_encoded_integer(os, octets, 2);
     #define OPTIONAL_BEGIN
     #define TLV_INTEGER(name, octets) \
-        if (p->name != -1) { \
+        if (p->name >= 0) { \
             TL(name, octets); \
             INTEGER(name, octets) \
         }
@@ -503,7 +503,8 @@ Octstr *smpp_pdu_pack(Octstr *smsc_id, SMPP_PDU *pdu)
         case id: { struct name *p = &pdu->u.name; fields } break;
     #include "smpp_pdu.def"
     default:
-        error(0, "Unknown SMPP_PDU type, internal error while packing.");
+        error(0, "Unknown SMPP_PDU type 0x%08lx, internal error while packing.", pdu->type);
+        break;
     }
 
     temp = octstr_create("");
@@ -661,7 +662,8 @@ SMPP_PDU *smpp_pdu_unpack(Octstr *smsc_id, Octstr *data_without_len)
     	case id: { struct name *p = &pdu->u.name; fields } break;
     #include "smpp_pdu.def"
     default:
-    	error(0, "Unknown SMPP_PDU type, internal error while unpacking.");
+    	error(0, "Unknown SMPP_PDU type 0x%08lx, internal error while unpacking.", type);
+    	break;
     }
 
     return pdu;
@@ -673,7 +675,7 @@ err:
 }
 
 
-void smpp_pdu_dump(SMPP_PDU *pdu)
+void smpp_pdu_dump(Octstr *smsc_id, SMPP_PDU *pdu)
 {
     debug("sms.smpp", 0, "SMPP PDU %p dump:", (void *) pdu);
     debug("sms.smpp", 0, "  type_name: %s", pdu->type_name);
@@ -695,9 +697,13 @@ void smpp_pdu_dump(SMPP_PDU *pdu)
         if (p->tlv != NULL) { \
             List *keys; \
             Octstr *key; \
+            struct smpp_tlv *tlv; \
             keys = dict_keys(p->tlv); \
             while(keys != NULL && (key = gwlist_extract_first(keys)) != NULL) { \
-                octstr_dump_short(dict_get(p->tlv, key), 2, octstr_get_cstr(key)); \
+                tlv = smpp_tlv_get_by_name(smsc_id, key); \
+                if (tlv != NULL) { \
+                    octstr_dump_short(dict_get(p->tlv, key), 2, octstr_get_cstr(key)); \
+                } \
                 octstr_destroy(key); \
             } \
             gwlist_destroy(keys, octstr_destroy_item); \

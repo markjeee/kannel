@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -66,7 +66,7 @@
 
 /* Symbolic levels for output levels. */
 enum output_level {
-	GW_DEBUG, GW_INFO, GW_WARNING, GW_ERROR, GW_PANIC
+	GW_DEBUG, GW_INFO, GW_WARNING, GW_ERROR, GW_PANIC, GW_BACKTRACE
 };
 
 /* defines if a log-file is exclusive or not */
@@ -87,6 +87,12 @@ void log_shutdown(void);
 #define	panic	gw_panic
 
 void gw_panic(int, const char *, ...) PRINTFLIKE(2,3);
+
+/*
+ * Print given stacktrace. If no stackstrace given then stacktrace will be
+ * initialized
+ */
+void gw_backtrace(void **, size_t, int);
 
 /* Print a normal error message. Used when something which should be
  * investigated and possibly fixed, happens. The error might be fatal, too,
@@ -136,6 +142,11 @@ void log_set_output_level(enum output_level level);
 
 /* Set minimum level for output messages to logfiles */
 void log_set_log_level(enum output_level level);
+
+/*
+ * Set the syslog facility to use.
+ */
+void log_set_syslog_facility(char *facility);
 
 /*
  * Set syslog usage. If `ident' is NULL, syslog is not used.

@@ -93,6 +93,11 @@ AC_DEFUN([AC_SVN_REVISION],
     revision=`svnversion .`
     test -z "$revision" && revision="unknown"
     $1="$revision"
+  elif test -d ".git"
+  then
+    sha1=$(git rev-parse --short HEAD)
+    mod=$(git status | grep "modified:\|added:\|deleted:" -q && echo "M")
+    $1="$sha1$mod"
   fi
 ])
 

@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -1833,6 +1833,8 @@ int wsp_pack_integer_string(Octstr *packed, Octstr *value)
         integer += digit;
     }
 
+    debug("wsp",0,"WSP: %s: value `%s', integer 0x%04lx", __func__,
+    	  octstr_get_cstr(value), integer);
     wsp_pack_integer_value(packed, integer);
     return 0;
 
@@ -1845,6 +1847,7 @@ overflow:
 
 int wsp_pack_version_value(Octstr *packed, Octstr *version)
 {
+	unsigned long integer;
     long major, minor;
     long pos;
 
@@ -1862,7 +1865,10 @@ int wsp_pack_version_value(Octstr *packed, Octstr *version)
             goto usetext;
     }
 
-    wsp_pack_short_integer(packed, major << 4 | minor);
+    integer = major << 4 | minor;
+    debug("wsp",0,"WSP: %s: value `%s', integer 0x%04lx", __func__,
+    	  octstr_get_cstr(version), integer);
+    wsp_pack_short_integer(packed, integer);
     return 0;
 
 usetext:
@@ -2913,6 +2919,8 @@ static int pack_known_header(Octstr *packed, long fieldnum, Octstr *value)
             goto error;
     } else {
         wsp_pack_short_integer(packed, fieldnum);
+        debug("wsp",0,"WSP: Known header 0x%04lx, value `%s'.",
+              fieldnum, octstr_get_cstr(value));
         if (headerinfo[i].func(packed, value) < 0)
             goto error;
     }
@@ -2976,7 +2984,8 @@ Octstr *wsp_headers_pack(List *headers, int separate_content_type, int wsp_versi
         errors = 0;
 
         if (separate_content_type && fieldnum == WSP_HEADER_CONTENT_TYPE) {
-	    /* already handled */
+	    	/* already handled */
+        	debug("wsp",0,"WSP: content type already handled.");
         } else if (fieldnum < 0) {
             if (wsp_pack_application_header(packed, fieldname, value) < 0)
                 errors = 1;

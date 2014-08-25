@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -1121,12 +1121,12 @@ wtls_Payload *wtls_pdu_pack(wtls_PDU * pdu, WTLSMachine * wtls_machine)
 
 void wtls_payload_dump(wtls_Payload * payload, int level)
 {
-   char *dbg = "wap.wtls", type[20], *data =
-       octstr_get_cstr(payload->data);
-
-	/* the message type */
+   char *dbg = "wap.wtls", type[20], *data;
    if (!payload)
       return;
+   data = octstr_get_cstr(payload->data);
+
+	/* the message type */
    pduName(type, payload->type);
    debug(dbg, 0, "%*sPayload type: %s", level, "", type);
    if (payload->type == Handshake_PDU) {

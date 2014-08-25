@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -60,7 +60,6 @@
  * Lars Wirzenius
  */
 
-
 #include <string.h>
 
 #include "gwlib/gwlib.h"
@@ -98,36 +97,39 @@ static WAPEvent *pack_into_push_datagram(WAPEvent *event);
  * Public functions
  */
 
-
 void wsp_unit_init(wap_dispatch_func_t *datagram_dispatch,
-                   wap_dispatch_func_t *application_dispatch) {
+                   wap_dispatch_func_t *application_dispatch)
+{
 	queue = gwlist_create();
 	gwlist_add_producer(queue);
 	dispatch_to_wdp = datagram_dispatch;
 	dispatch_to_appl = application_dispatch;
-        wsp_strings_init();
+	wsp_strings_init();
 	run_status = running;
 	gwthread_create(main_thread, NULL);
 }
 
 
-void wsp_unit_shutdown(void) {
+void wsp_unit_shutdown(void)
+{
 	gw_assert(run_status == running);
 	run_status = terminating;
 	gwlist_remove_producer(queue);
 	gwthread_join_every(main_thread);
 	gwlist_destroy(queue, wap_event_destroy_item);
-        wsp_strings_shutdown();
+	wsp_strings_shutdown();
 }
 
 
-void wsp_unit_dispatch_event(WAPEvent *event) {
+void wsp_unit_dispatch_event(WAPEvent *event)
+{
 	wap_event_assert(event);
 	gwlist_produce(queue, event);
 }
 
 
-static WAPEvent *unpack_datagram(WAPEvent *datagram) {
+static WAPEvent *unpack_datagram(WAPEvent *datagram)
+{
 	WAPEvent *event;
 	Octstr *os;
 	WSP_PDU *pdu;
@@ -161,7 +163,7 @@ static WAPEvent *unpack_datagram(WAPEvent *datagram) {
         
 	event = wap_event_create(S_Unit_MethodInvoke_Ind);
 	event->u.S_Unit_MethodInvoke_Ind.addr_tuple = wap_addr_tuple_duplicate(
-                datagram->u.T_DUnitdata_Ind.addr_tuple);
+			datagram->u.T_DUnitdata_Ind.addr_tuple);
 	event->u.S_Unit_MethodInvoke_Ind.transaction_id = tid_byte;
         
 	switch (pdu->type) {
@@ -169,21 +171,21 @@ static WAPEvent *unpack_datagram(WAPEvent *datagram) {
 		debug("wap.wsp", 0, "Connectionless Get request received.");
 		method = GET_METHODS + pdu->u.Get.subtype;
 		event->u.S_Unit_MethodInvoke_Ind.request_uri = 
-			octstr_duplicate(pdu->u.Get.uri);
-		event->u.S_Unit_MethodInvoke_Ind.request_headers = 
-			wsp_headers_unpack(pdu->u.Get.headers, 0);
+				octstr_duplicate(pdu->u.Get.uri);
+		event->u.S_Unit_MethodInvoke_Ind.request_headers =
+				wsp_headers_unpack(pdu->u.Get.headers, 0);
 		event->u.S_Unit_MethodInvoke_Ind.request_body = NULL;
 		break;
 
 	case Post:
 		debug("wap.wsp", 0, "Connectionless Post request received.");
-                method = POST_METHODS + pdu->u.Post.subtype;
+		method = POST_METHODS + pdu->u.Post.subtype;
 		event->u.S_Unit_MethodInvoke_Ind.request_uri = 
-			octstr_duplicate(pdu->u.Post.uri);
+				octstr_duplicate(pdu->u.Post.uri);
 		event->u.S_Unit_MethodInvoke_Ind.request_headers = 
-			wsp_headers_unpack(pdu->u.Post.headers, 1);
+				wsp_headers_unpack(pdu->u.Post.headers, 1);
 		event->u.S_Unit_MethodInvoke_Ind.request_body = 
-			octstr_duplicate(pdu->u.Post.data);
+				octstr_duplicate(pdu->u.Post.data);
 		break;
 
 	default:
@@ -221,28 +223,28 @@ static void main_thread(void *arg)
         debug("wap.wsp.unit", 0, "WSP (UNIT): event arrived");
         wap_event_assert(e);
         switch (e->type) {
-            case T_DUnitdata_Ind:
-                newevent = unpack_datagram(e);
-                if (newevent != NULL)
-                    dispatch_to_appl(newevent);
-                break;
+        case T_DUnitdata_Ind:
+        	newevent = unpack_datagram(e);
+        	if (newevent != NULL)
+        		dispatch_to_appl(newevent);
+        	break;
 
-            case S_Unit_MethodResult_Req:
-                newevent = pack_into_result_datagram(e);
-                if (newevent != NULL)
-                    dispatch_to_wdp(newevent);
-                break;
+        case S_Unit_MethodResult_Req:
+        	newevent = pack_into_result_datagram(e);
+        	if (newevent != NULL)
+        		dispatch_to_wdp(newevent);
+        	break;
 
-            case S_Unit_Push_Req:
-                newevent = pack_into_push_datagram(e);
-                if (newevent != NULL) 
-                    dispatch_to_wdp(newevent);
-                debug("wsp.unit", 0, "WSP (UNIT): delivering to wdp");
-                break;
+        case S_Unit_Push_Req:
+        	newevent = pack_into_push_datagram(e);
+        	if (newevent != NULL)
+        		dispatch_to_wdp(newevent);
+        	debug("wsp.unit", 0, "WSP (UNIT): delivering to wdp");
+        	break;
 	
-            default:
-                warning(0, "WSP UNIT: Unknown event type %d", e->type);
-                break;
+        default:
+        	warning(0, "WSP UNIT: Unknown event type %d", e->type);
+        	break;
         }
         wap_event_destroy(e);
     }
@@ -256,7 +258,8 @@ static void main_thread(void *arg)
  * So we add Encoding-Version when we are sending something to the client.
  * (This includes push, which is not directly mentioned in chapter 8.4.2.70). 
  */
-static WAPEvent *pack_into_result_datagram(WAPEvent *event) {
+static WAPEvent *pack_into_result_datagram(WAPEvent *event)
+{
 	WAPEvent *datagram;
 	struct S_Unit_MethodResult_Req *p;
 	WSP_PDU *pdu;
@@ -282,7 +285,7 @@ static WAPEvent *pack_into_result_datagram(WAPEvent *event) {
 
 	datagram = wap_event_create(T_DUnitdata_Req);
 	datagram->u.T_DUnitdata_Req.addr_tuple =
-		wap_addr_tuple_duplicate(p->addr_tuple);
+			wap_addr_tuple_duplicate(p->addr_tuple);
 	datagram->u.T_DUnitdata_Req.user_data = ospdu;
 
 	return datagram;
@@ -292,62 +295,59 @@ static WAPEvent *pack_into_result_datagram(WAPEvent *event) {
  * According to WSP table 12, p. 63, push id and transaction id are stored 
  * into same field. T-UnitData.ind is different for IP and SMS bearer.
  */
-static WAPEvent *pack_into_push_datagram(WAPEvent *event) {
-        WAPEvent *datagram;
-        WSP_PDU *pdu;
-        Octstr *ospdu;
+static WAPEvent *pack_into_push_datagram(WAPEvent *event)
+{
+	WAPEvent *datagram;
+	WSP_PDU *pdu;
+	Octstr *ospdu;
 	unsigned char push_id;
 
-        gw_assert(event->type == S_Unit_Push_Req);
-        debug("wap.wsp.unit", 0, "WSP_UNIT: Connectionless push accepted");
+	gw_assert(event->type == S_Unit_Push_Req);
+	debug("wap.wsp.unit", 0, "WSP_UNIT: Connectionless push accepted");
 
-        http_header_add(event->u.S_Unit_Push_Req.push_headers, 
-                        "Encoding-Version", "1.3");
+	http_header_add(event->u.S_Unit_Push_Req.push_headers,
+			"Encoding-Version", "1.3");
 
-        pdu = wsp_pdu_create(Push);
+	pdu = wsp_pdu_create(Push);
 	pdu->u.Push.headers = wsp_headers_pack(
-            event->u.S_Unit_Push_Req.push_headers, 1, WSP_1_3);
+			event->u.S_Unit_Push_Req.push_headers, 1, WSP_1_3);
 	pdu->u.Push.data = octstr_duplicate(
-            event->u.S_Unit_Push_Req.push_body);
-        ospdu = wsp_pdu_pack(pdu);
+			event->u.S_Unit_Push_Req.push_body);
+	wsp_pdu_dump(pdu, 0);
+	ospdu = wsp_pdu_pack(pdu);
 	wsp_pdu_destroy(pdu);
 	if (ospdu == NULL)
 	    return NULL;
 
-        push_id = event->u.S_Unit_Push_Req.push_id;
+	push_id = event->u.S_Unit_Push_Req.push_id;
 	octstr_insert_data(ospdu, 0, (char *)&push_id, 1);
 
-        datagram = wap_event_create(T_DUnitdata_Req);
+	datagram = wap_event_create(T_DUnitdata_Req);
 
-        datagram->u.T_DUnitdata_Req.addr_tuple =
-	    wap_addr_tuple_duplicate(event->u.S_Unit_Push_Req.addr_tuple);
-        datagram->u.T_DUnitdata_Req.address_type = 
-	    event->u.S_Unit_Push_Req.address_type;
-        if (event->u.S_Unit_Push_Req.smsc_id != NULL)
-            datagram->u.T_DUnitdata_Req.smsc_id =
-                octstr_duplicate(event->u.S_Unit_Push_Req.smsc_id);
-        else
-            datagram->u.T_DUnitdata_Req.smsc_id = NULL;
-        if (event->u.S_Unit_Push_Req.dlr_url != NULL)
-            datagram->u.T_DUnitdata_Req.dlr_url =
-                octstr_duplicate(event->u.S_Unit_Push_Req.dlr_url);
-        else
-            datagram->u.T_DUnitdata_Req.dlr_url = NULL;
-        datagram->u.T_DUnitdata_Req.dlr_mask = event->u.S_Unit_Push_Req.dlr_mask;
-        if (event->u.S_Unit_Push_Req.smsbox_id != NULL)
-            datagram->u.T_DUnitdata_Req.smsbox_id =
-                octstr_duplicate(event->u.S_Unit_Push_Req.smsbox_id);
-        else       
-            datagram->u.T_DUnitdata_Req.smsbox_id = NULL;
-        datagram->u.T_DUnitdata_Req.service_name =
-            octstr_duplicate(event->u.S_Unit_Push_Req.service_name);
+	datagram->u.T_DUnitdata_Req.addr_tuple =
+			wap_addr_tuple_duplicate(event->u.S_Unit_Push_Req.addr_tuple);
+	datagram->u.T_DUnitdata_Req.address_type =
+			event->u.S_Unit_Push_Req.address_type;
+	if (event->u.S_Unit_Push_Req.smsc_id != NULL)
+		datagram->u.T_DUnitdata_Req.smsc_id =
+				octstr_duplicate(event->u.S_Unit_Push_Req.smsc_id);
+	else
+		datagram->u.T_DUnitdata_Req.smsc_id = NULL;
+	if (event->u.S_Unit_Push_Req.dlr_url != NULL)
+		datagram->u.T_DUnitdata_Req.dlr_url =
+				octstr_duplicate(event->u.S_Unit_Push_Req.dlr_url);
+	else
+		datagram->u.T_DUnitdata_Req.dlr_url = NULL;
+	datagram->u.T_DUnitdata_Req.dlr_mask = event->u.S_Unit_Push_Req.dlr_mask;
+	if (event->u.S_Unit_Push_Req.smsbox_id != NULL)
+		datagram->u.T_DUnitdata_Req.smsbox_id =
+				octstr_duplicate(event->u.S_Unit_Push_Req.smsbox_id);
+	else
+		datagram->u.T_DUnitdata_Req.smsbox_id = NULL;
+	datagram->u.T_DUnitdata_Req.service_name =
+			octstr_duplicate(event->u.S_Unit_Push_Req.service_name);
 
 	datagram->u.T_DUnitdata_Req.user_data = ospdu;
         
-        return datagram;
+	return datagram;
 }
-
-
-
-
-

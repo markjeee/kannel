@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -367,6 +367,13 @@ long octstr_search_char(const Octstr *ostr, int ch, long pos);
 
 
 /*
+ * Search the character backwards from octet string starting from position pos. Returns
+ * the position (index) of the char in string, -1 if not found.
+ */
+long octstr_rsearch_char(const Octstr *ostr, int ch, long pos);
+
+
+/*
  * Search several character from octet string starting from position pos. Returns 
  * the position (index) of the first char found in string, -1 if none was found.
  */
@@ -390,6 +397,11 @@ long octstr_case_search(const Octstr *haystack, const Octstr *needle, long pos);
  * Like octstr_case_search, but searchs only first n octets.
  */
 long octstr_case_nsearch(const Octstr *haystack, const Octstr *needle, long pos, long n);
+
+/*
+ * Like octstr_search, but with needle as C-String.
+ */
+long octstr_str_search(const Octstr *haystack, const char *needle, long pos);
 
 /*
  * Write contents of octet string to a file, in human readable form. 
@@ -713,6 +725,11 @@ int octstr_isnum(Octstr *ostr1);
  * Replace all occurences of needle with repl within haystack
  */
 void octstr_replace(Octstr *haystack, Octstr *needle, Octstr *repl);
+
+/*
+ * Replace first occurence of needle with repl within haystack
+ */
+void octstr_replace_first(Octstr *haystack, Octstr *needle, Octstr *repl);
 
 /*
  * Symbolize hex string '78797a' becomes '%78%79%7a'

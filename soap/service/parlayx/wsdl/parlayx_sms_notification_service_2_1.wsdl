@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- June 11, 2005 -->
+<wsdl:definitions
+   name="parlayx_sms_notification_service"
+   targetNamespace="http://www.csapi.org/wsdl/parlayx/sms/notification/v2_1/service"
+   xmlns="http://schemas.xmlsoap.org/wsdl/"
+   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+   xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+   xmlns:tns="http://www.csapi.org/wsdl/parlayx/sms/notification/v2_1/service"
+   xmlns:interface="http://www.csapi.org/wsdl/parlayx/sms/notification/v2_1/interface">
+
+   <wsdl:import namespace="http://www.csapi.org/wsdl/parlayx/sms/notification/v2_1/interface" location="parlayx_sms_notification_interface_2_1.wsdl"/>
+
+   <wsdl:binding name="SmsNotificationBinding" type="interface:SmsNotification">
+      <soap:binding style="document" transport="http://schemas.xmlsoap.org/soap/http"/>
+
+      <wsdl:operation name="notifySmsReception">
+         <soap:operation soapAction="" style="document"/>
+            <wsdl:input>
+               <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+               <soap:body use="literal"/>
+            </wsdl:output>
+      </wsdl:operation>
+
+      <wsdl:operation name="notifySmsDeliveryReceipt">
+         <soap:operation soapAction="" style="document"/>
+            <wsdl:input>
+               <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+               <soap:body use="literal"/>
+            </wsdl:output>
+      </wsdl:operation>
+   </wsdl:binding>
+
+   <wsdl:service name="SmsNotificationService">
+      <wsdl:port name="SmsNotification" binding="tns:SmsNotificationBinding">
+         <soap:address location="http://localhost:9080/SmsNotificationService/services/SmsNotification"/>
+      </wsdl:port>
+   </wsdl:service>
+</wsdl:definitions>

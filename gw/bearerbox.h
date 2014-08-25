@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -152,7 +152,7 @@ int smsc2_start(Cfg *config);
 int smsc2_restart(Cfg *config);
 
 void smsc2_suspend(void);    /* suspend (can still send but not receive) */
-void smsc2_resume(void);     /* resume */
+void smsc2_resume(int is_init);     /* resume */
 int smsc2_shutdown(void);
 void smsc2_cleanup(void); /* final clean-up */
 
@@ -217,6 +217,7 @@ int bb_stop_smsc(Octstr *id);
 int bb_add_smsc(Octstr *id);
 int bb_remove_smsc(Octstr *id);
 int bb_restart_smsc(Octstr *id);
+int bb_remove_message(Octstr *id);
 int bb_reload_lists(void);
 int bb_reload_smsc_groups(void);
 

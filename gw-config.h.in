@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -130,8 +130,20 @@
 /* Define if you have the backtrace function. */
 #undef HAVE_BACKTRACE
 
+/* Define if you have the user context functions. */
+#undef HAVE_UCONTEXT
+
 /* Define if you have the srandom function. */
 #undef HAVE_SRANDOM
+
+/* Define if you have the initgroups function. */
+#undef HAVE_INITGROUPS
+
+/* Define if you have the strtoll function. */
+#undef HAVE_STRTOLL
+
+/* Define if you have the strtoq function. */
+#undef HAVE_STRTOQ
 
 /* Define if you have the <fcntl.h> header file.  */
 #undef HAVE_FCNTL_H
@@ -221,6 +233,9 @@
 /* Define if you have and want to use the OCI library */
 #undef HAVE_ORACLE
 
+/* Define if you have and want to use the OCIPing function */
+#undef HAVE_OCIPING
+
 /* Define if you have and want to use the SQLite database library (-lsqlite) */
 #undef HAVE_SQLITE
 
@@ -232,6 +247,9 @@
 
 /* Define if you have and want to use the PostgreSQL dlr routines (-lpq) */
 #undef HAVE_PGSQL
+
+/* Define if you have and want to use the Redis client library (-lhiredis) */
+#undef HAVE_REDIS
 
 /* Define if you want to have cookie support for the WSP */
 #undef ENABLE_COOKIES
@@ -253,6 +271,9 @@
 /* Define if you have and want to use POSIX regular expressions */
 #undef HAVE_REGEX
 
+/* Define if you have and want to use POSIX nftw function */
+#undef HAVE_NFTW
+
 /* Define if you have and want to use PCRE (Perl compatible regular expressions) */
 #undef HAVE_PCRE
 
@@ -267,6 +288,9 @@
 
 /* Define if you have working semaphore (sem_t). */
 #undef HAVE_SEMAPHORE
+
+/* Define if you have and want to use gSOAP compiler */
+#undef HAVE_GSOAP
 
 /* If we're using GCC, we can get it to check format function arguments. */
 #ifdef __GNUC__

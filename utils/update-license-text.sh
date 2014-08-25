@@ -6,8 +6,8 @@
 # current LICENSE text file to all source code files.
 #
 
-old="2001-2009 Kannel Group"
-new="2001-2010 Kannel Group"
+old="2001-2013 Kannel Group"
+new="2001-2014 Kannel Group"
 
 prog=`basename $0`
 files=`find -type f ! -name "${prog}" ! -path "*/.svn/*" ! -path "./addons/*" | xargs fgrep -lr "${old}"`

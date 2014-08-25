@@ -1,7 +1,7 @@
 /* ====================================================================
  * The Kannel Software License, Version 1.0
  *
- * Copyright (c) 2001-2010 Kannel Group
+ * Copyright (c) 2001-2014 Kannel Group
  * Copyright (c) 1998-2001 WapIT Ltd.
  * All rights reserved.
  *
@@ -114,6 +114,7 @@ static Dict *smsbox_by_smsc_receiver;
 
 static long	smsbox_port;
 static int smsbox_port_ssl;
+static Octstr *smsbox_interface;
 static long	wapbox_port;
 static int wapbox_port_ssl;
 
@@ -264,6 +265,20 @@ static void deliver_sms_to_queue(Msg *msg, Boxc *conn)
             msg_destroy(msg);
             break;
             
+        case SMSCCONN_FAILED_EXPIRED:   /* validity expired */
+            warning(0, "Message rejected by bearerbox, validity expired!");
+
+            /*
+             * we don't store_save_ack() here, since the call to
+             * bb_smscconn_send_failed() within smsc2_route() did
+             * it already.
+             */
+            mack->ack.nack = ack_failed;
+
+            /* destroy original message */
+            msg_destroy(msg);
+            break;
+
         default:
             break;
     }
@@ -993,17 +1008,15 @@ static void wait_for_connections(int fd, void (*function) (void *arg),
 static void smsboxc_run(void *arg)
 {
     int fd;
-    int port;
 
     gwlist_add_producer(flow_threads);
     gwthread_wakeup(MAIN_THREAD_ID);
-    port = (int) *((long *)arg);
 
-    fd = make_server_socket(port, NULL);
+    fd = make_server_socket(smsbox_port, smsbox_interface ? octstr_get_cstr(smsbox_interface) : NULL);
     /* XXX add interface_name if required */
 
     if (fd < 0) {
-        panic(0, "Could not open smsbox port %d", port);
+        panic(0, "Could not open smsbox port %ld", smsbox_port);
     }
 
     /*
@@ -1222,6 +1235,8 @@ int smsbox_start(Cfg *cfg)
     if (smsbox_port_ssl)
         debug("bb", 0, "smsbox connection module is SSL-enabled");
 
+    smsbox_interface = cfg_get(grp, octstr_imm("smsbox-interface"));
+
     if (cfg_get_integer(&smsbox_max_pending, grp, octstr_imm("smsbox-max-pending")) == -1) {
         smsbox_max_pending = SMSBOX_MAX_PENDING;
         info(0, "BOXC: 'smsbox-max-pending' not set, using default (%ld).", smsbox_max_pending);
@@ -1258,7 +1273,7 @@ int smsbox_start(Cfg *cfg)
     if ((sms_dequeue_thread = gwthread_create(sms_to_smsboxes, NULL)) == -1)
  	    panic(0, "Failed to start a new thread for smsbox routing");
 
-    if (gwthread_create(smsboxc_run, &smsbox_port) == -1)
+    if (gwthread_create(smsboxc_run, NULL) == -1)
 	    panic(0, "Failed to start a new thread for smsbox connections");
 
     return 0;
@@ -1470,6 +1485,8 @@ void boxc_cleanup(void)
     box_deny_ip = NULL;
     counter_destroy(boxid);
     boxid = NULL;
+    octstr_destroy(smsbox_interface);
+    smsbox_interface = NULL;
 }
 
 
@@ -1489,7 +1506,6 @@ int route_incoming_to_boxc(Msg *msg)
     long len, b, i;
     int full_found = 0;
 
-    s = r = NULL;
     gw_assert(msg_type(msg) == sms);
 
     /* msg_dump(msg, 0); */
@@ -1501,14 +1517,14 @@ int route_incoming_to_boxc(Msg *msg)
     	warning(0, "smsbox_list empty!");
         if (max_incoming_sms_qlength < 0 || max_incoming_sms_qlength > gwlist_len(incoming_sms)) {
             gwlist_produce(incoming_sms, msg);
-	    return 0;
-        } else
+            return 0;
+        } else {
             return -1;
+        }
     }
 
-
     /*
-     * We have a specific route to pass this msg to smsbox-id?
+     * Do we have a specific smsbox-id route to pass this msg to?
      */
     if (octstr_len(msg->sms.boxc_id) > 0) {
         boxc_id = msg->sms.boxc_id;
@@ -1534,74 +1550,78 @@ int route_incoming_to_boxc(Msg *msg)
             boxc_id = s;
     }
 
-
     /* We have a specific smsbox-id to use */
     if (boxc_id != NULL) {
 
         List *boxc_id_list = dict_get(smsbox_by_id, boxc_id);
-        if (boxc_id_list == NULL || gwlist_len(boxc_id_list) == 0) {
+        if (gwlist_len(boxc_id_list) == 0) {
             /*
              * something is wrong, this was the smsbox connection we used
              * for sending, so it seems this smsbox is gone
              */
-            warning(0,"Could not route message to smsbox id <%s>, smsbox is gone!",
+            warning(0, "Could not route message to smsbox id <%s>, smsbox is gone!",
                     octstr_get_cstr(boxc_id));
+            gw_rwlock_unlock(smsbox_list_rwlock);
+            if (max_incoming_sms_qlength < 0 || max_incoming_sms_qlength > gwlist_len(incoming_sms)) {
+                gwlist_produce(incoming_sms, msg);
+                return 0;
+            } else {
+                return -1;
+            }
         }
-        else {
-            /* take random smsbox from list, as long as it has space we will use it,
-             * otherwise check the next one.
-             */
-            len = gwlist_len(boxc_id_list);
-            b = gw_rand() % len;
+        
+        /* 
+         * Take random smsbox from list, as long as it has space we will use it,
+         * otherwise check the next one.
+         */
+        len = gwlist_len(boxc_id_list);
+        b = gw_rand() % len;
 
-            for(i = 0; i < len; i++) {
-                bc = gwlist_get(boxc_id_list, (i+b) % len);
+        for (i = 0; i < len; i++) {
+            bc = gwlist_get(boxc_id_list, (i+b) % len);
 
-                if (bc != NULL && max_incoming_sms_qlength > 0 &&
+            if (bc != NULL && max_incoming_sms_qlength > 0 &&
                     gwlist_len(bc->incoming) > max_incoming_sms_qlength) {
-                    bc = NULL;
-                }
-
-                if (bc != NULL) {
-                    break;
-                }
+                bc = NULL;
             }
 
             if (bc != NULL) {
-                bc->load++;
-                gwlist_produce(bc->incoming, msg);
-                gw_rwlock_unlock(smsbox_list_rwlock);
-                return 1; /* we are done */
+                break;
             }
-            else {
-                /*
-                 * we have routing defined, but no smsbox connected at the moment.
-                 * put msg into global incoming queue and wait until smsbox with
-                 * such boxc_id connected.
-                 */
-                gw_rwlock_unlock(smsbox_list_rwlock);
-                if (max_incoming_sms_qlength < 0 || max_incoming_sms_qlength > gwlist_len(incoming_sms)) {
-                    gwlist_produce(incoming_sms, msg);
-                    return 0;
-                }
-                else
-                    return -1;
+        }
+
+        if (bc != NULL) {
+            bc->load++;
+            gwlist_produce(bc->incoming, msg);
+            gw_rwlock_unlock(smsbox_list_rwlock);
+            return 1; /* we are done */
+        }
+        else {
+            /*
+             * we have routing defined, but no smsbox connected at the moment.
+             * put msg into global incoming queue and wait until smsbox with
+             * such boxc_id connected.
+             */
+            gw_rwlock_unlock(smsbox_list_rwlock);
+            if (max_incoming_sms_qlength < 0 || max_incoming_sms_qlength > gwlist_len(incoming_sms)) {
+                gwlist_produce(incoming_sms, msg);
+                return 0;
+            } else {
+                return -1;
             }
         }
     }
 
     /*
-     * ok, none of the routing things applied previously, so route it to
-     * a random smsbox.
-     */
-
-    /* take random smsbox from list, as long as it has space we will use it,
-     * otherwise check the next one.
+     * Ok, none of the specific routing things applied previously, 
+     * so route it to a random smsbox.
+     * Take random smsbox from list, as long as it has space we will 
+     * use it, therwise check the next one.
      */
     len = gwlist_len(smsbox_list);
     b = gw_rand() % len;
 
-    for(i = 0; i < len; i++) {
+    for (i = 0; i < len; i++) {
         bc = gwlist_get(smsbox_list, (i+b) % len);
 
         if (bc->boxc_id != NULL || bc->routable == 0)
@@ -1629,14 +1649,17 @@ int route_incoming_to_boxc(Msg *msg)
         warning(0, "smsbox_list empty!");
         if (max_incoming_sms_qlength < 0 || max_incoming_sms_qlength > gwlist_len(incoming_sms)) {
             gwlist_produce(incoming_sms, msg);
-	           return 0;
-         } else
-            return -1;
-    } else if (bc == NULL && full_found == 1)
+               return 0;
+         } else {
+             return -1;
+         }
+    } else if (bc == NULL && full_found == 1) {
         return -1;
+    }
 
     return 1;
 }
+
 
 static void sms_to_smsboxes(void *arg)
 {

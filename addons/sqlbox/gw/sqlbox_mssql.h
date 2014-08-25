@@ -12,7 +12,7 @@ id INTEGER NULL, sms_type INTEGER NULL, mclass INTEGER NULL, mwi INTEGER NULL, \
 coding INTEGER NULL, compress INTEGER NULL, validity INTEGER NULL, deferred INTEGER NULL, \
 dlr_mask INTEGER NULL, dlr_url VARCHAR(255) NULL, pid INTEGER NULL, alt_dcs INTEGER NULL, \
 rpi INTEGER NULL, charset VARCHAR(255) NULL, boxc_id VARCHAR(255) NULL, \
-binfo VARCHAR(255) NULL, meta_data VARCHAR(4000) NULL)"
+binfo VARCHAR(255) NULL, meta_data VARCHAR(4000) NULL, foreign_id VARCHAR(255) NULL)"
 
 #define SQLBOX_MSSQL_CREATE_INSERT_TABLE "CREATE TABLE %S ( \
 sql_id NUMERIC(10,0) IDENTITY NOT NULL PRIMARY KEY, \
@@ -24,7 +24,7 @@ id INTEGER NULL, sms_type INTEGER NULL, mclass INTEGER NULL, mwi INTEGER NULL, \
 coding INTEGER NULL, compress INTEGER NULL, validity INTEGER NULL, deferred INTEGER NULL, \
 dlr_mask INTEGER NULL, dlr_url VARCHAR(255) NULL, pid INTEGER NULL, alt_dcs INTEGER NULL, \
 rpi INTEGER NULL, charset VARCHAR(255) NULL, boxc_id VARCHAR(255) NULL, \
-binfo VARCHAR(255) NULL, meta_data VARCHAR(4000) NULL)"
+binfo VARCHAR(255) NULL, meta_data VARCHAR(4000) NULL), foreign_id VARCHAR(255) NULL"
 
 #define SQLBOX_MSSQL_SELECT_QUERY "SELECT TOP 1 sql_id, momt, sender, receiver, udhdata, msgdata, \
 xtime, smsc_id, service, account, id, sms_type, mclass, mwi, coding, compress, \
@@ -33,8 +33,8 @@ FROM %S"
 
 #define SQLBOX_MSSQL_INSERT_QUERY "INSERT INTO %S (momt, sender, receiver, udhdata, msgdata, \
 xtime, smsc_id, service, account, sms_type, mclass, mwi, coding, compress, validity, \
-deferred, dlr_mask, dlr_url, pid, alt_dcs, rpi, charset, boxc_id, binfo, meta_data) VALUES (%S, \
-%S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S)"
+deferred, dlr_mask, dlr_url, pid, alt_dcs, rpi, charset, boxc_id, binfo, meta_data, foreign_id) VALUES (%S, \
+%S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S)"
 
 #define SQLBOX_MSSQL_DELETE_QUERY "DELETE FROM %S WHERE sql_id = %S"
 
@@ -46,7 +46,7 @@ deferred, dlr_mask, dlr_url, pid, alt_dcs, rpi, charset, boxc_id, binfo, meta_da
 void sql_save_msg(Msg *msg, Octstr *momt /*, Octstr smsbox_id */);
 Msg *mssql_fetch_msg();
 void sql_shutdown();
-struct server_type *sql_init_mssql(Cfg *cfg);
+struct server_type *sqlbox_init_mssql(Cfg *cfg);
 #ifndef sqlbox_mssql_c
 extern
 #endif

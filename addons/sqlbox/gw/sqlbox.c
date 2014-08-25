@@ -85,6 +85,8 @@ static long bearerbox_port;
 static Octstr *bearerbox_host;
 static int bearerbox_port_ssl = 0;
 static Octstr *global_sender;
+static long limit_per_cycle;
+static int save_mo, save_mt, save_dlr;
 
 #ifndef HAVE_MSSQL
 #ifndef HAVE_MYSQL
@@ -103,7 +105,8 @@ static Octstr *global_sender;
 #endif
 Octstr *sqlbox_id;
 
-#define SLEEP_BETWEEN_SELECTS 1.0
+#define SLEEP_BETWEEN_EMPTY_SELECTS 1.0
+#define DEFAULT_LIMIT_PER_CYCLE 10
 
 typedef struct _boxc {
     Connection    *smsbox_connection;
@@ -285,9 +288,16 @@ static void smsbox_to_bearerbox(void *arg)
 
         if (msg_type(msg) == sms) {
             debug("sqlbox", 0, "smsbox_to_bearerbox: sms received");
-            msg_escaped = msg_duplicate(msg);
-            gw_sql_save_msg(msg_escaped, octstr_imm("MT"));
-            msg_destroy(msg_escaped);
+            if (save_mt) {
+                msg_escaped = msg_duplicate(msg);
+                /* convert validity & deferred to minutes */
+                if (msg_escaped->sms.validity != SMS_PARAM_UNDEFINED)
+                    msg_escaped->sms.validity = (msg_escaped->sms.validity - time(NULL))/60;
+                if (msg_escaped->sms.deferred != SMS_PARAM_UNDEFINED)
+                    msg_escaped->sms.deferred = (msg_escaped->sms.deferred - time(NULL))/60;
+                gw_sql_save_msg(msg_escaped, octstr_imm("MT"));
+                msg_destroy(msg_escaped);
+            }
         }
 
         send_msg(conn->bearerbox_connection, conn, msg);
@@ -428,10 +438,16 @@ static void bearerbox_to_smsbox(void *arg)
         }
         if (msg_type(msg) == sms) {
             msg_escaped = msg_duplicate(msg);
-            if (msg->sms.sms_type != report_mo)
-                gw_sql_save_msg(msg_escaped, octstr_imm("MO"));
-            else
-                gw_sql_save_msg(msg_escaped, octstr_imm("DLR"));
+            if (msg->sms.sms_type != report_mo) {
+                if (save_mo) {
+                    gw_sql_save_msg(msg_escaped, octstr_imm("MO"));
+                }
+            }
+            else {
+                if (save_dlr) {
+                    gw_sql_save_msg(msg_escaped, octstr_imm("DLR"));
+                }
+            }
             msg_destroy(msg_escaped);
         }
         send_msg(conn->smsbox_connection, conn, msg);
@@ -543,10 +559,16 @@ static void bearerbox_to_sql(void *arg)
             break;
         }
         if (msg_type(msg) == sms) {
-            if (msg->sms.sms_type != report_mo)
-                gw_sql_save_msg(msg, octstr_imm("MO"));
-            else
-                gw_sql_save_msg(msg, octstr_imm("DLR"));
+            if (msg->sms.sms_type != report_mo) {
+                if (save_mo) {
+                    gw_sql_save_msg(msg, octstr_imm("MO"));
+                }
+            }
+            else {
+                if (save_dlr) {
+                    gw_sql_save_msg(msg, octstr_imm("DLR"));
+                }
+            }
 
 	    /* create ack message */
 	    mack = msg_create(ack);
@@ -562,10 +584,97 @@ static void bearerbox_to_sql(void *arg)
     }
 }
 
+static void sql_single(Boxc *boxc)
+{
+    Msg *msg;
+
+    while (sqlbox_status == SQL_RUNNING && boxc->alive) {
+        if ((msg = gw_sql_fetch_msg()) != NULL) {
+            if (charset_processing(msg) == -1) {
+                error(0, "Could not charset process message, dropping it!");
+                msg_destroy(msg);
+                continue;
+            }
+            if (global_sender != NULL && (msg->sms.sender == NULL || octstr_len(msg->sms.sender) == 0)) {
+                msg->sms.sender = octstr_duplicate(global_sender);
+            }
+            /* convert validity and deferred to unix timestamp */
+            if (msg->sms.validity != SMS_PARAM_UNDEFINED)
+                msg->sms.validity = time(NULL) + msg->sms.validity * 60;
+            if (msg->sms.deferred != SMS_PARAM_UNDEFINED)
+                msg->sms.deferred = time(NULL) + msg->sms.deferred * 60;
+            send_msg(boxc->bearerbox_connection, boxc, msg);
+
+            if (save_mt) {
+                /* convert validity & deferred back to minutes
+                 * TODO clarify why we fetched message from DB and then insert it back here???
+                 */
+                if (msg->sms.validity != SMS_PARAM_UNDEFINED)
+                    msg->sms.validity = (msg->sms.validity - time(NULL))/60;
+                if (msg->sms.deferred != SMS_PARAM_UNDEFINED)
+                    msg->sms.deferred = (msg->sms.deferred - time(NULL))/60;
+                gw_sql_save_msg(msg, octstr_imm("MT"));
+            }
+        }
+        else {
+            gwthread_sleep(SLEEP_BETWEEN_EMPTY_SELECTS);
+        }
+        msg_destroy(msg);
+    }
+}
+
+static void sql_list(Boxc *boxc)
+{
+    Msg *msg;
+    List *qlist, *save_list;
+
+    qlist = gwlist_create();
+    gwlist_add_producer(qlist);
+    save_list = gwlist_create();
+    gwlist_add_producer(save_list);
+
+    while (sqlbox_status == SQL_RUNNING && boxc->alive) {
+	if ( gw_sql_fetch_msg_list(qlist, limit_per_cycle) > 0 ) {
+	    while((gwlist_len(qlist)>0) && ((msg = gwlist_consume(qlist)) != NULL )) {
+                if (charset_processing(msg) == -1) {
+                    error(0, "Could not charset process message, dropping it!");
+                    msg_destroy(msg);
+                    continue;
+                }
+                if (global_sender != NULL && (msg->sms.sender == NULL || octstr_len(msg->sms.sender) == 0)) {
+                    msg->sms.sender = octstr_duplicate(global_sender);
+                }
+                /* convert validity and deferred to unix timestamp */
+                if (msg->sms.validity != SMS_PARAM_UNDEFINED)
+                    msg->sms.validity = time(NULL) + msg->sms.validity * 60;
+                if (msg->sms.deferred != SMS_PARAM_UNDEFINED)
+                    msg->sms.deferred = time(NULL) + msg->sms.deferred * 60;
+                send_msg(boxc->bearerbox_connection, boxc, msg);
+    
+                /* convert validity & deferred back to minutes */
+                if (save_mt && msg->sms.validity != SMS_PARAM_UNDEFINED)
+                    msg->sms.validity = (msg->sms.validity - time(NULL))/60;
+                if (save_mt && msg->sms.deferred != SMS_PARAM_UNDEFINED)
+                    msg->sms.deferred = (msg->sms.deferred - time(NULL))/60;
+		gwlist_produce(save_list, msg);
+            }
+            /* save_list also deletes and destroys messages */
+	    gw_sql_save_list(save_list, octstr_imm("MT"), save_mt);
+        }
+        else {
+            gwthread_sleep(SLEEP_BETWEEN_EMPTY_SELECTS);
+        }
+    }
+
+    gwlist_remove_producer(qlist);
+    gwlist_remove_producer(save_list);
+    gwlist_destroy(qlist, msg_destroy_item);
+    gwlist_destroy(save_list, msg_destroy_item);
+}
+
 static void sql_to_bearerbox(void *arg)
 {
     Boxc *boxc;
-    Msg *msg;
 
     boxc = gw_malloc(sizeof(Boxc));
     boxc->bearerbox_connection = connect_to_bearerbox_real(bearerbox_host, bearerbox_port, bearerbox_port_ssl, NULL /* bb_our_host */);
@@ -580,25 +689,13 @@ static void sql_to_bearerbox(void *arg)
     }
 
     gwthread_create(bearerbox_to_sql, boxc);
-
     identify_to_bearerbox(boxc);
 
-    while (sqlbox_status == SQL_RUNNING && boxc->alive) {
-        if ((msg = gw_sql_fetch_msg()) != NULL) {
-            if (charset_processing(msg) == -1) {
-                error(0, "Could not charset process message, dropping it!");
-                msg_destroy(msg);
-                continue;
-            }
-            if (global_sender != NULL && (msg->sms.sender == NULL || octstr_len(msg->sms.sender) == 0)) {
-                msg->sms.sender = octstr_duplicate(global_sender);
-            }
-            send_msg(boxc->bearerbox_connection, boxc, msg);
-            gw_sql_save_msg(msg, octstr_imm("MT"));
-        }
-        else {
-            gwthread_sleep(SLEEP_BETWEEN_SELECTS);
-        }
+    if (gw_sql_fetch_msg_list == NULL || gw_sql_save_list == NULL || limit_per_cycle <= 1) {
+        sql_single(boxc);
+    }
+    else {
+        sql_list(boxc);
     }
 
     boxc_destroy(boxc);
@@ -726,6 +823,21 @@ static void init_sqlbox(Cfg *cfg)
 
     if (cfg_get_integer(&sqlbox_port, grp, octstr_imm("smsbox-port")) == -1)
         sqlbox_port = 13005;
+
+    /* setup limit per cycle */
+    if (cfg_get_integer(&limit_per_cycle, grp, octstr_imm("limit-per-cycle")) == -1)
+        limit_per_cycle = DEFAULT_LIMIT_PER_CYCLE;
+
+    /* set up save parameters */
+    if (cfg_get_bool(&save_mo, grp, octstr_imm("save-mo")) == -1)
+        save_mo = 1;
+
+    if (cfg_get_bool(&save_mt, grp, octstr_imm("save-mt")) == -1)
+        save_mt = 1;
+
+    if (cfg_get_bool(&save_dlr, grp, octstr_imm("save-dlr")) == -1)
+        save_dlr = 1;
+
     /* setup logfile stuff */
     logfile = cfg_get(grp, octstr_imm("log-file"));
 

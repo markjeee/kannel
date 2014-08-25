@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -185,8 +185,6 @@ static struct dlr_entry *dlr_pgsql_get(const Octstr *smsc, const Octstr *ts, con
 
     if (result == NULL || gwlist_len(result) < 1) {
         debug("dlr.pgsql", 0, "no rows found");
-        while((row = gwlist_extract_first(result)))
-            gwlist_destroy(row, octstr_destroy_item);
         gwlist_destroy(result, NULL);
         return NULL;
     }
@@ -280,9 +278,9 @@ static long dlr_pgsql_messages(void)
         ret = -1;
     } else {
         ret = atol(octstr_get_cstr(gwlist_get(gwlist_get(res, 0), 0)));
+        gwlist_destroy(gwlist_extract_first(res), octstr_destroy_item);
     }
 
-    gwlist_destroy(gwlist_extract_first(res), octstr_destroy_item);
     gwlist_destroy(res, NULL);
         
     return ret;

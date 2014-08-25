@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook V3.1//EN" [
-		 <!ENTITY figtype "#FIGTYPE#">
-		 <!ENTITY timestamp "#DATE#">
-		 <!ENTITY version "#VERSION#">
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+                      "http://docbook.org/xml/4.2/docbookx.dtd" [
+<!ENTITY figtype "#FIGTYPE#">
+<!ENTITY timestamp "#DATE#">
+<!ENTITY version "#VERSION#">
 ]>
 
 <!-- <!DOCTYPE book SYSTEM "docbookx.dtd"> -->
@@ -71,7 +71,7 @@
 </para>
 			<mediaobject>
 				<imageobject>
-					<imagedata fileref="fig1o&figtype;">
+					<imagedata fileref="fig1o&figtype;"/>
 				</imageobject>
 				<caption>
 					<para>Figure 1: SSL&apos;s position among the Internet&apos;s protocols
@@ -134,7 +134,7 @@
 </para>
 				<mediaobject>
 					<imageobject>
-						<imagedata fileref="fig2o&figtype;">
+						<imagedata fileref="fig2o&figtype;"/>
 					</imageobject>
 					<caption>
 						<para>Figure 2: Cipher block chaining
@@ -190,7 +190,7 @@
 </para>
 			<mediaobject>
 				<imageobject>
-					<imagedata fileref="fig3o&figtype;">
+					<imagedata fileref="fig3o&figtype;"/>
 				</imageobject>
 				<caption>
 					<para>Figure 3: Creation of a message digest using a hash function
@@ -333,7 +333,7 @@
 				</orderedlist>
 				<mediaobject>
 					<imageobject>
-						<imagedata fileref="fig4out&figtype;">
+						<imagedata fileref="fig4out&figtype;"/>
 					</imageobject>
 					<caption>
 						<para>Figure 4: SSL handshake. Step numbers correspond to those in the textual account
@@ -356,7 +356,7 @@
 				</orderedlist>
 				<mediaobject>
 					<imageobject>
-						<imagedata fileref="fig8o&figtype;">
+						<imagedata fileref="fig8o&figtype;"/>
 					</imageobject>
 					<caption>
 						<para>Figure 5: Transfer of confidential information using SSL. Step numbers correspond to those in the textual account
@@ -378,7 +378,7 @@
 				<para>Finally, Brian sends Abigail her item and her credit card company the bill.</para>
 				<mediaobject>
 					<imageobject>
-						<imagedata fileref="fig7o&figtype;">
+						<imagedata fileref="fig7o&figtype;"/>
 					</imageobject>
 					<caption>
 						<para>Figure 6: SSL session closure. Step numbers correspond to those in the textual account
@@ -396,7 +396,7 @@
 </para>
 			<mediaobject>
 				<imageobject>
-					<imagedata fileref="fig10o&figtype;">
+					<imagedata fileref="fig10o&figtype;"/>
 				</imageobject>
 				<caption>
 					<para>Figure 7: The WAP stack
@@ -407,7 +407,7 @@
 </para>
 			<mediaobject>
 				<imageobject>
-					<imagedata fileref="fig9o&figtype;">
+					<imagedata fileref="fig9o&figtype;"/>
 				</imageobject>
 				<caption>
 					<para>Figure 8: WAP communication overview
@@ -527,7 +527,7 @@
 				</orderedlist>
 				<mediaobject>
 					<imageobject>
-						<imagedata fileref="fig5out&figtype;">
+						<imagedata fileref="fig5out&figtype;"/>
 					</imageobject>
 					<caption>
 						<para>Figure 9: WTLS handshake
@@ -668,7 +668,7 @@
 			<para>Figure 10 outlines a secure Mobile Internet transaction of the second type, with the WAP gateway behind the content provider&apos;s firewall. Abigail is now the user of a WAP client device, communicating with Brian via the WAP gateway.</para>
 			<mediaobject>
 				<imageobject>
-					<imagedata fileref="fig6out1&figtype;">
+					<imagedata fileref="fig6out1&figtype;"/>
 				</imageobject>
 				<caption>
 					<para>Figure 10: WTLS transaction, with the WAP gateway hosted by the content provider
@@ -709,7 +709,7 @@
 </para>
 			<para>The following instructions show you how to create an RSA key pair using OpenSSL. Many additional options are also available: see the OpenSSL man pages (in particular openssl and genrsa) for details.
 </para>
-<FormalPara><Title>To create an asymmetric key pair:</Title>
+<formalpara><title>To create an asymmetric key pair:</title>
 <para>
 			<orderedlist inheritnum="ignore" continuation="restarts">
 				<listitem>
@@ -835,7 +835,7 @@
 				</listitem>
 			</orderedlist>
 			</para>
-			</FormalPara>
+			</formalpara>
 		</section>
 	</chapter>
 </book>

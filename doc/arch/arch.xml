@@ -1,6 +1,6 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook V3.1//EN" []>
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+                      "http://docbook.org/xml/4.2/docbookx.dtd" []>
 
 <book>
 
@@ -35,7 +35,7 @@
 <toc></toc>
 
 
-<!-- -------------------------------------------------------------------- -->
+<!-- xxx -->
 
 
 
@@ -49,7 +49,7 @@
 	would need it. In addition, just by always being with you,
 	it allows you to do things a static device won't. For example,
 	in Arthur C. Clarke's novel <xref linkend="bib.imperialearth"
-	endterm="bib.imperialearth.title"> everyone has a small device
+	endterm="bib.imperialearth.title"/> everyone has a small device
 	that works as a notebook, dictionary, encyclopedia, and recording
 	device. This itself is nothing special: real-life computers have
 	been doing such things for decades by now. However, by virtue of
@@ -63,7 +63,7 @@
 	a networked one. Instant communication with anyone, anywhere,
 	at anytime is another science fiction dream. The communication
 	device worn by characters in the <xref linkend="bib.startrek"
-	endterm="bib.startrek.title"> television series is an example:
+	endterm="bib.startrek.title"/> television series is an example:
 	just by tapping the device once, you can talk to anyone.</para>
 
 	<para>The real world has been catching up with science fiction.
@@ -145,7 +145,7 @@
 </chapter>
 
 
-<!-- -------------------------------------------------------------------- -->
+<!-- xxx -->
 
 <chapter>
 <title>Problems in implementing services for mobile phones</title>
@@ -362,7 +362,7 @@
 </chapter>
 
 
-<!-- -------------------------------------------------------------------- -->
+<!-- xxx -->
 
 
 
@@ -422,7 +422,7 @@
 
 	<para>WAP pull does not bring the existing content of the Internet
 	directly to the phone.	As discussed in <xref linkend="sec.prewap"
-	endterm="sec.prewap">, existing content is unlikely to display
+	endterm="sec.prewap"/>, existing content is unlikely to display
 	properly on a phone anyway.  Instead, WAP defines a completely
 	new markup language, the Wireless Markup Language (WML), which
 	is simpler and much more strictly defined than HTML, making it
@@ -554,7 +554,7 @@
 	</para>
 
 	<para>A representative use case for the protocol is shown
-	in <xref linkend="wap-session">.
+	in <xref linkend="wap-session"/>.
 
 		<orderedlist>
 
@@ -707,7 +707,7 @@
        </orderedlist>
 
        and confirmed (and session-oriented) one, see <xref 
-       linkend="conf-push-session">:
+       linkend="conf-push-session"/>:
 
        <orderedlist>
        <listitem><para>
@@ -789,7 +789,7 @@
 </chapter>
 
 
-<!-- -------------------------------------------------------------------- -->
+<!-- xxx -->
 
 
 
@@ -1099,8 +1099,8 @@
         If wapbox is used for pushing, it is called <glossterm> Push
         Proxy Gateway</glossterm> or <glossterm>PPG</glossterm> Another
         term for fetching data is <glossterm>pulling</glossterm> For
-        Kannel box structure for pulling, see <xref linkend="pull-boxes">,
-        and for pushing, see <xref linkend="push-boxes">.
+        Kannel box structure for pulling, see <xref linkend="pull-boxes"/>,
+        and for pushing, see <xref linkend="push-boxes"/>.
 	</para></listitem>
 
 	</itemizedlist>
@@ -1209,7 +1209,7 @@
     of course, if benchmarks later show it to be useful.</para>
     
     <para>The bearerbox uses several internal threads and message
-    queues. <xref linkend="fig.bearerbox.arch"> shows their structure.
+    queues. <xref linkend="fig.bearerbox.arch"/> shows their structure.
     There can be multiple UDP sockets open, since the WAP protocol uses
     different UDP port numbers to identify the type of message: whether
     the message is for a session mode transaction or a sessionless
@@ -1384,8 +1384,8 @@
         independent of WAP protocol stack, but they do use WTP initiator 
         and WSP pushing facitilies. This means that only WSP session 
         facilities are common with push and pull. For usage of threads when
-        pulling, see <xref linkend="wapbox-threads"> and when pushing, see
-        <xref linkend="pushbox-threads">. Here arrows marked with '1' refer 
+        pulling, see <xref linkend="wapbox-threads"/> and when pushing, see
+        <xref linkend="pushbox-threads"/>. Here arrows marked with '1' refer 
         session establishment, ones marked with '2' content pushing and ones 
         marked with '3' push confirmation.
         </para>
@@ -1497,7 +1497,7 @@
 	language (the C preprocessor) and use that to transform the
 	description into compilable and efficient C code.</para>
 	
-	<para>See <xref linkend="bib.cpp-trick" endterm="bib.cpp-trick.title">
+	<para>See <xref linkend="bib.cpp-trick" endterm="bib.cpp-trick.title"/>
 	for more information.</para>
 
 </sect2>
@@ -1541,7 +1541,7 @@
 	it somewhat complicates the implementation.</para>
 	
 	<para>This is similar to the `C10K' problem (<xref
-	linkend="bib.c10k" endterm="bib.c10k.title">) known to
+	linkend="bib.c10k" endterm="bib.c10k.title"/>) known to
 	implementors of HTTP servers. Even though the hardware is more
 	than fast enough to handle ten thousand simultaneous clients
 	(ten thousand concurrent HTTP requests), the operating system
@@ -1560,7 +1560,7 @@
 	    slow or does not respond at all. Due to stupidities in
 	    C library interfaces, only one thread in a process can do
 	    a name lookup at a time. This will be discussed in more
-	    detail in <xref linkend="concurrent-dns">.
+	    detail in <xref linkend="concurrent-dns"/>.
 	    </para></listitem>
 
 	    <listitem><para>Open a TCP connection to the HTTP server.
@@ -1750,7 +1750,7 @@
 </chapter>
 
 
-<!-- -------------------------------------------------------------------- -->
+<!-- xxx -->
 
 
 
@@ -1852,7 +1852,7 @@
     project. This is acceptable, according to the license, but may have
     cause the development community to grow slower. On the other hand,
     if a more forceful license, such as the <xref linkend="bib.gpl"
-    endterm="bib.gpl.title"> (GPL), had been chosen, the other developers
+    endterm="bib.gpl.title"/> (GPL), had been chosen, the other developers
     might not have wanted to use Kannel at all, since it is often
     perceived that the GPL makes it impossible to build a profitable
     business. It would be interesting to investigate this in the Kannel
@@ -1961,7 +1961,7 @@ bad:
     <para>The distributed approach also applies to debugging. One of
     the popular slogans for open source development is <quote>when
     you have enough eyes, all bugs are shallow</quote> (see
-    <xref linkend="bib.catb" endterm="bib.catb.title">).
+    <xref linkend="bib.catb" endterm="bib.catb.title"/>).
     This does not mean that all bugs are easy to solve, but if there
     is an urgent problem with Kannel, there will usually be many people
     working on finding it. They all work independently, but communicate
@@ -2009,7 +2009,7 @@ bad:
 </chapter>
 
 
-<!-- -------------------------------------------------------------------- -->
+<!-- xxx -->
 
 
 <!-- I probably won't write this.
@@ -2029,7 +2029,7 @@ bad:
 -->
 
 
-<!-- -------------------------------------------------------------------- -->
+<!-- xxx -->
 
 
 
@@ -2155,7 +2155,7 @@ bad:
 
 
 
-<!-- -------------------------------------------------------------------- -->
+<!-- xxx -->
 
 
 <bibliography>
@@ -2201,8 +2201,8 @@ bad:
 
 		<para>Essay on how open source
 		development paradigms work. See <ulink
-		url="http://www.tuxedo.org/~esr/writings/cathedral-bazaar/cathedral-bazaar/index.html">
-		http://www.tuxedo.org/~esr/writings/cathedral-bazaar/cathedral-bazaar/index.html</ulink></para>
+		url="http://www.catb.org/~esr/writings/cathedral-bazaar/">
+		http://www.catb.org/~esr/writings/cathedral-bazaar/</ulink></para>
 
 	</abstract> </biblioentry>
 
@@ -2259,8 +2259,8 @@ bad:
 		<para>A C preprocessor trick for handling many similar
 		structured data types, such as packets in a communication
 		protocol, is described and justified. See <ulink
-		url="http://www.iki.fi/liw/texts/index.html#cpp-trick">
-		http://www.iki.fi/liw/texts/index.html#cpp-trick</ulink>.
+		url="http://liw.iki.fi/liw/texts/cpp-trick.html">
+		http://liw.iki.fi/liw/texts/cpp-trick.html</ulink>.
 		</para>
 
 	</abstract> </biblioentry>

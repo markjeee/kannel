@@ -7,6 +7,7 @@
 
 #define sql_update mysql_update
 #define sql_select mysql_select
+#define MYSQL_ERR_NOSUCHFIELD 1054
 
 static Octstr *sqlbox_logtable;
 static Octstr *sqlbox_insert_table;
@@ -35,6 +36,9 @@ static void mysql_update(const Octstr *sql)
     state = mysql_query(pc->conn, octstr_get_cstr(sql));
     if (state != 0)
         error(0, "MYSQL: %s", mysql_error(pc->conn));
+        if (mysql_errno(pc->conn) == MYSQL_ERR_NOSUCHFIELD) {
+            error(0, "Try to recreate insert and log tables. The structure may have changed. See ChangeLog.");
+        }
 
     dbpool_conn_produce(pc);
 }
@@ -58,6 +62,9 @@ static MYSQL_RES* mysql_select(const Octstr *sql)
     state = mysql_query(pc->conn, octstr_get_cstr(sql));
     if (state != 0) {
         error(0, "MYSQL: %s", mysql_error(pc->conn));
+        if (mysql_errno(pc->conn) == MYSQL_ERR_NOSUCHFIELD) {
+            error(0, "Try to recreate insert and log tables. The structure may have changed. See ChangeLog.");
+        }
     } else {
         result = mysql_store_result(pc->conn);
     }
@@ -104,9 +111,6 @@ Msg *mysql_fetch_msg()
     MYSQL_ROW row;
 
     sql = octstr_format(SQLBOX_MYSQL_SELECT_QUERY, sqlbox_insert_table);
-#if defined(SQLBOX_TRACE)
-     debug("SQLBOX", 0, "sql: %s", octstr_get_cstr(sql));
-#endif
     res = mysql_select(sql);
     if (res == NULL) {
         debug("sqlbox", 0, "SQL statement failed: %s", octstr_get_cstr(sql));
@@ -117,6 +121,8 @@ Msg *mysql_fetch_msg()
             id = octstr_null_create(row[0]);
             /* save fields in this row as msg struct */
             msg = msg_create(sms);
+            /* we abuse the foreign_id field in the message struct for our sql_id value */
+            msg->sms.foreign_id = octstr_null_create(row[0]);
             msg->sms.sender     = octstr_null_create(row[2]);
             msg->sms.receiver   = octstr_null_create(row[3]);
             msg->sms.udhdata    = octstr_null_create(row[4]);
@@ -125,7 +131,6 @@ Msg *mysql_fetch_msg()
             msg->sms.smsc_id    = octstr_null_create(row[7]);
             msg->sms.service    = octstr_null_create(row[8]);
             msg->sms.account    = octstr_null_create(row[9]);
-            /* msg->sms.id      = atol_null(row[10]); */
             msg->sms.sms_type   = atol_null(row[11]);
             msg->sms.mclass     = atol_null(row[12]);
             msg->sms.mwi        = atol_null(row[13]);
@@ -162,6 +167,65 @@ Msg *mysql_fetch_msg()
     return msg;
 }
 
+int mysql_fetch_msg_list(List *qlist, long limit)
+{
+    Msg *msg = NULL;
+    Octstr *sql, *delet, *id;
+    MYSQL_RES *res;
+    MYSQL_ROW row;
+    int ret = 0;
+
+    sql = octstr_format(SQLBOX_MYSQL_SELECT_LIST_QUERY, sqlbox_insert_table, limit);
+    res = mysql_select(sql);
+    if (res == NULL) {
+        debug("sqlbox", 0, "SQL statement failed: %s", octstr_get_cstr(sql));
+    }
+    else {
+	ret = mysql_num_rows(res);
+        if (ret >= 1) {
+            while (row = mysql_fetch_row(res)) {
+                /* save fields in this row as msg struct */
+                msg = msg_create(sms);
+                /* we abuse the foreign_id field in the message struct for our sql_id value */
+                msg->sms.foreign_id = octstr_null_create(row[0]);
+                msg->sms.sender     = octstr_null_create(row[2]);
+                msg->sms.receiver   = octstr_null_create(row[3]);
+                msg->sms.udhdata    = octstr_null_create(row[4]);
+                msg->sms.msgdata    = octstr_null_create(row[5]);
+                msg->sms.time       = atol_null(row[6]);
+                msg->sms.smsc_id    = octstr_null_create(row[7]);
+                msg->sms.service    = octstr_null_create(row[8]);
+                msg->sms.account    = octstr_null_create(row[9]);
+                msg->sms.sms_type   = atol_null(row[11]);
+                msg->sms.mclass     = atol_null(row[12]);
+                msg->sms.mwi        = atol_null(row[13]);
+                msg->sms.coding     = atol_null(row[14]);
+                msg->sms.compress   = atol_null(row[15]);
+                msg->sms.validity   = atol_null(row[16]);
+                msg->sms.deferred   = atol_null(row[17]);
+                msg->sms.dlr_mask   = atol_null(row[18]);
+                msg->sms.dlr_url    = octstr_null_create(row[19]);
+                msg->sms.pid        = atol_null(row[20]);
+                msg->sms.alt_dcs    = atol_null(row[21]);
+                msg->sms.rpi        = atol_null(row[22]);
+                msg->sms.charset    = octstr_null_create(row[23]);
+                msg->sms.binfo      = octstr_null_create(row[25]);
+                msg->sms.meta_data  = octstr_null_create(row[26]);
+                if (row[24] == NULL) {
+                    msg->sms.boxc_id= octstr_duplicate(sqlbox_id);
+                }
+                else {
+                    msg->sms.boxc_id= octstr_null_create(row[24]);
+                }
+                gwlist_produce(qlist, msg);
+            }
+        }
+        mysql_free_result(res);
+    }
+    octstr_destroy(sql);
+    return ret;
+}
+
 static Octstr *get_numeric_value_or_return_null(long int num)
 {
     if (num == -1) {
@@ -178,6 +242,7 @@ static Octstr *get_string_value_or_return_null(Octstr *str)
     if (octstr_compare(str, octstr_imm("")) == 0) {
         return octstr_create("NULL");
     }
+    /* todo: create a new string instead of inline replacing */
     octstr_replace(str, octstr_imm("\\"), octstr_imm("\\\\"));
     octstr_replace(str, octstr_imm("\'"), octstr_imm("\\\'"));
     return octstr_format("\'%S\'", str);
@@ -186,7 +251,7 @@ static Octstr *get_string_value_or_return_null(Octstr *str)
 #define st_num(x) (stuffer[stuffcount++] = get_numeric_value_or_return_null(x))
 #define st_str(x) (stuffer[stuffcount++] = get_string_value_or_return_null(x))
 
-void mysql_save_msg(Msg *msg, Octstr *momt /*, Octstr smsbox_id */)
+void mysql_save_msg(Msg *msg, Octstr *momt)
 {
     Octstr *sql;
     Octstr *stuffer[30];
@@ -198,11 +263,58 @@ void mysql_save_msg(Msg *msg, Octstr *momt /*, Octstr smsbox_id */)
         st_num(msg->sms.mclass), st_num(msg->sms.mwi), st_num(msg->sms.coding), st_num(msg->sms.compress),
         st_num(msg->sms.validity), st_num(msg->sms.deferred), st_num(msg->sms.dlr_mask), st_str(msg->sms.dlr_url),
         st_num(msg->sms.pid), st_num(msg->sms.alt_dcs), st_num(msg->sms.rpi), st_str(msg->sms.charset),
-        st_str(msg->sms.boxc_id), st_str(msg->sms.binfo), st_str(msg->sms.meta_data));
+        st_str(msg->sms.boxc_id), st_str(msg->sms.binfo), st_str(msg->sms.meta_data), st_str(msg->sms.foreign_id));
     sql_update(sql);
     while (stuffcount > 0) {
         octstr_destroy(stuffer[--stuffcount]);
     }
+    octstr_destroy(sql);
+}
+
+/* save a list of messages and delete them from the insert table */
+void mysql_save_list(List *qlist, Octstr *momt, int save_mt)
+{
+    Octstr *sql, *values, *ids, *sep;
+    Octstr *stuffer[30];
+    int stuffcount = 0, first = 1;
+    Msg *msg;
+
+    values = save_mt ? octstr_create("") : NULL;
+    ids = octstr_create("");
+    sep = octstr_imm("");
+    while (gwlist_len(qlist) > 0 && (msg = gwlist_consume(qlist)) != NULL) {
+        if (save_mt) {
+            /* convert into urlencoded tekst first */
+            octstr_url_encode(msg->sms.msgdata);
+            octstr_url_encode(msg->sms.udhdata);
+            octstr_format_append(values, "%S (NULL, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S)",
+                sep, st_str(momt), st_str(msg->sms.sender),
+                st_str(msg->sms.receiver), st_str(msg->sms.udhdata), st_str(msg->sms.msgdata), st_num(msg->sms.time),
+                st_str(msg->sms.smsc_id), st_str(msg->sms.service), st_str(msg->sms.account), st_num(msg->sms.sms_type),
+                st_num(msg->sms.mclass), st_num(msg->sms.mwi), st_num(msg->sms.coding), st_num(msg->sms.compress),
+                st_num(msg->sms.validity), st_num(msg->sms.deferred), st_num(msg->sms.dlr_mask), st_str(msg->sms.dlr_url),
+                st_num(msg->sms.pid), st_num(msg->sms.alt_dcs), st_num(msg->sms.rpi), st_str(msg->sms.charset),
+                st_str(msg->sms.boxc_id), st_str(msg->sms.binfo), st_str(msg->sms.meta_data), st_str(msg->sms.foreign_id));
+        }
+        octstr_format_append(ids, "%S %S", sep, msg->sms.foreign_id);
+        msg_destroy(msg);
+        if (first) {
+            first = 0;
+            sep = octstr_imm(",");
+        }
+        while (stuffcount > 0) {
+            octstr_destroy(stuffer[--stuffcount]);
+        }
+    }
+    if (save_mt) {
+        sql = octstr_format(SQLBOX_MYSQL_INSERT_LIST_QUERY, sqlbox_logtable, values);
+        octstr_destroy(values);
+        sql_update(sql);
+        octstr_destroy(sql);
+    }
+    sql = octstr_format(SQLBOX_MYSQL_DELETE_LIST_QUERY, sqlbox_insert_table, ids);
+    octstr_destroy(ids);
+    sql_update(sql);
     octstr_destroy(sql);
 }
 
@@ -304,6 +416,8 @@ found:
     res->sql_leave = mysql_leave;
     res->sql_fetch_msg = mysql_fetch_msg;
     res->sql_save_msg = mysql_save_msg;
+    res->sql_fetch_msg_list = mysql_fetch_msg_list;
+    res->sql_save_list = mysql_save_list;
     return res;
 }
 #endif

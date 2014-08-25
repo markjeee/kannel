@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- June 11, 2005 -->
+<wsdl:definitions
+   name="parlayx_sms_notification_interface"
+   targetNamespace="http://www.csapi.org/wsdl/parlayx/sms/notification/v2_1/interface"
+   xmlns="http://schemas.xmlsoap.org/wsdl/"
+   xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+   xmlns:parlayx_sms_notification="http://www.csapi.org/wsdl/parlayx/sms/notification/v2_1/interface"
+   xmlns:parlayx_sms_xsd="http://www.csapi.org/schema/parlayx/sms/v2_1"
+   xmlns:parlayx_common_xsd="http://www.csapi.org/schema/parlayx/common/v2_1"
+   xmlns:parlayx_sms_notification_local_xsd="http://www.csapi.org/schema/parlayx/sms/notification/v2_1/local">
+
+   <wsdl:types>
+      <xsd:schema elementFormDefault="qualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.csapi.org/schema/parlayx/sms/notification/v2_1/local">
+         <xsd:import namespace="http://www.csapi.org/schema/parlayx/sms/v2_1" schemaLocation="parlayx_sms_types_2_1.xsd"/>
+         <xsd:import namespace="http://www.csapi.org/schema/parlayx/common/v2_1" schemaLocation="parlayx_common_types_2_1.xsd"/>
+
+         <xsd:element name="notifySmsReception" type="parlayx_sms_notification_local_xsd:notifySmsReception"/>
+         <xsd:complexType name="notifySmsReception">
+            <xsd:sequence>
+               <xsd:element name="correlator" type="xsd:string"/>
+               <xsd:element name="message" type="parlayx_sms_xsd:SmsMessage"/>
+            </xsd:sequence>
+         </xsd:complexType>
+
+         <xsd:element name="notifySmsReceptionResponse" type="parlayx_sms_notification_local_xsd:notifySmsReceptionResponse"/>
+         <xsd:complexType name="notifySmsReceptionResponse">
+            <xsd:sequence/>
+         </xsd:complexType>
+
+         <xsd:element name="notifySmsDeliveryReceipt" type="parlayx_sms_notification_local_xsd:notifySmsDeliveryReceipt"/>
+         <xsd:complexType name="notifySmsDeliveryReceipt">
+            <xsd:sequence>
+               <xsd:element name="correlator" type="xsd:string"/>
+               <xsd:element name="deliveryStatus" type="parlayx_sms_xsd:DeliveryInformation"/>
+            </xsd:sequence>
+         </xsd:complexType>
+
+         <xsd:element name="notifySmsDeliveryReceiptResponse" type="parlayx_sms_notification_local_xsd:notifySmsDeliveryReceiptResponse"/>
+         <xsd:complexType name="notifySmsDeliveryReceiptResponse">
+            <xsd:sequence/>
+         </xsd:complexType>
+      </xsd:schema>
+   </wsdl:types>
+
+   <wsdl:message name="SmsNotification_notifySmsReceptionRequest">
+      <wsdl:part name="parameters" element="parlayx_sms_notification_local_xsd:notifySmsReception"/>
+   </wsdl:message>
+
+   <wsdl:message name="SmsNotification_notifySmsReceptionResponse">
+      <wsdl:part name="result" element="parlayx_sms_notification_local_xsd:notifySmsReceptionResponse"/>
+   </wsdl:message>
+
+   <wsdl:message name="SmsNotification_notifySmsDeliveryReceiptRequest">
+      <wsdl:part name="parameters" element="parlayx_sms_notification_local_xsd:notifySmsDeliveryReceipt"/>
+   </wsdl:message>
+
+   <wsdl:message name="SmsNotification_notifySmsDeliveryReceiptResponse">
+      <wsdl:part name="result" element="parlayx_sms_notification_local_xsd:notifySmsDeliveryReceiptResponse"/>
+   </wsdl:message>
+
+   <wsdl:portType name="SmsNotification">
+      <wsdl:operation name="notifySmsReception">
+         <wsdl:input message="parlayx_sms_notification:SmsNotification_notifySmsReceptionRequest"/>
+         <wsdl:output message="parlayx_sms_notification:SmsNotification_notifySmsReceptionResponse"/>
+      </wsdl:operation>
+
+      <wsdl:operation name="notifySmsDeliveryReceipt">
+         <wsdl:input message="parlayx_sms_notification:SmsNotification_notifySmsDeliveryReceiptRequest"/>
+         <wsdl:output message="parlayx_sms_notification:SmsNotification_notifySmsDeliveryReceiptResponse"/>
+      </wsdl:operation>
+   </wsdl:portType>
+</wsdl:definitions>

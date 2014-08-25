@@ -336,6 +336,24 @@ for loc in /usr /usr/local /opt/local; do
     done
   fi    
 done
+AC_SUBST(XML_DCL)
+found=""
+for loc in /usr /usr/local /sw /opt/local; do
+  if test "x$found" = "x" ; then 
+    for file in ${loc}/lib/sgml/stylesheet/dsssl/docbook/nwalsh/dtds/decls/xml.dcl \
+    ${loc}/lib/sgml/stylesheets/nwalsh-modular/dtds/decls/xml.dcl \
+    ${loc}/share/sgml/docbook/dsssl-stylesheets-1.*/dtds/decls/xml.dcl \
+    ${loc}/share/sgml/docbook/dsssl-stylesheets/dtds/decls/xml.dcl \
+    ${loc}/share/sgml/docbook/stylesheet/dsssl/modular/dtds/decls/xml.dcl \
+        ${loc}/share/sgml/docbook/dsssl/modular/dtds/decls/xml.dcl \
+        ${loc}/share/sgml/dsssl/docbook-dsssl-nwalsh/dtds/decls/xml.dcl \
+        ${loc}/share/dsssl/docbook-dsssl/dtds/decls/xml.dcl ; do
+      if test "x$found" = "x" ; then 
+    AC_CHECK_FILE($file,XML_DCL=$file; found=1)
+      fi
+    done
+  fi
+done
 
 dnl Implement --enable-docs option.
 
@@ -505,7 +523,7 @@ else
         AC_MSG_RESULT([$gw_version])
         AC_MSG_CHECKING([Kannel libs])
         if ! $GW_CONFIG --libs &>/dev/null ; then
-                LDFLAGS="$LDFLAGS `$GW_CONFIG --libs`"
+                LIBS="$LIBS `$GW_CONFIG --libs`"
                 gw_libdir=`$GW_CONFIG --libs`
                 AC_MSG_RESULT([$gw_libdir])
         fi

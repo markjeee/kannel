@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -58,6 +58,7 @@
  * dbpool_sqlite3.c - implement SQLite3 operations for generic database connection pool
  *
  * Stipe Tolj <st@tolj.org>
+ * David Butler <gdb@dbSystems.com> - modeled select and update from dbpool_oracle.c 
  */
 
 #ifdef HAVE_SQLITE3
@@ -132,12 +133,131 @@ static void sqlite3_conf_destroy(DBConf *db_conf)
     gw_free(db_conf);
 }
 
+static int sqlite3_select(void *theconn, const Octstr *sql, List *binds, List **res)
+{
+    sqlite3 *db = theconn;
+    sqlite3_stmt *stmt;
+    const char *rem;
+    List *row;
+    int status;
+    int columns;
+    int i;
+    int binds_len = (binds ? gwlist_len(binds) : 0);
+
+    *res = NULL;
+
+    /* prepare statement */
+#if SQLITE_VERSION_NUMBER >= 3003009    
+    status = sqlite3_prepare_v2(db, octstr_get_cstr(sql), octstr_len(sql) + 1, &stmt, &rem);
+#else    
+    status = sqlite3_prepare(db, octstr_get_cstr(sql), octstr_len(sql) + 1, &stmt, &rem);
+#endif
+    if (SQLITE_OK != status) {
+        error(0, "SQLite3: %s", sqlite3_errmsg(db));
+        return -1;
+    }
+
+    /* bind variables */
+    for (i = 0; i < binds_len; i++) {
+        Octstr *bind = gwlist_get(binds, i);
+        status = sqlite3_bind_text(stmt, i + 1, octstr_get_cstr(bind), octstr_len(bind), SQLITE_STATIC);
+        if (SQLITE_OK != status) {
+            error(0, "SQLite3: %s", sqlite3_errmsg(db));
+            sqlite3_finalize(stmt);
+            return -1;
+        }
+    }
+
+    /* execute our statement */
+    *res = gwlist_create();
+    while ((status = sqlite3_step(stmt)) == SQLITE_ROW) {
+        columns = sqlite3_data_count(stmt);
+        debug("dbpool.sqlite3",0,"SQL has %d columns", columns);
+        row = gwlist_create();
+        for (i = 0; i < columns; i++) {
+            if (sqlite3_column_type(stmt, i) == SQLITE_NULL) {
+                gwlist_insert(row, i, octstr_create(""));
+            } else {
+                gwlist_insert(row, i, octstr_create(sqlite3_column_text(stmt, i)));
+            }
+            /* debug("dbpool.sqlite3",0,"inserted value = '%s'", 
+                     octstr_get_cstr(gwlist_get(row,i))); */
+        }
+        gwlist_append(*res, row);
+    }
+
+    if (SQLITE_DONE != status) {
+        error(0, "SQLite3: %s", sqlite3_errmsg(db));
+        while ((row = gwlist_extract_first(*res)) != NULL)
+            gwlist_destroy(row, octstr_destroy_item);
+        gwlist_destroy(*res, NULL);
+        *res = NULL;
+        sqlite3_finalize(stmt);
+        return -1;
+    }
+
+    sqlite3_finalize(stmt);
+
+    return 0;
+}
+
+
+static int sqlite3_update(void *theconn, const Octstr *sql, List *binds)
+{
+    sqlite3 *db = theconn;
+    sqlite3_stmt *stmt;
+    const char *rem;
+    int status;
+    int rows;
+    int i;
+    int binds_len = (binds ? gwlist_len(binds) : 0);
+
+    /* prepare statement */
+#if SQLITE_VERSION_NUMBER >= 3003009    
+    status = sqlite3_prepare_v2(db, octstr_get_cstr(sql), octstr_len(sql) + 1, &stmt, &rem);
+#else
+    status = sqlite3_prepare(db, octstr_get_cstr(sql), octstr_len(sql) + 1, &stmt, &rem);
+#endif    
+    if (SQLITE_OK != status) {
+        error(0, "SQLite3: %s", sqlite3_errmsg(db));
+        return -1;
+    }
+    debug("dbpool.sqlite3",0,"sqlite3_prepare done");
+
+    /* bind variables */
+    for (i = 0; i < binds_len; i++) {
+        Octstr *bind = gwlist_get(binds, i);
+        status = sqlite3_bind_text(stmt, i + 1, octstr_get_cstr(bind), octstr_len(bind), SQLITE_STATIC);
+        if (SQLITE_OK != status) {
+            error(0, "SQLite3: %s", sqlite3_errmsg(db));
+            sqlite3_finalize(stmt);
+            return -1;
+        }
+    }
+
+    /* execute our statement */
+    if ((status = sqlite3_step(stmt)) != SQLITE_DONE) {
+        error(0, "SQLite3: %s", sqlite3_errmsg(db));
+        sqlite3_finalize(stmt);
+        return -1;
+    }
+    debug("dbpool.sqlite3",0,"sqlite3_step done");
+
+    rows = sqlite3_changes(db);
+    debug("dbpool.sqlite3",0,"rows processed = %d", rows);
+
+    sqlite3_finalize(stmt);
+
+    return rows;
+}
 
 static struct db_ops sqlite3_ops = {
     .open = sqlite3_open_conn,
     .close = sqlite3_close_conn,
     .check = sqlite3_check_conn,
-    .conf_destroy = sqlite3_conf_destroy
+    .conf_destroy = sqlite3_conf_destroy,
+    .select = sqlite3_select,
+    .update = sqlite3_update
 };
 
 #endif /* HAVE_SQLITE3 */

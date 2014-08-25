@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- June 11, 2005 -->
+<xsd:schema
+   targetNamespace="http://www.csapi.org/schema/parlayx/sms/v2_1"
+   xmlns:parlayx_sms_xsd="http://www.csapi.org/schema/parlayx/sms/v2_1"
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+   <xsd:complexType name="DeliveryInformation">
+      <xsd:sequence>
+         <xsd:element name="address" type="xsd:anyURI"/>
+         <xsd:element name="deliveryStatus" type="parlayx_sms_xsd:DeliveryStatus"/>
+      </xsd:sequence>
+   </xsd:complexType>
+
+   <xsd:complexType name="SmsMessage">
+      <xsd:sequence>
+         <xsd:element name="message" type="xsd:string"/>
+         <xsd:element name="senderAddress" type="xsd:anyURI"/>
+         <xsd:element name="smsServiceActivationNumber" type="xsd:anyURI"/>
+      </xsd:sequence>
+   </xsd:complexType>
+
+   <xsd:simpleType name="DeliveryStatus">
+      <xsd:restriction base="xsd:string">
+         <xsd:enumeration value="DeliveredToNetwork"/>
+         <xsd:enumeration value="DeliveryUncertain"/>
+         <xsd:enumeration value="DeliveryImpossible"/>
+         <xsd:enumeration value="MessageWaiting"/>
+         <xsd:enumeration value="DeliveredToTerminal"/>
+         <xsd:enumeration value="DeliveryNotificationNotSupported"/>
+      </xsd:restriction>
+   </xsd:simpleType>
+
+   <xsd:simpleType name="SmsFormat">
+      <xsd:restriction base="xsd:string">
+         <xsd:enumeration value="Ems"/>
+         <xsd:enumeration value="SmartMessaging"/>
+      </xsd:restriction>
+   </xsd:simpleType>
+</xsd:schema>

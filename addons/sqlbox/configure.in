@@ -137,8 +137,29 @@ case "$host" in
     LDFLAGS="$LDFLAGS -Wl,--enable-auto-import"
     ;;
   *apple-darwin*) 
-    CFLAGS="$CFLAGS -DDARWIN=1"
-    LIBS="$LIBS -L/opt/local/lib" 
+    # MacOS X
+    # Lets try to find the newest installed SDK for compilation
+    # so we know how to link against it.
+    # If we find a SDK, we use that rather then the standard /usr
+    # location libs and includes.
+    found=0
+    SDK=""
+    for loc in "MacOSX10.6.sdk" "MacOSX10.5.sdk" "MacOSX10.4u.sdk" "MacOSX10.4.0.sdk" "MacOSX10.3.9.sdk" \
+                   "MacOSX10.3.0.sdk" "MacOSX10.2.8.sdk" "MacOSX10.1.5.sdk"
+        do
+      if test "$found" = "0" ; then
+            if test -d "/Developer/SDKs/${E}" ; then
+              found="1"
+                  SDK="${loc}"
+        fi
+      fi
+    done
+    if test "$SDK" != "" ; then
+      CFLAGS="$CFLAGS -DDARWIN=1 -L/Developer/SDKs/${SDK}/usr/lib -I/Developer/SDKs/${SDK}/usr/include"
+    else
+      CFLAGS="$CFLAGS -DDARWIN=1"
+    fi
+    LIBTOOL="libtool -static -o"
     ;;
   *-linux-*)
     CFLAGS="$CFLAGS -D_XOPEN_SOURCE=600 -D_BSD_SOURCE"
@@ -146,7 +167,9 @@ case "$host" in
     ;;
   *-*-openbsd* | *-*-freebsd*)
     CFLAGS="$CFLAGS -pthread"
-        AC_CHECK_LIB(c_r, pthread_exit, [LIBS="$LIBS -lc_r -lkse"; pthread="yes"])
+    AC_CHECK_LIB(pthread, pthread_exit, [LIBS="$LIBS -lpthread"; pthread="yes"],
+      [AC_CHECK_LIB(c_r, pthread_exit, [LIBS="$LIBS -lc_r"; pthread="yes"])]
+    )
     ;;
   *-interix3*)
     INSTALL="./install-sh"
@@ -314,6 +337,24 @@ for loc in /usr /usr/local /opt/local; do
       fi
     done
   fi    
+done
+AC_SUBST(XML_DCL)
+found=""
+for loc in /usr /usr/local /sw /opt/local; do
+  if test "x$found" = "x" ; then 
+    for file in ${loc}/lib/sgml/stylesheet/dsssl/docbook/nwalsh/dtds/decls/xml.dcl \
+    ${loc}/lib/sgml/stylesheets/nwalsh-modular/dtds/decls/xml.dcl \
+    ${loc}/share/sgml/docbook/dsssl-stylesheets-1.*/dtds/decls/xml.dcl \
+    ${loc}/share/sgml/docbook/dsssl-stylesheets/dtds/decls/xml.dcl \
+    ${loc}/share/sgml/docbook/stylesheet/dsssl/modular/dtds/decls/xml.dcl \
+        ${loc}/share/sgml/docbook/dsssl/modular/dtds/decls/xml.dcl \
+        ${loc}/share/sgml/dsssl/docbook-dsssl-nwalsh/dtds/decls/xml.dcl \
+        ${loc}/share/dsssl/docbook-dsssl/dtds/decls/xml.dcl ; do
+      if test "x$found" = "x" ; then 
+    AC_CHECK_FILE($file,XML_DCL=$file; found=1)
+      fi
+    done
+  fi
 done
 
 dnl Implement --enable-docs option.

@@ -10,7 +10,7 @@
 \"coding\" INTEGER NULL, \"compress\" INTEGER NULL, \"validity\" INTEGER NULL, \"deferred\" INTEGER NULL, \
 \"dlr_mask\" INTEGER NULL, \"dlr_url\" VARCHAR2(255) NULL, \"pid\" INTEGER NULL, \"alt_dcs\" INTEGER NULL, \
 \"rpi\" INTEGER NULL, \"charset\" VARCHAR2(255) NULL, \"boxc_id\" VARCHAR2(255) NULL, \
-\"binfo\" VARCHAR2(255) NULL, \"meta_data\" VARCHAR2(4000) NULL, \
+\"binfo\" VARCHAR2(255) NULL, \"meta_data\" VARCHAR2(4000) NULL, \"foreign_id\" VARCHAR2(255) NULL, \
 CONSTRAINT c_%S_momt CHECK ( \"momt\" IN ( 'MO', 'MT', 'DLR', NULL)))"
 
 #define SQLBOX_ORACLE_CREATE_INSERT_TABLE "CREATE TABLE \"%S\" (\"sql_id\" INTEGER NOT NULL PRIMARY KEY, \
@@ -21,7 +21,7 @@ CONSTRAINT c_%S_momt CHECK ( \"momt\" IN ( 'MO', 'MT', 'DLR', NULL)))"
 \"coding\" INTEGER NULL, \"compress\" INTEGER NULL, \"validity\" INTEGER NULL, \"deferred\" INTEGER NULL, \
 \"dlr_mask\" INTEGER NULL, \"dlr_url\" VARCHAR2(255) NULL, \"pid\" INTEGER NULL, \"alt_dcs\" INTEGER NULL, \
 \"rpi\" INTEGER NULL, \"charset\" VARCHAR2(255) NULL, \"boxc_id\" VARCHAR2(255) NULL, \
-\"binfo\" VARCHAR2(255) NULL, \"meta_data\" VARCHAR2(4000) NULL, \
+\"binfo\" VARCHAR2(255) NULL, \"meta_data\" VARCHAR2(4000) NULL, \"foreign_id\" VARCHAR2(255) NULL, \
 CONSTRAINT c_%S_momt CHECK ( \"momt\" IN ( 'MO', 'MT', NULL)))"
 
 #define SQLBOX_ORACLE_CREATE_LOG_SEQUENCE "CREATE SEQUENCE \"%S_seq\" START WITH 1 INCREMENT BY 1 NOMAXVALUE"
@@ -41,10 +41,10 @@ FOR EACH ROW BEGIN SELECT \"%S_seq\".nextval INTO :new.\"sql_id\" FROM DUAL; END
 
 #define SQLBOX_ORACLE_INSERT_QUERY "INSERT INTO \"%S\" (\"momt\", \"sender\", \"receiver\", \"udhdata\", \"msgdata\", \
 \"time\", \"smsc_id\", \"service\", \"account\", \"sms_type\", \"mclass\", \"mwi\", \"coding\", \"compress\", \"validity\", \
-\"deferred\", \"dlr_mask\", \"dlr_url\", \"pid\", \"alt_dcs\", \"rpi\", \"charset\", \"boxc_id\", \"binfo\", \"meta_data\" \
-) VALUES (%S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S)"
+\"deferred\", \"dlr_mask\", \"dlr_url\", \"pid\", \"alt_dcs\", \"rpi\", \"charset\", \"boxc_id\", \"binfo\", \"meta_data\", \
+\"foreign_id\") VALUES (:1, :2, :3, :4, :5, :6, :7, :8, :9, :10, :11, :12, :13, :14, :15, :16, :17, :18, :19, :20, :21, :22, :23, :24, :25, :26)"
 
-#define SQLBOX_ORACLE_DELETE_QUERY "DELETE FROM \"%S\" WHERE \"sql_id\" = %S"
+#define SQLBOX_ORACLE_DELETE_QUERY "DELETE FROM \"%S\" WHERE \"sql_id\" = :1"
 
 #endif /* HAVE_ORACLE || HAVE_SDB */
 
@@ -54,7 +54,7 @@ FOR EACH ROW BEGIN SELECT \"%S_seq\".nextval INTO :new.\"sql_id\" FROM DUAL; END
 void sql_save_msg(Msg *msg, Octstr *momt /*, Octstr smsbox_id */);
 Msg *oracle_fetch_msg();
 void sql_shutdown();
-struct server_type *sql_init_oracle(Cfg *cfg);
+struct server_type *sqlbox_init_oracle(Cfg *cfg);
 #ifndef sqlbox_oracle_c
 extern
 #endif

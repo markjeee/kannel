@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -129,10 +129,29 @@ long dict_key_count(Dict *dict);
 List *dict_keys(Dict *dict);
 
 
+/*
+ * Return a Dict with the duplicate entries, by using the duplicate_value()
+ * function callback to duplicate the value entries.
+ */
+Dict *dict_duplicate(Dict *dict, void *(*duplicate_value)(void *));
+
+
+/*
+ * Traverse to all elements of a Dict, and execute the passed callback
+ * function with the key as first argument, a void pointer as data argument
+ * and a user defined pointer that is passed along all calls to func.
+ * Returns the number of Dict elements that have been traversed.
+ */
+long dict_traverse(Dict *dict, void (*func)(Octstr *, void *, void *), void *data);
+
+
+/*
+ * Same as dict_traverse(), but ensures that the elements are sorted before
+ * the traversal. The sorting is done via quick sort, applied via a compare
+ * callback function that compares 2 elements of the overall elements list.
+ */
+long dict_traverse_sorted(Dict *dict, int (*cmp)(const void *, const void *),
+		                  void (*func)(Octstr *, void *, void *), void *data);
+
+
 #endif
-
-
-
-
-
-

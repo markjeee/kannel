@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -360,7 +360,7 @@ static void radius_attr_unpack(ParseContext **context, RADIUS_PDU **pdu)
 RADIUS_PDU *radius_pdu_unpack(Octstr *data_without_len)
 {
     RADIUS_PDU *pdu;
-    int type, ident;
+    int type;
     long len, pos;
     ParseContext *context;
     Octstr *authenticator; 
@@ -376,7 +376,7 @@ RADIUS_PDU *radius_pdu_unpack(Octstr *data_without_len)
     context = parse_context_create(data_without_len);
 
     type = parse_get_char(context);
-    ident = parse_get_char(context);
+    parse_get_char(context);
     pdu = radius_pdu_create(type, NULL);
     if (pdu == NULL)
         return NULL;

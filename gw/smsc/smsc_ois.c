@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -1243,11 +1243,7 @@ static int ois_adjust_data_coding_scheme(Msg *msg, const char *raw)
 
 static int ois_ignore_protocol_id(const char *raw)
 {
-    int value;
-
     SAY(3, "ois_ignore_protocol_id");
-
-    value = raw[0] & 0xff;
 
     return 1;
 }
@@ -1344,14 +1340,13 @@ static int ois_deliver_sm_result(SMSCenter *smsc, int result, const char *str)
 {
     char body[BUFLEN+1];
     char buffer[BUFLEN+1];
-    int len;
     int ret;
 
     SAY(2, "ois_deliver_sm_result");
 
     /* construct a message */
 
-    len = ois_encode_deliver_sm_result(body, result);
+    ois_encode_deliver_sm_result(body, result);
 
     /* first and only part */
 

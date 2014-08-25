@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -71,7 +71,7 @@
 
 #include <oci.h>
 
-/* forward decl. */
+/* forward declaration */
 static int oracle_select(void *theconn, const Octstr *sql, List *binds, List **res);
 
 struct ora_conn {
@@ -240,12 +240,26 @@ static void oracle_close_conn(void *theconn)
 }
 
 
-static int oracle_check_conn(void *conn)
+static int oracle_check_conn(void *theconn)
 {
-    Octstr *sql;
-    List *res;
     int ret;
 
+#ifdef HAVE_OCIPING
+    struct ora_conn *conn = (struct ora_conn*) theconn;
+    sword result;
+
+    gw_assert(conn != NULL);
+
+    result = OCIPing(conn->svchp, conn->errhp, OCI_DEFAULT);
+    if (result != OCI_SUCCESS) {
+        oracle_checkerr(conn->errhp, result);
+        ret = -1;
+    } else {
+        ret = 0;
+    }
+#else
+    Octstr *sql;
+    List *res;
     /* TODO Check for appropriate OCI function */
     sql = octstr_create("SELECT 1 FROM DUAL");
 
@@ -258,6 +272,7 @@ static int oracle_check_conn(void *conn)
         gwlist_destroy(res, NULL);
 
     octstr_destroy(sql);
+#endif
 
     return ret;
 }

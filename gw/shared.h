@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -129,6 +129,11 @@ int deliver_to_bearerbox(Msg *msg);
  */
 Octstr *parse_date(Octstr *date);
 
+
+/*
+ * Restarts process with a given params
+ */
+int restart_box(char **argv);
 
 #endif
 

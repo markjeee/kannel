@@ -1,6 +1,6 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook V3.1//EN"
-     [
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+                      "http://docbook.org/xml/4.2/docbookx.dtd" [
 <!ENTITY figtype "#FIGTYPE#">
 <!ENTITY timestamp "#DATE#">
 <!ENTITY version "#VERSION#">
@@ -293,7 +293,7 @@
 	<note>
 		<para>
 			If you are upgrading from a previous version, please look at
-			<xref linkend="upgrading-notes"> for any important information.
+			<xref linkend="upgrading-notes"/> for any important information.
 			See chapter 5.
 		</para>
 	</note>
@@ -365,7 +365,7 @@
 			If either command writes out an error message and stops
 			before it finishes its job, you have a problem, and you either
 			need to fix it yourself, if you can, or report the
-			problem to the Kannel project. See <xref linkend="bug-reporting">
+			problem to the Kannel project. See <xref linkend="bug-reporting"/>
 			for details.
 		</para>
 		
@@ -912,6 +912,149 @@ smpp-logins = /etc/opensmppbox/clients
 	use this feature and set it to true.
       </para>
     </sect2>
+		<sect2>
+			<title>Routing of outbound messages</title>
+
+			<para>
+				It is possible to route incoming messages to specific ESMEs
+				connected to Opensmppbox by setting the use-systemid-as-smsboxid 
+				configuration variable to true and utilzing native bearerbox 
+				routing capabilities (see smsbox routing in Kannel Userguide).
+			</para>
+
+			<para>
+				To assign outbound messages to a specific sms centre in bearerbox,
+				one must use the smsc-route configuration group within Opensmppbox.
+				It works exactly in the same manner as smsbox routing in Kannel
+				but in the opposite direction.
+			</para>
+
+			<para>A configuration example may look like this:
+
+				<programlisting>
+group = smsc-route
+smsc-id = mysmsc
+shortcode = "1111;2222;3333"
+				</programlisting>
+
+				Which means all outbound messages with sender number 1111, 2222 or 3333 
+				will be assigned a smsc id "mysmsc".
+			</para>
+
+			<para>Another example:
+
+				<programlisting>
+group = smsc-route
+smsc-id = mysmsc
+smsbox-id = "A;B;C"
+shortcode = "1111;2222;3333"
+				</programlisting>
+
+				Which means all outbound messages with sender number 1111, 2222 or 3333 
+				originating from the smsbox A, B or C will be assigned a smsc id "mysmsc".
+			</para>
+
+			<para>Yet another example:
+
+				<programlisting>
+group = smsc-route
+smsc-id = mysmsc
+receiver-shortcode = "+18887778888;+18887779999;+18886665555"
+				</programlisting>
+
+				Which means all outbound messages with receiver number +18887778888, +18887779999, +18886665555 
+				will be assigned a smsc id "mysmsc".
+			</para>
+
+			<para>
+				If none of the rules have been defined or none match the criteria, the 
+				default smsc route defined in route-to-smsc configuration variable 
+				will be used.
+			</para>
+			
+			<table frame="none">
+				<title>smsc-route Group Variables</title>
+        <tgroup cols="3">
+          <thead>
+            <row>
+              <entry>Variable</entry>
+              <entry>Value</entry>
+              <entry>Description</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry>
+                <literal>group (m)</literal>
+              </entry>
+              <entry>
+                <literal>smsc-route</literal>
+              </entry>
+              <entry valign="bottom">This is a mandatory variable</entry>
+            </row>
+            <row>
+              <entry>
+                <literal>smsc-id (m)</literal>
+              </entry>
+              <entry>
+                <literal>word</literal>
+              </entry>
+              <entry valign="bottom">
+                Defines smsc identifier, messages matching the
+				criteria below, will be assigned to.
+              </entry>
+            </row>			
+            <row>
+              <entry>
+                <literal>smsbox-id (o)</literal>
+              </entry>
+              <entry>
+                <literal>word-list</literal>
+              </entry>
+              <entry valign="bottom">
+                If set, specifies from which smsbox-ids all outbound 
+                messages should be routed to this smsc. List contains 
+                smsbox-ids separated by semicolon (";").
+                If used in combination with config directive shortcode, 
+                then this is another matching criteria for the 
+                routing decision. 
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <literal>shortcode (o)</literal>
+              </entry>
+              <entry>
+                <literal>number-list</literal>
+              </entry>
+              <entry valign="bottom">
+                If set, specifies which sender numbers for outbound 
+                messages should be routed to this smsc. List contains 
+                numbers separated by semicolon (";").
+                If used in combination with config directive smsbox-id, 
+                then only messages originating from the specified
+                smsboxes are matched against the shortcode list.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <literal>receiver-shortcode (o)</literal>
+              </entry>
+              <entry>
+                <literal>number-list</literal>
+              </entry>
+              <entry valign="bottom">
+                If set, specifies which receiver numbers for outbound 
+                messages should be routed to this smsc. List contains 
+                numbers separated by semicolon (";").
+                This option takes higher precedence than smsbox-id and
+                shortcode; it supercedes these options.
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+</table>
+</sect2>	
 	</sect1>
 </chapter>
 <chapter id="bug-reporting">

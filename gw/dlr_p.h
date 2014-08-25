@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -84,6 +84,7 @@ struct dlr_entry {
    Octstr *url;
    Octstr *boxc_id;
    int mask;
+   int use_dst;
 };
 
 /*
@@ -102,7 +103,7 @@ void dlr_entry_destroy(struct dlr_entry *dlr);
 struct dlr_entry *dlr_entry_duplicate(const struct dlr_entry *dlr);
 
 /* 
- * Callback functions to hanlde specifical dlr storage type 
+ * Callback functions to handle specific dlr storage type 
  */
 struct dlr_storage {
     /*
@@ -116,7 +117,7 @@ struct dlr_storage {
     void (*dlr_add) (struct dlr_entry *entry);
     /*
      * Find and return struct dlr_entry. If entry not found return NULL.
-     * NOTE: Caller will detroy struct dlr_entry
+     * NOTE: Caller will destroy struct dlr_entry
      */
     struct dlr_entry* (*dlr_get) (const Octstr *smsc, const Octstr *ts, const Octstr *dst);
     /*
@@ -147,6 +148,7 @@ struct dlr_storage {
  */
 struct dlr_db_fields {
     Octstr *table;
+    long ttl;
     Octstr *field_smsc;
     Octstr *field_ts;
     Octstr *field_src;
@@ -166,11 +168,14 @@ void dlr_db_fields_destroy(struct dlr_db_fields *fields);
  * if we have module API implemented.
  */
 struct dlr_storage *dlr_init_mem(Cfg *cfg);
+struct dlr_storage *dlr_init_spool(Cfg *cfg);
 struct dlr_storage *dlr_init_mysql(Cfg *cfg);
 struct dlr_storage *dlr_init_sdb(Cfg *cfg);
 struct dlr_storage *dlr_init_oracle(Cfg *cfg);
 struct dlr_storage *dlr_init_pgsql(Cfg *cfg);
 struct dlr_storage *dlr_init_mssql(Cfg *cfg);
+struct dlr_storage *dlr_init_sqlite3(Cfg *cfg);
+struct dlr_storage *dlr_init_redis(Cfg *cfg);
 
 
 #endif /* DLR_P_H */

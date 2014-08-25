@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -221,7 +221,7 @@ int sms_swap(Msg *msg)
 #define CATENATE_UDH_LEN 5
 
 
-static void prepend_catenation_udh(Msg *sms, int part_no, int num_messages,
+void prepend_catenation_udh(Msg *sms, int part_no, int num_messages,
     	    	    	    	   int msg_sequence)
 {
     if (sms->sms.udhdata == NULL)

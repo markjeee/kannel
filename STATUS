@@ -1,8 +1,15 @@
 KANNEL 1.x STATUS: 
-    Last modified at [$Id: STATUS,v 1.34 2003-07-18 22:12:34 davi Exp $]
+    Last modified at 2014-08-01 by Stipe Tolj
 
 Release:
 
+    1.4.4: update to stable, released Aug 01, 2014.
+    1.5.0: development version, released Oct 20, 2010.
+    1.4.3: update to stable, released Feb 04, 2009.
+    1.4.2: update to stable, released Jan 12, 2009.
+    1.4.1: update to stable, released Sep 25, 2006.
+    1.4.0: update to stable, released Nov 23, 2004.
+    1.3.2: development version, released Jul 14, 2004.
     1.3.1: development version, released Feb 17, 2003.
     1.3.0: development version, released Jan 06, 2003.
     1.2.1: update to stable, released Nov 02, 2002.
@@ -23,8 +30,7 @@ Release:
     0.13.1: development version, released Dec 13, 2000.
     0.12.3: update to stable, released Dec 08, 2000.
 
-    (see ChangeLog for previous releases)
+    (see ChangeLog for details in directory doc/)
 
 Bugs:
-    (see http://bugs.kannel.org)
-
+    (see https://redmine.kannel.org/)

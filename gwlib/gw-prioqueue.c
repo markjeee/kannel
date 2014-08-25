@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -309,7 +309,9 @@ void *gw_prioqueue_consume(gw_prioqueue_t *queue)
     queue_lock(queue);
     while (queue->len == 1 && queue->producers > 0) {
         queue->mutex->owner = -1;
+        pthread_cleanup_push((void(*)(void*))pthread_mutex_unlock, &queue->mutex->mutex);
         pthread_cond_wait(&queue->nonempty, &queue->mutex->mutex);
+        pthread_cleanup_pop(0);
         queue->mutex->owner = gwthread_self();
     }
     if (queue->len > 1) {

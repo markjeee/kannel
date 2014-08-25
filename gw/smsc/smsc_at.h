@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -55,7 +55,7 @@
  */ 
 
 /*
- * gw/smsc_at2.h
+ * gw/smsc_at.h
  *
  * New driver for serial connected AT based
  * devices.
@@ -68,6 +68,7 @@
 #define SMSC_AT2_H
 
 #include "gwlib/gwlib.h"
+#include "load.h"
 
 /* maximum data to attempt to read in one go */
 #define	MAX_READ        1023
@@ -113,6 +114,7 @@ typedef struct ModemDef {
     Octstr *message_storage;
     long message_start;
     int	enable_mms;
+    int	hardware_flow_control;
 } ModemDef;
 
 typedef struct PrivAT2data {
@@ -149,6 +151,7 @@ typedef struct PrivAT2data {
     int rawtcp_port;
     int is_serial; /* false if device is rawtcp */ 
     int use_telnet; /* use telnet escape sequences */
+    Load *load;
  } PrivAT2data;
 
 

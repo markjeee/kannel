@@ -1,3 +1,60 @@
+2014-04-29  Stipe Tolj  <stolj at kannel.org>
+    * doc/userguide.xml: move from DocBook V3.1 to V4.2 and fix various XML
+      tag errors. No content change.
+    * gw/Makefile.in, Makefile.in: automake generated files.
+    * Makefile.am: add $(XML_DCL) reference to the xml.dcl file.
+    * configure[.in]: we need the xml.dcl to be added to the jade execution
+      to have a clean XML tag declaration, since we are in SGML mode here.
+      
+2014-04-18 Rene Kluwen <rene.kluwen at chimit.nl>
+    Fixed memory leak, hopefully for good.
+    Added fix for dlr_add to use extra parameter use_dst.
+
+2013-11-12 Rene Kluwen <rene.kluwen at chimit.nl>
+    Patch by Juno Lopez that allows for segmented reading of pdus
+    when they are split over different tcp packets under high load.
+
+2013-09-01 Rene Kluwen <rene.kluwen at chimit.nl>
+    Fixed a small bug in the routing-upon-receiver number where opensmppbox would crash at boot-time
+    if the particular config section is not defined.
+
+2013-08-08 Rene Kluwen <rene.kluwen at chimit.nl>
+    Patch provided by Alexander Kovalenko <alexander.kovalenko at ardas.dp.ua>. The generated smpp message id
+    is now more than 8 characters in case of smpp version > 3.3.
+
+2013-07-10 Rene Kluwen <rene.kluwen at chimit.nl>
+    Patch provided by Kelvin Porter Kelvin.Porterat h3net.com. Allows routing to smsc based upon receiver number.
+
+2012-12-18 Rene Kluwen <rene.kluwen at chimit.nl>
+    Another patch by Victor Luchitz. Multi-part messages now have an smpp message-id of their own.
+    This is in stead of the message id that first used to be the one of the first message-part.
+
+2012-12-11 Rene Kluwen <rene.kluwen at chimit.nl>
+        Reverted back to v63 due to too many bugs and problems in these sources.
+        At the same time, introducing a new ESME-to-MT routing possibility. See documentation about 'smsc-route'.
+        Patch provided by Victor Luchitz.
+        Users that currently rely on the MO-routing patch are encouraged to use bearerbox's 'smsbox-route'
+        in combination with 'use-system-id-as-box-id'. It works exactly the same.
+        The "old" opensmppbox is still availabe as a branch called "single-bearerbox-connection".
+        You can still check that branch out if your software is relying on it.
+
+2011-11-05 Rene Kluwen <rene.kluwen at chimit.nl>
+    * gw/opensmppbox.c: Fixed memory leak concerning MO messages.
+    Thanks to Victor Luchitz for reporting.
+
+2011-05-13 Rene Kluwen <rene.kluwen at chimit.nl>
+    * configure.in: the new configure file didn't seem to work, after make rpm.
+    Couldn't find the Kannel libraries. This patch fixes that.
+
+2011-05-09 Rene Kluwen <rene.kluwen at chimit.nl>
+    * gw/opensmppbox.c: Default GSM character set is converted to UTF-8 (Kannel's internal
+    way of exchanging messages). The facilitates foreign (e.g. greek) characters.
+    Thanks to Nii Ako Ampa-Sowa (ampasowa at gmail.com) for the patch.
+
+2011-04-07 Rene Kluwen <rene.kluwen at chimit.nl>
+    * gw/opensmppbox.c: Tested system_type on being provided by the smpp client,
+    because if not, opensmppbox would crash. Thanks to info at xen-housing.sk for reporting.
+
 2010-11-10 Alexander Malysh <amalysh at kannel.org>
     * gw/opensmppbox.c: applied patch that adds validity and deferred handling.
       Thanks to "XEN-Housing s.r.o." <info at xen-housing.sk> and me :-) for this patch.

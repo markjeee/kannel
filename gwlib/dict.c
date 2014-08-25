@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -367,8 +367,79 @@ List *dict_keys(Dict *dict)
 }
 
 
+Dict *dict_duplicate(Dict *dict, void *(*duplicate_value)(void *))
+{
+    Item *item;
+    long i, j;
+    Dict *dup;
+
+    lock(dict);
+    dup = dict_create(dict->size, dict->destroy_value);
+    for (i = 0; i < dict->size; ++i) {
+        if (dict->tab[i] == NULL)
+            continue;
+        for (j = 0; j < gwlist_len(dict->tab[i]); ++j) {
+            item = gwlist_get(dict->tab[i], j);
+            dict_put(dup, item->key, duplicate_value(item->value));
+        }
+    }
+    unlock(dict);
+
+    return dup;
+}
 
 
+long dict_traverse(Dict *dict, void (*func)(Octstr *, void *, void *), void *data)
+{
+    Item *item;
+    long i, j, r = 0;
+
+    lock(dict);
+    for (i = 0; i < dict->size; ++i) {
+        if (dict->tab[i] == NULL)
+            continue;
+        for (j = 0; j < gwlist_len(dict->tab[i]); ++j) {
+            item = gwlist_get(dict->tab[i], j);
+            func(item->key, item->value, data);
+            r++;
+        }
+    }
+    unlock(dict);
+
+    return r;
+}
 
 
+long dict_traverse_sorted(Dict *dict, int (*cmp)(const void *, const void *),
+						  void (*func)(Octstr *, void *, void *), void *data)
+{
+    Item *item;
+    long i, j, r = 0;
+    List *l;
 
+    l = gwlist_create();
+    lock(dict);
+
+    /* We need to aggregate a list of all item elements first. */
+    for (i = 0; i < dict->size; ++i) {
+        if (dict->tab[i] == NULL)
+            continue;
+        for (j = 0; j < gwlist_len(dict->tab[i]); ++j) {
+            gwlist_append(l, gwlist_get(dict->tab[i], j));
+        }
+    }
+
+    /* Now we can sort the list. */
+    gwlist_sort(l, cmp);
+
+    /* And traverse the list. */
+    r = gwlist_len(l);
+    while ((item = gwlist_consume(l)) != NULL) {
+        func(item->key, item->value, data);
+    }
+
+    unlock(dict);
+    gwlist_destroy(l, NULL);
+
+    return r;
+}

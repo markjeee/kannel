@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -101,8 +101,11 @@ static void dlr_mem_flush(void)
 
     gw_rwlock_wrlock(&rwlock);
     len = gwlist_len(dlr_waiting_list);
-    for (i=0; i < len; i++)
-        gwlist_delete(dlr_waiting_list, i, 1);
+    for (i = 0; i < len; i++) {
+        struct dlr_entry *dlr = gwlist_get(dlr_waiting_list, 0);
+        gwlist_delete(dlr_waiting_list, 0, 1);
+        dlr_entry_destroy(dlr);
+    }
     gw_rwlock_unlock(&rwlock);
 }
 

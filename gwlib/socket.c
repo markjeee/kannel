@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -90,7 +90,7 @@ static const struct sockaddr_in empty_sockaddr_in;
 #endif
 
 
-int make_server_socket(int port, const char *interface_name )
+int make_server_socket(int port, const char *interface_name)
 {
     struct sockaddr_in addr;
     int s;
@@ -146,14 +146,14 @@ error:
 }
 
 
-int tcpip_connect_to_server(char *hostname, int port, const char *interface_name)
+int tcpip_connect_to_server(char *hostname, int port, const char *source_addr)
 {
 
-    return tcpip_connect_to_server_with_port(hostname, port, 0, interface_name);
+    return tcpip_connect_to_server_with_port(hostname, port, 0, source_addr);
 }
 
 
-int tcpip_connect_to_server_with_port(char *hostname, int port, int our_port, const char *interface_name)
+int tcpip_connect_to_server_with_port(char *hostname, int port, int our_port, const char *source_addr)
 {
     struct sockaddr_in addr;
     struct sockaddr_in o_addr;
@@ -175,16 +175,16 @@ int tcpip_connect_to_server_with_port(char *hostname, int port, int our_port, co
         goto error;
     }
 
-    if (our_port > 0 || (interface_name != NULL && strcmp(interface_name, "*") != 0))  {
+    if (our_port > 0 || (source_addr != NULL && strcmp(source_addr, "*") != 0))  {
         int reuse;
 
         o_addr = empty_sockaddr_in;
         o_addr.sin_family = AF_INET;
         o_addr.sin_port = htons(our_port);
-        if (interface_name == NULL || strcmp(interface_name, "*") == 0)
+        if (source_addr == NULL || strcmp(source_addr, "*") == 0)
             o_addr.sin_addr.s_addr = htonl(INADDR_ANY);
         else {
-            if (gw_gethostbyname(&o_hostinfo, interface_name, &buff1) == -1) {
+            if (gw_gethostbyname(&o_hostinfo, source_addr, &buff1) == -1) {
                 error(errno, "gethostbyname failed");
                 goto error;
             }
@@ -219,6 +219,7 @@ int tcpip_connect_to_server_with_port(char *hostname, int port, int our_port, co
         if (rc == -1) {
             error(errno, "connect to <%s> failed", octstr_get_cstr(ip2));
         }
+        octstr_destroy(ip2);
     } while (rc == -1 && hostinfo.h_addr_list[++i] != NULL);
 
     if (rc == -1)
@@ -237,12 +238,12 @@ error:
     return -1;
 }
 
-int tcpip_connect_nb_to_server(char *hostname, int port, const char *interface_name, int *done)
+int tcpip_connect_nb_to_server(char *hostname, int port, const char *source_addr, int *done)
 {
-    return tcpip_connect_nb_to_server_with_port(hostname, port, 0, interface_name, done);
+    return tcpip_connect_nb_to_server_with_port(hostname, port, 0, source_addr, done);
 }
 
-int tcpip_connect_nb_to_server_with_port(char *hostname, int port, int our_port, const char *interface_name, int *done)
+int tcpip_connect_nb_to_server_with_port(char *hostname, int port, int our_port, const char *source_addr, int *done)
 {
     struct sockaddr_in addr;
     struct sockaddr_in o_addr;
@@ -265,16 +266,16 @@ int tcpip_connect_nb_to_server_with_port(char *hostname, int port, int our_port,
         goto error;
     }
 
-    if (our_port > 0 || (interface_name != NULL && strcmp(interface_name, "*") != 0)) {
+    if (our_port > 0 || (source_addr != NULL && strcmp(source_addr, "*") != 0)) {
         int reuse;
 
         o_addr = empty_sockaddr_in;
         o_addr.sin_family = AF_INET;
         o_addr.sin_port = htons(our_port);
-        if (interface_name == NULL || strcmp(interface_name, "*") == 0)
+        if (source_addr == NULL || strcmp(source_addr, "*") == 0)
             o_addr.sin_addr.s_addr = htonl(INADDR_ANY);
         else {
-            if (gw_gethostbyname(&o_hostinfo, interface_name, &buff1) == -1) {
+            if (gw_gethostbyname(&o_hostinfo, source_addr, &buff1) == -1) {
                 error(errno, "gethostbyname failed");
                 goto error;
             }
@@ -313,6 +314,7 @@ int tcpip_connect_nb_to_server_with_port(char *hostname, int port, int our_port,
                 error(errno, "nonblocking connect to <%s> failed", octstr_get_cstr(ip2));
             }
         }
+        octstr_destroy(ip2);
     } while (rc == -1 && errno != EINPROGRESS && hostinfo.h_addr_list[++i] != NULL);
 
     if (rc == -1 && errno != EINPROGRESS)
@@ -389,6 +391,18 @@ int socket_set_blocking(int fd, int blocking)
 }
 
 
+int socket_set_nodelay(int fd, int on)
+{
+    int rc;
+
+    rc = setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, &on, sizeof (on));
+    if (rc == -1)
+        error(errno, "Unable set TCP_NODELAY(%d)", on);
+
+    return rc;
+}
+
+
 int read_available(int fd, long wait_usec)
 {
     fd_set rf;
@@ -461,7 +475,7 @@ int udp_client_socket(void)
 }
 
 
-int udp_bind(int port, const char *interface_name)
+int udp_bind(int port, const char *source_addr)
 {
     int s;
     struct sockaddr_in sa;
@@ -477,10 +491,10 @@ int udp_bind(int port, const char *interface_name)
     sa = empty_sockaddr_in;
     sa.sin_family = AF_INET;
     sa.sin_port = htons(port);
-    if (strcmp(interface_name, "*") == 0)
+    if (strcmp(source_addr, "*") == 0)
         sa.sin_addr.s_addr = htonl(INADDR_ANY);
     else {
-        if (gw_gethostbyname(&hostinfo, interface_name, &buff) == -1) {
+        if (gw_gethostbyname(&hostinfo, source_addr, &buff) == -1) {
             error(errno, "gethostbyname failed");
             gw_free(buff);
             return -1;
@@ -567,6 +581,12 @@ int udp_sendto(int s, Octstr *datagram, Octstr *addr)
 
 int udp_recvfrom(int s, Octstr **datagram, Octstr **addr)
 {
+    return udp_recvfrom_flags(s, datagram, addr, 0);
+}
+
+
+int udp_recvfrom_flags(int s, Octstr **datagram, Octstr **addr, int sockrcvflags)
+{
     struct sockaddr_in sa;
     socklen_t salen;
     char *buf;
@@ -575,7 +595,7 @@ int udp_recvfrom(int s, Octstr **datagram, Octstr **addr)
     buf = gw_malloc(UDP_PACKET_MAX_SIZE);
 
     salen = sizeof(sa);
-    bytes = recvfrom(s, buf, UDP_PACKET_MAX_SIZE, 0, (struct sockaddr *) &sa, &salen);
+    bytes = recvfrom(s, buf, UDP_PACKET_MAX_SIZE, sockrcvflags, (struct sockaddr *) &sa, &salen);
     if (bytes == -1) {
         if (errno != EAGAIN)
             error(errno, "Couldn't receive UDP packet");
@@ -654,40 +674,25 @@ void socket_shutdown(void)
 }
 
 
-static Octstr *gw_netaddr_to_octstr4(unsigned char *src)
-{
-    return octstr_format("%d.%d.%d.%d", src[0], src[1], src[2], src[3]);
-}
-
-
-#ifdef AF_INET6
-static Octstr *gw_netaddr_to_octstr6(unsigned char *src)
-{
-    return octstr_format(
-	    	"%x:%x:%x:%x:"
-		"%x:%x:%x:%x:"
-		"%x:%x:%x:%x:"
-		"%x:%x:%x:%x",
-	         src[0],  src[1],  src[2],  src[3],
-		 src[4],  src[5],  src[6],  src[7],
-		 src[8],  src[9], src[10], src[11],
-		src[12], src[13], src[14], src[15]);
-}
-#endif
-
 Octstr *gw_netaddr_to_octstr(int af, void *src)
 {
     switch (af) {
-    case AF_INET:
-	return gw_netaddr_to_octstr4(src);
+    case AF_INET: {
+        char straddr[INET_ADDRSTRLEN];
+        inet_ntop(AF_INET, src, straddr, sizeof(straddr));
+        return octstr_create(straddr);
+    }
 
 #ifdef AF_INET6
-    case AF_INET6:
-	return gw_netaddr_to_octstr6(src);
+    case AF_INET6: {
+        char straddr[INET6_ADDRSTRLEN];
+        inet_ntop(AF_INET6, src, straddr, sizeof(straddr));
+        return octstr_create(straddr);
+    }
 #endif
 
     default:
-	return NULL;
+        return NULL;
     }
 }
 

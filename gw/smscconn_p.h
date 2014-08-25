@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -144,6 +144,7 @@
 #include "gwlib/gwlib.h"
 #include "gwlib/regex.h"
 #include "smscconn.h"
+#include "load.h"
 
 struct smscconn {
     /* variables set by appropriate SMSCConn driver */
@@ -204,8 +205,14 @@ struct smscconn {
     Dict *reroute_by_receiver;  /* reroute receiver numbers to specific smsc-ids */
     Octstr *reroute_to_smsc;    /* define a smsc-id to reroute to */
     int reroute_dlr;            /* should DLR's are rereouted too? */
+    int dead_start;             /* don't connect this SMSC at startup time */
 
     long max_sms_octets; /* max allowed octets for this SMSC */
+
+    Load *outgoing_sms_load;
+    Load *incoming_sms_load;
+    Load *incoming_dlr_load;
+    Load *outgoing_dlr_load;
 
     /* XXX: move rest global data from Smsc here
      */
@@ -288,6 +295,11 @@ int smsc_oisd_create(SMSCConn *conn, CfgGroup *cfg);
 
 /* Responsible file: smsc/smsc_loopback.c */
 int smsc_loopback_create(SMSCConn *conn, CfgGroup *cfg);
+
+#ifdef HAVE_GSOAP
+/* Responsible file: smsc/smsc_soap_parlayx.c */
+int smsc_soap_parlayx_create(SMSCConn *conn, CfgGroup *cfg);
+#endif
 
 /* ADD NEW CREATE FUNCTIONS HERE
  *

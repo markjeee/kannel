@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -223,7 +223,7 @@ static void handle_split(SMSCConn *conn, Msg *msg, long reason)
                 warning(0, "Maximum retries for message exceeded, discarding it!");
                 bb_smscconn_send_failed(NULL, msg, SMSCCONN_FAILED_DISCARDED,
                                         octstr_create("Retries Exceeded"));
-                break;
+                return;
             }
             msg->sms.resend_try = (msg->sms.resend_try > 0 ? msg->sms.resend_try + 1 : 1);
             time(&msg->sms.resend_time);
@@ -283,12 +283,18 @@ void bb_smscconn_sent(SMSCConn *conn, Msg *sms, Octstr *reply)
         bb_alog_sms(conn, sms, "Sent SMS");
         counter_increase(outgoing_sms_counter);
         load_increase(outgoing_sms_load);
-        if (conn) counter_increase(conn->sent);
+        if (conn != NULL) {
+            counter_increase(conn->sent);
+            load_increase(conn->outgoing_sms_load);
+        }
     } else {
         bb_alog_sms(conn, sms, "Sent DLR");
         counter_increase(outgoing_dlr_counter);
         load_increase(outgoing_dlr_load);
-        if (conn) counter_increase(conn->sent_dlr);
+        if (conn != NULL) {
+            counter_increase(conn->sent_dlr);
+            load_increase(conn->outgoing_dlr_load);
+        }
     }
 
     /* generate relay confirmancy message */
@@ -348,14 +354,28 @@ void bb_smscconn_send_failed(SMSCConn *conn, Msg *sms, int reason, Octstr *reply
         break;
 
     default:
-	/* write NACK to store file */
+        /* write NACK to store file */
         store_save_ack(sms, ack_failed);
 
-	if (conn) counter_increase(conn->failed);
-	if (reason == SMSCCONN_FAILED_DISCARDED)
-	    bb_alog_sms(conn, sms, "DISCARDED SMS");
-	else
-	    bb_alog_sms(conn, sms, "FAILED Send SMS");
+        if (conn) counter_increase(conn->failed);
+        if (reason == SMSCCONN_FAILED_DISCARDED) {
+            if (sms->sms.sms_type != report_mt)
+                bb_alog_sms(conn, sms, "DISCARDED SMS");
+            else
+                bb_alog_sms(conn, sms, "DISCARDED DLR");
+        }
+        else if (reason == SMSCCONN_FAILED_EXPIRED) {
+            if (sms->sms.sms_type != report_mt)
+                bb_alog_sms(conn, sms, "EXPIRED SMS");
+            else
+                bb_alog_sms(conn, sms, "EXPIRED DLR");
+        }
+        else {
+            if (sms->sms.sms_type != report_mt)
+                bb_alog_sms(conn, sms, "FAILED Send SMS");
+            else
+                bb_alog_sms(conn, sms, "FAILED Send DLR");
+        }
 
         /* generate relay confirmancy message */
         if (DLR_IS_SMSC_FAIL(sms->sms.dlr_mask) ||
@@ -386,17 +406,17 @@ long bb_smscconn_receive(SMSCConn *conn, Msg *sms)
     int rc;
     Msg *copy;
 
-   /*
-    * first check whether msgdata data is NULL and set it to empty
-    *  because seems too much kannels parts rely on msgdata not to be NULL.
-    */
-   if (sms->sms.msgdata == NULL)
-       sms->sms.msgdata = octstr_create("");
+    /*
+     * first check whether msgdata data is NULL and set it to empty
+     *  because seems too much kannels parts rely on msgdata not to be NULL.
+     */
+    if (sms->sms.msgdata == NULL)
+        sms->sms.msgdata = octstr_create("");
 
-   /*
-    * First normalize in smsc level and then on global level.
-    * In outbound direction it's vise versa, hence first global then smsc.
-    */
+    /*
+     * First normalize in smsc level and then on global level.
+     * In outbound direction it's vise versa, hence first global then smsc.
+     */
     uf = (conn && conn->unified_prefix) ? octstr_get_cstr(conn->unified_prefix) : NULL;
     normalize_number(uf, &(sms->sms.sender));
 
@@ -406,10 +426,10 @@ long bb_smscconn_receive(SMSCConn *conn, Msg *sms)
     gw_rwlock_rdlock(&white_black_list_lock);
     if (white_list && numhash_find_number(white_list, sms->sms.sender) < 1) {
         gw_rwlock_unlock(&white_black_list_lock);
-	info(0, "Number <%s> is not in white-list, message discarded",
-	     octstr_get_cstr(sms->sms.sender));
-	bb_alog_sms(conn, sms, "REJECTED - not white-listed SMS");
-	msg_destroy(sms);
+        info(0, "Number <%s> is not in white-list, message discarded",
+             octstr_get_cstr(sms->sms.sender));
+        bb_alog_sms(conn, sms, "REJECTED - not white-listed SMS");
+        msg_destroy(sms);
         return SMSCCONN_FAILED_REJECTED;
     }
 
@@ -424,11 +444,11 @@ long bb_smscconn_receive(SMSCConn *conn, Msg *sms)
     
     if (black_list && numhash_find_number(black_list, sms->sms.sender) == 1) {
         gw_rwlock_unlock(&white_black_list_lock);
-	info(0, "Number <%s> is in black-list, message discarded",
-	     octstr_get_cstr(sms->sms.sender));
-	bb_alog_sms(conn, sms, "REJECTED - black-listed SMS");
-	msg_destroy(sms);
-	return SMSCCONN_FAILED_REJECTED;
+        info(0, "Number <%s> is in black-list, message discarded",
+             octstr_get_cstr(sms->sms.sender));
+        bb_alog_sms(conn, sms, "REJECTED - black-listed SMS");
+        msg_destroy(sms);
+        return SMSCCONN_FAILED_REJECTED;
     }
 
     if (black_list_regex && gw_regex_match_pre(black_list_regex, sms->sms.sender) == 0) {
@@ -469,8 +489,10 @@ long bb_smscconn_receive(SMSCConn *conn, Msg *sms)
             case concat_pending:
                 counter_increase(incoming_sms_counter); /* ?? */
                 load_increase(incoming_sms_load);
-                if (conn != NULL)
+                if (conn != NULL) {
                     counter_increase(conn->received);
+                    load_increase(conn->incoming_sms_load);
+                }
                 msg_destroy(sms);
                 return SMSCCONN_SUCCESS;
             case concat_complete:
@@ -519,12 +541,18 @@ long bb_smscconn_receive(SMSCConn *conn, Msg *sms)
         bb_alog_sms(conn, sms, "Receive SMS");
         counter_increase(incoming_sms_counter);
         load_increase(incoming_sms_load);
-        if (conn != NULL) counter_increase(conn->received);
+        if (conn != NULL) {
+            counter_increase(conn->received);
+            load_increase(conn->incoming_sms_load);
+        }
     } else {
         bb_alog_sms(conn, sms, "Receive DLR");
         counter_increase(incoming_dlr_counter);
         load_increase(incoming_dlr_load);
-        if (conn != NULL) counter_increase(conn->received_dlr);
+        if (conn != NULL) {
+            counter_increase(conn->received_dlr);
+            load_increase(conn->incoming_dlr_load);
+        }
     }
 
     msg_destroy(sms);
@@ -619,13 +647,20 @@ static void sms_router(void *arg)
         case SMSCCONN_QUEUED:
             debug("bb.sms", 0, "Routing failed, re-queued.");
             break;
-	case SMSCCONN_FAILED_DISCARDED:
+        case SMSCCONN_FAILED_DISCARDED:
             msg_destroy(msg);
             newmsg = startmsg = NULL;
             break;
         case SMSCCONN_FAILED_QFULL:
             debug("bb.sms", 0, "Routing failed, re-queuing.");
             gwlist_produce(outgoing_sms, msg);
+            break;
+        case SMSCCONN_FAILED_EXPIRED:
+            debug("bb.sms", 0, "Routing failed, expired.");
+            msg_destroy(msg);
+            newmsg = startmsg = NULL;
+            break;
+        default:
             break;
         }
     }
@@ -933,7 +968,12 @@ int smsc2_add_smsc(Octstr *id)
             conn = smscconn_create(grp, 1);
             if (conn != NULL) {
                 gwlist_append(smsc_list, conn);
-                smscconn_start(conn);
+                if (conn->dead_start) {
+                    /* Shutdown connection if it's not configured to connect at start-up time */
+                    smscconn_shutdown(conn, 0);
+                } else {
+                    smscconn_start(conn);
+                }
                 success = 1;
             }
         }
@@ -981,7 +1021,7 @@ int smsc2_reload_lists(void)
     return rc;
 }
 
-void smsc2_resume(void)
+void smsc2_resume(int is_init)
 {
     SMSCConn *conn;
     long i;
@@ -992,7 +1032,12 @@ void smsc2_resume(void)
     gw_rwlock_rdlock(&smsc_list_lock);
     for (i = 0; i < gwlist_len(smsc_list); i++) {
         conn = gwlist_get(smsc_list, i);
-        smscconn_start(conn);
+        if (!is_init || !conn->dead_start) {
+            smscconn_start(conn);
+        } else {
+            /* Shutdown the connections that are not configured to start at boot */
+            smscconn_shutdown(conn, 0);
+        }
     }
     gw_rwlock_unlock(&smsc_list_lock);
     
@@ -1105,6 +1150,10 @@ Octstr *smsc2_status(int status_type)
     const Octstr *conn_id = NULL;
     const Octstr *conn_admin_id = NULL;
     const Octstr *conn_name = NULL;
+    float incoming_sms_load_0, incoming_sms_load_1, incoming_sms_load_2;
+    float outgoing_sms_load_0, outgoing_sms_load_1, outgoing_sms_load_2;
+    float incoming_dlr_load_0, incoming_dlr_load_1, incoming_dlr_load_2;
+    float outgoing_dlr_load_0, outgoing_dlr_load_1, outgoing_dlr_load_2;
 
     if ((lb = bb_status_linebreak(status_type)) == NULL)
         return octstr_create("Un-supported format");
@@ -1127,6 +1176,10 @@ Octstr *smsc2_status(int status_type)
 
     gw_rwlock_rdlock(&smsc_list_lock);
     for (i = 0; i < gwlist_len(smsc_list); i++) {
+        incoming_sms_load_0 = incoming_sms_load_1 = incoming_sms_load_2 = 0.0;
+        outgoing_sms_load_0 = outgoing_sms_load_1 = outgoing_sms_load_2 = 0.0;
+        incoming_dlr_load_0 = incoming_dlr_load_1 = incoming_dlr_load_2 = 0.0;
+        outgoing_dlr_load_0 = outgoing_dlr_load_1 = outgoing_dlr_load_2 = 0.0;
         conn = gwlist_get(smsc_list, i);
 
         if ((smscconn_info(conn, &info) == -1)) {
@@ -1171,6 +1224,18 @@ Octstr *smsc2_status(int status_type)
             case SMSCCONN_ACTIVE:
             case SMSCCONN_ACTIVE_RECV:
                 sprintf(tmp3, "online %lds", info.online);
+                incoming_sms_load_0 = load_get(conn->incoming_sms_load,0);
+                incoming_sms_load_1 = load_get(conn->incoming_sms_load,1);
+                incoming_sms_load_2 = load_get(conn->incoming_sms_load,2);
+                outgoing_sms_load_0 = load_get(conn->outgoing_sms_load,0);
+                outgoing_sms_load_1 = load_get(conn->outgoing_sms_load,1);
+                outgoing_sms_load_2 = load_get(conn->outgoing_sms_load,2);
+                incoming_dlr_load_0 = load_get(conn->incoming_dlr_load,0);
+                incoming_dlr_load_1 = load_get(conn->incoming_dlr_load,1);
+                incoming_dlr_load_2 = load_get(conn->incoming_dlr_load,2);
+                outgoing_dlr_load_0 = load_get(conn->outgoing_dlr_load,0);
+                outgoing_dlr_load_1 = load_get(conn->outgoing_dlr_load,1);
+                outgoing_dlr_load_2 = load_get(conn->outgoing_dlr_load,2);
                 break;
             case SMSCCONN_DISCONNECTED:
                 sprintf(tmp3, "disconnected");
@@ -1189,19 +1254,48 @@ Octstr *smsc2_status(int status_type)
         }
 
         if (status_type == BBSTATUS_XML)
-            octstr_format_append(tmp, "<status>%s</status>\n\t\t"
-                "<received><sms>%ld</sms><dlr>%ld</dlr></received>\n\t\t"
-                "<sent><sms>%ld</sms><dlr>%ld</dlr></sent>\n\t\t"
-                "<failed>%ld</failed>\n\t\t"
-                "<queued>%ld</queued>\n\t</smsc>\n", tmp3,
-                info.received, info.received_dlr, info.sent, info.sent_dlr, info.failed,
-                info.queued);
+            octstr_format_append(tmp, "<status>%s</status>\n"
+                "\t\t<failed>%ld</failed>\n"
+                "\t\t<queued>%ld</queued>\n"
+                "\t\t<sms>\n"
+                "\t\t\t<received>%ld</received>\n"
+                "\t\t\t<sent>%ld</sent>\n"
+                "\t\t\t<inbound>%.2f,%.2f,%.2f</inbound>\n"
+                "\t\t\t<outbound>%.2f,%.2f,%.2f</outbound>\n"
+                "\t\t</sms>\n\t\t<dlr>\n"
+                "\t\t\t<received>%ld</received>\n"
+                "\t\t\t<sent>%ld</sent>\n"
+                "\t\t\t<inbound>%.2f,%.2f,%.2f</inbound>\n"
+                "\t\t\t<outbound>%.2f,%.2f,%.2f</outbound>\n"
+                "\t\t</dlr>\n"
+                "\t</smsc>\n", tmp3,
+                info.failed, info.queued, info.received, info.sent,
+                incoming_sms_load_0, incoming_sms_load_1, incoming_sms_load_2,
+                outgoing_sms_load_0, outgoing_sms_load_1, outgoing_sms_load_2,
+                info.received_dlr, info.sent_dlr,
+                incoming_dlr_load_0, incoming_dlr_load_1, incoming_dlr_load_2,
+                outgoing_dlr_load_0, outgoing_dlr_load_1, outgoing_dlr_load_2);
         else
-            octstr_format_append(tmp, " (%s, rcvd: sms %ld / dlr %ld, sent: sms %ld / dlr %ld, failed %ld, "
-                "queued %ld msgs)%s", tmp3,
-            info.received, info.received_dlr, info.sent, info.sent_dlr, info.failed,
-            info.queued, lb);
+            octstr_format_append(tmp, " (%s, rcvd: sms %ld (%.2f,%.2f,%.2f) / dlr %ld (%.2f,%.2f,%.2f), "
+                "sent: sms %ld (%.2f,%.2f,%.2f) / dlr %ld (%.2f,%.2f,%.2f), failed %ld, "
+                "queued %ld msgs)%s",
+                tmp3,
+                info.received,
+                incoming_sms_load_0, incoming_sms_load_1, incoming_sms_load_2,
+                info.received_dlr,
+                incoming_dlr_load_0, incoming_dlr_load_1, incoming_dlr_load_2,
+                info.sent,
+                outgoing_sms_load_0, outgoing_sms_load_1, outgoing_sms_load_2,
+                info.sent_dlr,
+                outgoing_dlr_load_0, outgoing_dlr_load_1, outgoing_dlr_load_2,
+                info.failed,
+                info.queued,
+                lb);
     }
+
+
+
+
     gw_rwlock_unlock(&smsc_list_lock);
 
     if (para)
@@ -1237,6 +1331,12 @@ long smsc2_rout(Msg *msg, int resend)
     if (msg_type(msg) != sms) {
         error(0, "Attempt to route non SMS message through smsc2_rout!");
         return SMSCCONN_FAILED_DISCARDED;
+    }
+
+    /* check if validity period has expired */
+    if (msg->sms.validity != SMS_PARAM_UNDEFINED && time(NULL) > msg->sms.validity) {
+        bb_smscconn_send_failed(NULL, msg_duplicate(msg), SMSCCONN_FAILED_EXPIRED, octstr_create("validity expired"));
+        return SMSCCONN_FAILED_EXPIRED;
     }
 
     /* unify prefix of receiver, in case of it has not been

@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -86,6 +86,7 @@ static Octstr *content_file = NULL; /* if set use POST method */
 static Octstr *method_name = NULL;
 static int file = 0;
 static List *split = NULL;
+static int follow_redirect = 1;
 
 
 static Octstr *post_content_create(void)
@@ -134,7 +135,7 @@ static void start_request(HTTPCaller *caller, List *reqh, long i)
      * urlencoded in the URL itself.
      */
     http_start_request(caller, method,
-                       url, reqh, content, 1, id, ssl_client_certkey_file);
+                       url, reqh, content, follow_redirect, id, ssl_client_certkey_file);
 
     debug("", 0, "Started request %ld with url:", *id);
     octstr_url_decode(url);
@@ -160,6 +161,7 @@ static int receive_reply(HTTPCaller *caller)
     octstr_destroy(final_url);
     if (id == NULL || ret == -1) {
 	error(0, "http GET failed");
+        gw_free(id);
 	return -1;
     }
     debug("", 0, "Done with request %ld", *(long *) id);
@@ -303,6 +305,8 @@ static void help(void)
     info(0, "    use HTTPS scheme to access SSL-enabled HTTP server");
     info(0, "-c ssl_client_cert_key_file");
     info(0, "    use this file as the SSL certificate and key file");
+    info(0, "-f");
+    info(0, "    don't follow redirects");
 }
 
 int main(int argc, char **argv) 
@@ -334,7 +338,7 @@ int main(int argc, char **argv)
     file = 0;
     fp = NULL;
     
-    while ((opt = getopt(argc, argv, "hv:qr:p:P:Se:t:i:a:u:sc:H:B:m:")) != EOF) {
+    while ((opt = getopt(argc, argv, "hv:qr:p:P:Se:t:i:a:u:sc:H:B:m:f")) != EOF) {
 	switch (opt) {
 	case 'v':
 	    log_set_output_level(atoi(optarg));
@@ -440,7 +444,11 @@ int main(int argc, char **argv)
 	    method_name = octstr_create(optarg);
 	    break;
 
-	case '?':
+    case 'f':
+        follow_redirect = 0;
+        break;
+
+    case '?':
 	default:
 	    error(0, "Invalid option %c", opt);
 	    help();

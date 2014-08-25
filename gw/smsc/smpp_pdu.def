@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -62,6 +62,8 @@
  *     Initial optional parameters implementation.
  * Alexander Malysh <a.malysh@centrium.de>:
  *     Extended optional parameters implementation.
+ * Stipe Tolj <stolj at kannel.org>:
+ *     Adding SMPP v5.0 PDUs
  */
 
 
@@ -118,6 +120,9 @@
     INTEGER(command_status, 4) \
     INTEGER(sequence_number, 4)
 
+/*
+ * PDUs defined in SMPP v3.4
+ */
 PDU(bind_transmitter,
     0x00000002,
     HEADER
@@ -225,10 +230,11 @@ PDU(submit_sm,
     INTEGER(sm_length, 1)
     OCTETS(short_message, sm_length)
     OPTIONAL_BEGIN
+    /* defined in SMPP v3.4 */
     TLV_INTEGER(user_message_reference, 2)
     TLV_INTEGER(source_port, 2)
     TLV_INTEGER(source_addr_subunit, 1)
-    TLV_INTEGER(destination_port, 2)
+    TLV_INTEGER(destination_port, 2)	/* renamed to 'dest_port' in SMPP v5.0 ?? */
     TLV_INTEGER(dest_addr_subunit, 1)
     TLV_INTEGER(sar_msg_ref_num, 2)
     TLV_INTEGER(sar_total_segments, 1)
@@ -253,6 +259,23 @@ PDU(submit_sm,
     TLV_INTEGER(its_reply_type, 1)
     TLV_OCTETS(its_session_info, 2, 2)
     TLV_OCTETS(ussd_service_op, 1, 1)
+    /* added in SMPP v5.0 */
+    TLV_OCTETS(billing_identification, 1, 1024)
+    TLV_INTEGER(dest_addr_np_country, 5)
+    TLV_OCTETS(dest_addr_np_information, 10, 10)
+    TLV_INTEGER(dest_addr_np_resolution, 1)
+    TLV_INTEGER(dest_bearer_type, 1)
+    TLV_NULTERMINATED(dest_network_id, 65)
+    TLV_INTEGER(dest_network_type, 1)
+    TLV_OCTETS(dest_node_id, 6, 6)
+    TLV_INTEGER(dest_telematics_id, 2)
+    TLV_INTEGER(qos_time_to_live, 4)
+    TLV_INTEGER(set_dpf, 1)
+    TLV_INTEGER(source_bearer_type, 1)
+    TLV_NULTERMINATED(source_network_id, 65)
+    TLV_INTEGER(source_network_type, 1)
+    TLV_OCTETS(source_node_id, 6, 6)
+    TLV_INTEGER(source_telematics_id, 1)
     OPTIONAL_END
 )
 
@@ -260,6 +283,13 @@ PDU(submit_sm_resp,
     0x80000004,
     HEADER
     NULTERMINATED(message_id, 65)
+	OPTIONAL_BEGIN
+	/* added in SMPP v5.0 */
+    TLV_NULTERMINATED(additional_status_info_text, 256)
+    TLV_INTEGER(delivery_failure_reason, 1)
+    TLV_INTEGER(dpf_result, 1)
+    TLV_OCTETS(network_error_code, 3, 3)
+    OPTIONAL_END
 )
 
 PDU(submit_multi,
@@ -283,6 +313,7 @@ PDU(submit_multi,
     INTEGER(sm_length, 1)
     OCTETS(short_message, sm_length)
     OPTIONAL_BEGIN
+    /* defined in SMPP v3.4 */
     TLV_INTEGER(user_message_reference, 2)
     TLV_INTEGER(source_port, 2)
     TLV_INTEGER(source_addr_subunit, 1)
@@ -305,6 +336,28 @@ PDU(submit_multi,
     TLV_INTEGER(ms_msg_wait_facilities, 1)
     TLV_INTEGER(alert_on_message_delivery, 0)
     TLV_INTEGER(language_indicator, 1)
+    /* added in SMPP v5.0 */
+    TLV_OCTETS(billing_identification, 1, 1024)
+    TLV_INTEGER(dest_addr_np_country, 5)
+    TLV_OCTETS(dest_addr_np_information, 10, 10)
+    TLV_INTEGER(dest_addr_np_resolution, 1)
+    TLV_INTEGER(dest_bearer_type, 1)
+    TLV_NULTERMINATED(dest_network_id, 65)
+    TLV_INTEGER(dest_network_type, 1)
+    TLV_OCTETS(dest_node_id, 6, 6)
+    TLV_INTEGER(dest_telematics_id, 2)
+    TLV_INTEGER(its_reply_type, 1)
+    TLV_OCTETS(its_session_info, 2, 2)
+    TLV_INTEGER(more_messages_to_send, 1)
+    TLV_INTEGER(number_of_messages, 1)
+    TLV_INTEGER(qos_time_to_live, 4)
+    TLV_INTEGER(set_dpf, 1)
+    TLV_INTEGER(source_bearer_type, 1)
+    TLV_NULTERMINATED(source_network_id, 65)
+    TLV_INTEGER(source_network_type, 1)
+    TLV_OCTETS(source_node_id, 6, 6)
+    TLV_INTEGER(source_telematics_id, 1)
+    TLV_INTEGER(user_response_code, 1)
     OPTIONAL_END
 )
 
@@ -313,6 +366,15 @@ PDU(submit_multi_resp,
     HEADER
     NULTERMINATED(message_id, 65)
     INTEGER(no_unsuccess, 1)
+    //VAR_OCTETS(unsuccess_sme, 6, 27)
+    //OCTETS(unsuccess_sme, 27)
+	OPTIONAL_BEGIN
+	/* added in SMPP v5.0 */
+    TLV_NULTERMINATED(additional_status_info_text, 256)
+    TLV_INTEGER(delivery_failure_reason, 1)
+    TLV_INTEGER(dpf_result, 1)
+    TLV_OCTETS(network_error_code, 3, 3)
+    OPTIONAL_END
 )
 
 PDU(deliver_sm,
@@ -337,9 +399,10 @@ PDU(deliver_sm,
     INTEGER(sm_length, 1)
     OCTETS(short_message, sm_length)
     OPTIONAL_BEGIN
+    /* defined in SMPP v3.4 */
     TLV_INTEGER(user_message_reference, 2)
     TLV_INTEGER(source_port, 2)
-    TLV_INTEGER(destination_port, 2)
+    TLV_INTEGER(destination_port, 2) /* renamed to 'dest_port' in SMPP v5.0 ?? */
     TLV_INTEGER(sar_msg_ref_num, 2)
     TLV_INTEGER(sar_total_segments, 1)
     TLV_INTEGER(sar_segment_seqnum, 1)
@@ -355,6 +418,20 @@ PDU(deliver_sm,
     TLV_OCTETS(network_error_code, 3, 3)
     TLV_INTEGER(message_state, 1)
     TLV_NULTERMINATED(receipted_message_id, 65)
+    /* added in SMPP v5.0 */
+    TLV_OCTETS(callback_num_atag, 0, 65)
+    TLV_INTEGER(callback_num_pres_ind, 1)
+    TLV_INTEGER(dest_addr_np_country, 5)
+    TLV_OCTETS(dest_addr_np_information, 10, 10)
+    TLV_INTEGER(dest_addr_np_resolution, 1)
+    TLV_INTEGER(dest_addr_subunit, 1)
+    TLV_NULTERMINATED(dest_network_id, 65)
+    TLV_INTEGER(dpf_result, 1)
+    TLV_INTEGER(its_reply_type, 1)
+    TLV_INTEGER(source_addr_subunit, 1)
+    TLV_NULTERMINATED(source_network_id, 65)
+    TLV_OCTETS(source_node_id, 6, 6)
+    TLV_OCTETS(ussd_service_op, 1, 1)
     OPTIONAL_END
 )
 
@@ -362,6 +439,12 @@ PDU(deliver_sm_resp,
     0x80000005,
     HEADER
     NULTERMINATED(message_id, 1)
+    OPTIONAL_BEGIN
+    /* added in SMPP v5.0 */
+    TLV_NULTERMINATED(additional_status_info_text, 256)
+    TLV_INTEGER(delivery_failure_reason, 1)
+    TLV_OCTETS(network_error_code, 3, 3)
+    OPTIONAL_END
 )
 
 PDU(data_sm,
@@ -378,6 +461,7 @@ PDU(data_sm,
     INTEGER(registered_delivery, 1)
     INTEGER(data_coding, 1)
     OPTIONAL_BEGIN
+    /* defined in SMPP v3.4 */
     TLV_INTEGER(source_port, 2)
     TLV_INTEGER(source_addr_subunit, 1)
     TLV_INTEGER(source_network_type, 1)
@@ -416,6 +500,16 @@ PDU(data_sm,
     TLV_INTEGER(language_indicator, 1)
     TLV_INTEGER(its_reply_type, 1)
     TLV_OCTETS(its_session_info, 2, 2)
+    /* added in SMPP v5.0 */
+    TLV_OCTETS(billing_identification, 1, 1024)
+    TLV_INTEGER(dest_addr_np_country, 5)
+    TLV_OCTETS(dest_addr_np_information, 10, 10)
+    TLV_INTEGER(dest_addr_np_resolution, 1)
+    TLV_NULTERMINATED(dest_network_id, 65)
+    TLV_OCTETS(dest_node_id, 6, 6)
+    TLV_NULTERMINATED(source_network_id, 65)
+    TLV_OCTETS(source_node_id, 6, 6)
+    TLV_OCTETS(ussd_service_op, 1, 1)
     OPTIONAL_END
 )
 
@@ -424,10 +518,11 @@ PDU(data_sm_resp,
     HEADER
     NULTERMINATED(message_id, 65)
     OPTIONAL_BEGIN
-    TLV_INTEGER(delivery_failure_reason, 1)
-    TLV_OCTETS(network_error_code, 3, 3)
+    /* defined in SMPP v3.4 */
     TLV_NULTERMINATED(additional_status_info_text, 256)
+    TLV_INTEGER(delivery_failure_reason, 1)
     TLV_INTEGER(dpf_result, 1)
+    TLV_OCTETS(network_error_code, 3, 3)
     OPTIONAL_END
 )
 
@@ -481,6 +576,10 @@ PDU(replace_sm,
     INTEGER(sm_default_msg_id, 1)
     INTEGER(sm_length, 1)
     OCTETS(short_message, sm_length)
+    OPTIONAL_BEGIN
+    /* added in SMPP v5.0 */
+    TLV_OCTETS(message_payload, 0, 65536)
+    OPTIONAL_END
 )
 
 PDU(replace_sm_resp,
@@ -508,8 +607,113 @@ PDU(alert_notification,
     INTEGER(esme_addr_npi, 1)
     NULTERMINATED(esme_addr, 65)
     OPTIONAL_BEGIN
+    /* defined in SMPP v3.4 */
     TLV_INTEGER(ms_availability_status, 1)
     OPTIONAL_END
+)
+
+/*
+ * PDUs defined in SMPP v5.0
+ */
+PDU(broadcast_sm,
+    0x00000111,
+    HEADER
+    NULTERMINATED(service_type, 6)
+    INTEGER(source_addr_ton, 1)
+    INTEGER(source_addr_npi, 1)
+    NULTERMINATED(source_addr, 21)
+    NULTERMINATED(message_id, 65)
+    INTEGER(priority_flag, 1)
+    NULTERMINATED(schedule_delivery_time, 17)
+    NULTERMINATED(validity_period, 17)
+    INTEGER(registered_delivery, 1)
+    INTEGER(replace_if_present_flag, 1)
+    INTEGER(data_coding, 1)
+    INTEGER(sm_default_msg_id, 1)
+    OPTIONAL_BEGIN
+    TLV_OCTETS(broadcast_area_identifier, 1, 101)
+    TLV_OCTETS(broadcast_content_type, 3, 3)
+    TLV_OCTETS(broadcast_rep_num, 3, 3)
+    TLV_OCTETS(broadcast_frequency_interval, 3, 3)
+    //OPTIONAL_BEGIN
+    TLV_INTEGER(alert_on_message_delivery, 0)
+    TLV_INTEGER(broadcast_channel_indicator, 1)
+    TLV_OCTETS(broadcast_content_type_info, 1, 254)
+    TLV_INTEGER(broadcast_message_class, 1)
+    TLV_OCTETS(broadcast_service_group, 1, 254)
+    TLV_OCTETS(callback_num, 4, 19)
+    TLV_OCTETS(callback_num_atag, 0, 65)
+    TLV_INTEGER(callback_num_pres_ind, 1)
+    TLV_INTEGER(dest_addr_subunit, 1)
+    TLV_OCTETS(dest_subaddress, 2, 23)
+    TLV_INTEGER(destination_port, 2)	/* called 'dest_port' in SMPP v5.0 spec?? */
+    TLV_INTEGER(display_time, 1)
+    TLV_INTEGER(language_indicator, 1)
+    TLV_OCTETS(message_payload, 0, 65536)
+    TLV_INTEGER(ms_validity, 1)
+    TLV_INTEGER(payload_type, 1)
+    TLV_INTEGER(privacy_indicator, 1)
+    TLV_INTEGER(sms_signal, 2)
+    TLV_INTEGER(source_addr_subunit, 1)
+    TLV_INTEGER(source_port, 2)
+    TLV_OCTETS(source_subaddress, 2, 23)
+    TLV_INTEGER(user_message_reference, 2)
+    OPTIONAL_END
+)
+
+PDU(broadcast_sm_resp,
+    0x80000111,
+    HEADER
+    NULTERMINATED(message_id, 65)
+    OPTIONAL_BEGIN
+    TLV_INTEGER(broadcast_error_status, 4)
+    TLV_OCTETS(failed_broadcast_area_identifier, 1, 101)
+    OPTIONAL_END
+)
+
+PDU(query_broadcast_sm,
+    0x00000112,
+    HEADER
+    NULTERMINATED(message_id, 65)
+    INTEGER(source_addr_ton, 1)
+    INTEGER(source_addr_npi, 1)
+    NULTERMINATED(source_addr, 21)
+    OPTIONAL_BEGIN
+    TLV_INTEGER(user_message_reference, 2)
+    OPTIONAL_END
+)
+
+PDU(query_broadcast_sm_resp,
+    0x80000112,
+    HEADER
+    NULTERMINATED(message_id, 65)
+    OPTIONAL_BEGIN
+    TLV_INTEGER(message_state, 1)
+    TLV_OCTETS(broadcast_area_identifier, 1, 101)
+    TLV_INTEGER(broadcast_area_success, 1)
+    //OPTIONAL_BEGIN
+    TLV_NULTERMINATED(broadcast_end_time, 16)
+    TLV_INTEGER(user_message_reference, 2)
+    OPTIONAL_END
+)
+
+PDU(cancel_broadcast_sm,
+    0x00000113,
+    HEADER
+    NULTERMINATED(service_type, 6)
+    NULTERMINATED(message_id, 65)
+    INTEGER(source_addr_ton, 1)
+    INTEGER(source_addr_npi, 1)
+    NULTERMINATED(source_addr, 21)
+    OPTIONAL_BEGIN
+    TLV_OCTETS(broadcast_content_type, 3, 3)
+    TLV_INTEGER(user_message_reference, 2)
+    OPTIONAL_END
+)
+
+PDU(cancel_broadcast_sm_resp,
+    0x80000113,
+    HEADER
 )
 
 #undef PDU

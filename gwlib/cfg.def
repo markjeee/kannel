@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -84,6 +84,7 @@ SINGLE_GROUP(core,
     OCTSTR(admin-allow-ip)
     OCTSTR(smsbox-port)
     OCTSTR(smsbox-port-ssl)
+    OCTSTR(smsbox-interface)
     OCTSTR(smsbox-max-pending)
     OCTSTR(wapbox-port)
     OCTSTR(wapbox-port-ssl)
@@ -94,6 +95,8 @@ SINGLE_GROUP(core,
     OCTSTR(wdp-interface-name)
     OCTSTR(log-file)
     OCTSTR(log-level)
+    OCTSTR(syslog-level)
+    OCTSTR(syslog-facility)
     OCTSTR(access-log)
     OCTSTR(access-log-time)
     OCTSTR(access-log-format)
@@ -119,6 +122,7 @@ SINGLE_GROUP(core,
     OCTSTR(ssl-server-key-file)
     OCTSTR(ssl-trusted-ca-file)
     OCTSTR(dlr-storage)
+    OCTSTR(dlr-spool)
     OCTSTR(maximum-queue-length)
     OCTSTR(sms-incoming-queue-limit)
     OCTSTR(sms-outgoing-queue-limit)
@@ -152,6 +156,7 @@ SINGLE_GROUP(wapbox,
     OCTSTR(log-file)
     OCTSTR(log-level)
     OCTSTR(syslog-level)
+    OCTSTR(syslog-facility)
     OCTSTR(smart-errors)
     OCTSTR(access-log)
     OCTSTR(access-log-time)
@@ -263,6 +268,8 @@ SINGLE_GROUP(smsbox,
     OCTSTR(global-sender)
     OCTSTR(log-file)
     OCTSTR(log-level)
+    OCTSTR(syslog-level)
+    OCTSTR(syslog-facility)
     OCTSTR(access-log)
     OCTSTR(access-log-time)
     OCTSTR(access-log-clean)
@@ -313,6 +320,7 @@ MULTI_GROUP(smsc,
     OCTSTR(our-host)
     OCTSTR(alt-dcs)
     OCTSTR(throughput)
+    OCTSTR(dead-start)
     OCTSTR(alt-charset)
     OCTSTR(host)
     OCTSTR(alt-host)
@@ -329,6 +337,7 @@ MULTI_GROUP(smsc,
     OCTSTR(validityperiod)
     OCTSTR(our-port)
     OCTSTR(receive-port)
+    OCTSTR(our-receiver-port)
     OCTSTR(connect-allow-ip)
     OCTSTR(system-id)
     OCTSTR(system-type)
@@ -363,6 +372,7 @@ MULTI_GROUP(smsc,
     OCTSTR(bind-addr-ton)
     OCTSTR(bind-addr-npi)
     OCTSTR(service-type)
+    OCTSTR(esm-class)
     OCTSTR(source-addr-autodetect)
     OCTSTR(enquire-link-interval)
     OCTSTR(max-pending-submits)
@@ -400,6 +410,7 @@ MULTI_GROUP(smsc,
     OCTSTR(generic-param-account)
     OCTSTR(generic-param-binfo)
     OCTSTR(generic-param-dlr-mask)
+	OCTSTR(generic-param-dlr-err)
     OCTSTR(generic-param-dlr-url)
     OCTSTR(generic-param-dlr-mid)
     OCTSTR(generic-param-flash)
@@ -409,6 +420,7 @@ MULTI_GROUP(smsc,
     OCTSTR(generic-param-validity)
     OCTSTR(generic-param-deferred)
     OCTSTR(generic-param-foreign-id)
+    OCTSTR(generic-param-meta-data)
     OCTSTR(generic-message-sent)
     OCTSTR(generic-status-sent)
     OCTSTR(generic-status-error)
@@ -461,7 +473,9 @@ MULTI_GROUP(sms-service,
     OCTSTR(black-list)
     OCTSTR(black-list-regex)
     OCTSTR(dlr-url)
+    OCTSTR(dlr-mask)
     OCTSTR(keyword-regex)
+    OCTSTR(alt-charset)
 )
 
 
@@ -536,6 +550,8 @@ MULTI_GROUP(modems,
     OCTSTR(message-start)
     OCTSTR(enable-mms)
     OCTSTR(reset-string)
+    OCTSTR(hardware-flow-control)
+
 )
 
 
@@ -601,10 +617,20 @@ MULTI_GROUP(sqlite3-connection,
     OCTSTR(lock-timeout)
 )
 
+MULTI_GROUP(redis-connection,
+    OCTSTR(id)
+    OCTSTR(host)
+    OCTSTR(port)
+    OCTSTR(password)
+    OCTSTR(database)
+    OCTSTR(max-connections)
+    OCTSTR(idle-timeout)
+)
  
 SINGLE_GROUP(dlr-db,
     OCTSTR(id)
     OCTSTR(table)
+    OCTSTR(ttl)
     OCTSTR(field-smsc)
     OCTSTR(field-timestamp)
     OCTSTR(field-source)

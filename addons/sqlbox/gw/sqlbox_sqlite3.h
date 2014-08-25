@@ -41,7 +41,7 @@ deferred, dlr_mask, dlr_url, pid, alt_dcs, rpi, charset, boxc_id, binfo, meta_da
 void sql_save_msg(Msg *msg, Octstr *momt );
 Msg *sqlite3_fetch_msg();
 void sql_shutdown();
-struct server_type *sql_init_sqlite3(Cfg *cfg);
+struct server_type *sqlbox_init_sqlite3(Cfg *cfg);
 #ifndef sqlbox_sqlite3_c
 extern
 #endif

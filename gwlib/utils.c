@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -80,7 +80,15 @@
 #include <grp.h>
 #include <libgen.h>
 
+#if HAVE_UCONTEXT
+#include <sys/ucontext.h>
+#endif
+
 #include "gwlib.h"
+
+#if HAVE_BACKTRACE
+#include <execinfo.h> /*backtrace */
+#endif
 
 /* Headers required for the version dump. */
 #if defined(HAVE_LIBSSL) || defined(HAVE_WTLS_OPENSSL) 
@@ -90,6 +98,24 @@
 #include <mysql_version.h>
 #include <mysql.h>
 #endif
+/*
+ * PostgreSQL drives us in a mess here slights. Even
+ * if our own configure run didn't detect openssl and hence
+ * gw-config.h has no HAVE_LIBSSL set, it is generally set
+ * on most distro in <pg_config.h>, so we end up in unresolved
+ * items at some point. We trick this by undef it again here.
+ */
+#ifdef HAVE_PGSQL
+# ifndef HAVE_LIBSSL
+# define UNDEF_LIBSSL 1
+# endif
+#include <libpq-fe.h>
+#include <pg_config.h>
+# ifdef UNDEF_LIBSSL
+# undef HAVE_LIBSSL
+# undef UNDEF_LIBSSL
+# endif
+#endif  /* HAVE_PGSQL */
 #ifdef HAVE_SQLITE 
 #include <sqlite.h>
 #endif
@@ -99,10 +125,15 @@
 #ifdef HAVE_ORACLE 
 #include <oci.h>
 #endif
+#ifdef HAVE_REDIS 
+#include <hiredis.h>
+#endif
 
 
 /* pid of child process when parachute is used */
 static pid_t child_pid = -1;
+/* pid of pid file owner */
+static pid_t pidfile_owner_pid = -1;
 /* saved child signal handlers */
 static struct sigaction child_actions[32];
 /* just a flag that child signal handlers are stored */
@@ -110,6 +141,35 @@ static int child_actions_init = 0;
 /* our pid file name */
 static char *pid_file = NULL;
 static volatile sig_atomic_t parachute_shutdown = 0;
+
+
+static void fatal_handler(int sig, siginfo_t *info, void *secret)
+{
+#ifdef HAVE_BACKTRACE
+    void *trace[50];
+#ifdef REG_EIP
+    ucontext_t *uc = (ucontext_t*)secret;
+#endif
+    size_t size;
+#endif    
+    struct sigaction act;
+    
+    act.sa_handler = SIG_DFL;
+    sigemptyset(&act.sa_mask);
+    act.sa_flags = 0;
+    sigaction(sig, &act, NULL);
+    
+#ifdef HAVE_BACKTRACE
+    size = backtrace(trace, sizeof(trace) / sizeof(void*));
+#ifdef REG_EIP
+    /* overwrite sigaction with caller's address */
+    trace[1] = (void *) uc->uc_mcontext.gregs[REG_EIP];
+#endif
+    gw_backtrace(trace, size, 0);
+#endif
+    
+    raise(sig);
+}
 
 
 static void parachute_sig_handler(int signum)
@@ -165,6 +225,7 @@ static void parachute_init_signals(int child)
         sigaction(SIGTTIN, &sa, NULL);
         sigaction(SIGTSTP, &sa, NULL);
         child_actions_init = 1;
+        init_fatal_signals();
     }
     else
         panic(0, "Child process signal handlers not initialized before.");
@@ -183,7 +244,8 @@ static int is_executable(const char *filename)
         return 0;
     }
     /* others has exec permission */
-    if (S_IXOTH & buf.st_mode) return 1;
+    if (S_IXOTH & buf.st_mode)
+        return 1;
     /* group has exec permission */
     if ((S_IXGRP & buf.st_mode) && buf.st_gid == getgid())
         return 1;
@@ -350,7 +412,7 @@ static void write_pid_file(void)
     if (!file)
         panic(errno, "Could not open file-stream `%s'", pid_file);
 
-    fprintf(file, "%ld\n", (long) getpid());
+    fprintf(file, "%ld\n", (long) (pidfile_owner_pid = getpid()));
     fclose(file);
 }
 
@@ -359,12 +421,21 @@ static void remove_pid_file(void)
     if (!pid_file)
         return;
 
-    /* ensure we don't called from child process */
-    if (child_pid == 0)
+    /* ensure that only pidfile owner can remove it */
+    if (pidfile_owner_pid != getpid())
         return;
 
-    if (-1 == unlink(pid_file))
+    if (-1 == unlink(pid_file)) {
+        int initdone = gwlib_initialized();
+        /* we are called at exit so gwlib may be shutdown already, init again */
+        if (!initdone) {
+            gwlib_init();
+            log_set_syslog("kannel", 0);
+        }
         error(errno, "Could not unlink pid-file `%s'", pid_file);
+        if (!initdone)
+            gwlib_shutdown();
+    }
 }
 
 
@@ -386,8 +457,8 @@ static int change_user(const char *user)
         return -1;
     }
 
-#ifndef __INTERIX
-    if (initgroups(user, -1) == -1) {
+#ifdef HAVE_INITGROUPS
+    if (initgroups(user, pass->pw_gid) == -1) {
         error(errno, "Could not set supplementary group ID's.");
     }
 #endif
@@ -455,6 +526,18 @@ Octet reverse_octet(Octet source)
 }
 
 
+void init_fatal_signals()
+{
+    /* install fatal signal handler */
+    struct sigaction act;
+    /* set segfault handler */
+    sigemptyset(&act.sa_mask);
+    act.sa_sigaction = fatal_handler;
+    act.sa_flags = SA_SIGINFO;
+    sigaction(SIGSEGV, &act, NULL);
+}
+
+
 void report_versions(const char *boxname)
 {
     Octstr *os;
@@ -484,6 +567,9 @@ Octstr *version_report_string(const char *boxname)
 #ifdef HAVE_MYSQL
              "Compiled with MySQL %s, using MySQL %s.\n"
 #endif
+#ifdef HAVE_PGSQL
+             "Compiled with PostgreSQL %s.\n"
+#endif
 #ifdef HAVE_SDB
              "Using LibSDB %s.\n"
 #endif
@@ -496,6 +582,9 @@ Octstr *version_report_string(const char *boxname)
 #else
              "Using Oracle OCI.\n"
 #endif
+#endif
+#ifdef HAVE_REDIS
+             "Using hiredis API %d.%d.%d\n"
 #endif
              "Using %s malloc.\n",
              boxname, GW_VERSION,
@@ -515,6 +604,9 @@ Octstr *version_report_string(const char *boxname)
 #ifdef HAVE_MYSQL
              MYSQL_SERVER_VERSION, mysql_get_client_info(),
 #endif
+#ifdef HAVE_PGSQL
+             PG_VERSION,
+#endif
 #ifdef HAVE_SDB
              LIBSDB_VERSION,
 #endif
@@ -525,6 +617,9 @@ Octstr *version_report_string(const char *boxname)
 #if defined(OCI_MAJOR_VERSION) && defined(OCI_MINOR_VERSION)
              OCI_MAJOR_VERSION, OCI_MINOR_VERSION,
 #endif
+#endif
+#ifdef HAVE_REDIS
+			 HIREDIS_MAJOR, HIREDIS_MINOR, HIREDIS_PATCH,
 #endif
              octstr_get_cstr(gwmem_type()));
 }
@@ -656,6 +751,9 @@ int get_and_set_debugs(int argc, char **argv,
     if (debug_places != NULL)
 	    info(0, "Debug places: `%s'", debug_places);
 
+
+    init_fatal_signals();
+    
     return i;
 }
 

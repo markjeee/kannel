@@ -90,6 +90,7 @@ CONVERT=@CONVERT@
 
 HTML_DSL=@HTML_DSL@
 TEX_DSL=@TEX_DSL@
+XML_DCL=@XML_DCL@
 
 # Set this to something if you want all installed binaries to have a suffix.
 # Version number is common.
@@ -179,17 +180,17 @@ figs = $(figsrcs:.fig=.png)  $(figsrcs:.fig=.ps)
 
 .xml.html:
 	sed "s/#FIGTYPE#/.png/;s/#VERSION#/${VERSION}/;s/#DATE#/`date +%Y.%m.%d`/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
-	${JADE} -V nochunks -t sgml -d $(HTML_DSL) $*.tmp > $@
+	${JADE} -V nochunks -t sgml -d $(HTML_DSL) $(XML_DCL) $*.tmp > $@
 	rm -f $*.tmp
 
 .xml.rtf:
 	sed "s/#FIGTYPE#/.ps/;s/#VERSION#/${VERSION}/;s/#DATE#/`date +%Y.%m.%d`/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
-	cd `dirname $<` && $(JADE) -o `basename $*`.rtf -t rtf -d $(TEX_DSL) `basename $*`.tmp
+	cd `dirname $<` && $(JADE) -o `basename $*`.rtf -t rtf -d $(TEX_DSL) $(XML_DCL) `basename $*`.tmp
 	rm -f $*.tmp
 
 .xml.ps:
 	sed "s/#FIGTYPE#/.ps/;s/#VERSION#/${VERSION}/;s/#DATE#/`date +%Y.%m.%d`/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
-	$(JADE) -o $*.tex -t tex -d $(TEX_DSL) $*.tmp
+	$(JADE) -o $*.tex -t tex -d $(TEX_DSL) $(XML_DCL) $*.tmp
 	rm -f $*.tmp
 	cd `dirname $<` && $(JADETEX) `basename $*`.tex >/dev/null || true
 	cd `dirname $<` && $(JADETEX) `basename $*`.tex >/dev/null || true
@@ -201,7 +202,7 @@ figs = $(figsrcs:.fig=.png)  $(figsrcs:.fig=.ps)
 
 .xml.pdf:
 	sed "s/#FIGTYPE#/.png/;s/#VERSION#/${VERSION}/;s/#DATE#/`date +%Y.%m.%d`/;s/#DRAFTS#/${DOCDRAFTS}/" $< > $*.tmp
-	$(JADE) -o $*.tex -t tex -d $(TEX_DSL) $*.tmp
+	$(JADE) -o $*.tex -t tex -d $(TEX_DSL) $(XML_DCL) $*.tmp
 	rm -f $*.tmp
 	cd `dirname $<` && $(JADETEX) `basename $*`.tex >/dev/null || true
 	cd `dirname $<` && $(JADETEX) `basename $*`.tex >/dev/null || true
@@ -280,9 +281,7 @@ install: all
 	$(INSTALL_DATA) $(top_srcdir)/wap/*.def $(DESTDIR)$(includedir)/kannel/wap	
 	$(INSTALL_DATA) gw-config.h $(DESTDIR)$(includedir)/kannel
 	$(INSTALL) -d $(DESTDIR)$(libdir)/kannel
-	$(INSTALL_DATA) libgwlib.a $(DESTDIR)$(libdir)/kannel
-	$(INSTALL_DATA) libgw.a $(DESTDIR)$(libdir)/kannel
-	$(INSTALL_DATA) libwap.a $(DESTDIR)$(libdir)/kannel
+	$(INSTALL_DATA) lib*.a $(DESTDIR)$(libdir)/kannel
 
 install-test: all
 	$(INSTALL) -d $(DESTDIR)$(libdir)/kannel
@@ -329,7 +328,9 @@ distclean: clean
 nag:
 	utils/find-long-lines
 
-depend .depend: wmlscript/wsgram.h gw-config.h
+@SOAP_INCLUDE@
+
+depend .depend: wmlscript/wsgram.h gw-config.h $(soap_depend)
 	for dir in $(srcdirs); do \
 	for file in $$dir/*.c; do \
 	    $(MKDEPEND) $$file -MT $$dir/`basename $$file .c`.o -MT $$dir/`basename $$file .c`.i; done; done > .depend  

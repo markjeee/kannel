@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -176,6 +176,31 @@ SMSCConn *smscconn_create(CfgGroup *grp, int start_as_stopped)
     conn->failed = counter_create();
     conn->flow_mutex = mutex_create();
 
+    conn->outgoing_sms_load = load_create();
+    /* add 60,300,-1 entries */
+    load_add_interval(conn->outgoing_sms_load, 60);
+    load_add_interval(conn->outgoing_sms_load, 300);
+    load_add_interval(conn->outgoing_sms_load, -1);
+
+    conn->incoming_sms_load = load_create();
+    /* add 60,300,-1 entries */
+    load_add_interval(conn->incoming_sms_load, 60);
+    load_add_interval(conn->incoming_sms_load, 300);
+    load_add_interval(conn->incoming_sms_load, -1);
+
+    conn->incoming_dlr_load = load_create();
+    /* add 60,300,-1 entries to dlr */
+    load_add_interval(conn->incoming_dlr_load, 60);
+    load_add_interval(conn->incoming_dlr_load, 300);
+    load_add_interval(conn->incoming_dlr_load, -1);
+
+    conn->outgoing_dlr_load = load_create();
+    /* add 60,300,-1 entries to dlr */
+    load_add_interval(conn->outgoing_dlr_load, 60);
+    load_add_interval(conn->outgoing_dlr_load, 300);
+    load_add_interval(conn->outgoing_dlr_load, -1);
+
+
 #define GET_OPTIONAL_VAL(x, n) x = cfg_get(grp, octstr_imm(n))
 #define SPLIT_OPTIONAL_VAL(x, n) \
         do { \
@@ -238,6 +263,9 @@ SMSCConn *smscconn_create(CfgGroup *grp, int start_as_stopped)
     if (cfg_get_integer(&conn->max_sms_octets, grp, octstr_imm("max-sms-octets")) == -1)
         conn->max_sms_octets = MAX_SMS_OCTETS;
 
+    if (cfg_get_bool(&conn->dead_start, grp, octstr_imm("dead-start")) == -1)
+        conn->dead_start = 0;	/* default to connect at start-up time */
+
     /* open a smsc-id specific log-file in exlusive mode */
     if (conn->log_file)
         conn->log_idx = log_open(octstr_get_cstr(conn->log_file), 
@@ -284,6 +312,10 @@ SMSCConn *smscconn_create(CfgGroup *grp, int start_as_stopped)
         ret = smsc_oisd_create(conn, grp);
     else if (octstr_compare(smsc_type, octstr_imm("loopback")) == 0)
         ret = smsc_loopback_create(conn, grp);
+#ifdef HAVE_GSOAP
+    else if (octstr_compare(smsc_type, octstr_imm("parlayx")) == 0)
+    	ret = smsc_soap_parlayx_create(conn, grp);
+#endif
     else
         ret = smsc_wrapper_create(conn, grp);
 
@@ -340,6 +372,11 @@ int smscconn_destroy(SMSCConn *conn)
     counter_destroy(conn->sent);
     counter_destroy(conn->sent_dlr);
     counter_destroy(conn->failed);
+
+    load_destroy(conn->incoming_sms_load);
+    load_destroy(conn->incoming_dlr_load);
+    load_destroy(conn->outgoing_sms_load);
+    load_destroy(conn->outgoing_dlr_load);
 
     octstr_destroy(conn->name);
     octstr_destroy(conn->id);

@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -111,11 +111,9 @@ static int sms_to_client(Connection *client, Msg *msg)
 {
     Octstr *line;
     Octstr *msgdata = NULL; /* NULL to allow octstr_destroy */
-    char *contents;
-    int len;
 
     debug("bb.sms", 0, "smsc_fake: sending message to client");
-//    msg_dump(msg, 0);
+    /* msg_dump(msg, 0); */
 
     line = octstr_duplicate(msg->sms.sender);
     octstr_append_char(line, ' ');
@@ -126,28 +124,29 @@ static int sms_to_client(Connection *client, Msg *msg)
         octstr_url_encode(msgdata);
         octstr_append(line, msgdata);
         octstr_destroy(msgdata);
-        octstr_append_char(line, ' ');
+        octstr_append(line, octstr_imm(" data "));
         msgdata = octstr_duplicate(msg->sms.msgdata);
         octstr_url_encode(msgdata);
         octstr_append(line, msgdata);
     } else {
-        contents = octstr_get_cstr(msg->sms.msgdata);
-        len = octstr_len(msg->sms.msgdata);
-        while (len > 0) {
-            len--;
-            if (contents[len] < 32 || contents[len] > 126) {
-                octstr_append(line, octstr_imm(" data "));
-                msgdata = octstr_duplicate(msg->sms.msgdata);
-                octstr_url_encode(msgdata);
-                octstr_append(line, msgdata);
-                goto notelse; /* C lacks "else" clause for while loops */
-            }
-        }
-        octstr_append(line, octstr_imm(" text "));
-        octstr_append(line, msg->sms.msgdata);
+    	if (msg->sms.coding == DC_8BIT) {
+            octstr_append(line, octstr_imm(" data "));
+            msgdata = octstr_duplicate(msg->sms.msgdata);
+            octstr_url_encode(msgdata);
+            octstr_append(line, msgdata);
+    	}
+    	else if (msg->sms.coding == DC_UCS2) {
+            octstr_append(line, octstr_imm(" ucs-2 "));
+            msgdata = octstr_duplicate(msg->sms.msgdata);
+            octstr_url_encode(msgdata);
+            octstr_append(line, msgdata);
+    	}
+    	else {
+            octstr_append(line, octstr_imm(" text "));
+            octstr_append(line, msg->sms.msgdata);
+    	}
     }
 
-notelse:
     octstr_append_char(line, 10);
 
     if (conn_write(client, line) == -1) {
@@ -180,10 +179,13 @@ static void msg_to_bb(SMSCConn *conn, Octstr *line)
     if (p == -1)
         goto error;
     type = octstr_copy(line, p2 + 1, p - p2 - 1);
-    if (!octstr_compare(type, octstr_imm("text")))
+    if (!octstr_compare(type, octstr_imm("text"))) {
         msg->sms.msgdata = octstr_copy(line, p + 1, LONG_MAX);
+        msg->sms.coding = DC_7BIT;
+    }
     else if (!octstr_compare(type, octstr_imm("data"))) {
         msg->sms.msgdata = octstr_copy(line, p + 1, LONG_MAX);
+        msg->sms.coding = DC_8BIT;
         if (octstr_url_decode(msg->sms.msgdata) == -1)
             warning(0, "smsc_fake: urlcoded data from client looks malformed");
     }
@@ -201,7 +203,7 @@ static void msg_to_bb(SMSCConn *conn, Octstr *line)
         msg->sms.udhdata = octstr_copy(line, p + 1, p2 - p - 1);
         msg->sms.msgdata = octstr_copy(line, p2 + 1, LONG_MAX);
         if (msg->sms.coding == DC_UNDEF)
-            msg->sms.coding = DC_8BIT;;
+            msg->sms.coding = DC_8BIT;
         if (octstr_url_decode(msg->sms.msgdata) == -1 ||
             octstr_url_decode(msg->sms.udhdata) == -1)
             warning(0, "smsc_fake: urlcoded data from client looks malformed");
@@ -224,7 +226,7 @@ static void msg_to_bb(SMSCConn *conn, Octstr *line)
     msg->sms.smsc_id = octstr_duplicate(conn->id);
 
     debug("bb.sms", 0, "smsc_fake: new message received");
-//    msg_dump(msg, 0);
+    /* msg_dump(msg, 0); */
     bb_smscconn_receive(conn, msg);
     return;
 error:
@@ -270,7 +272,7 @@ static void main_connection_loop(SMSCConn *conn, Connection *client)
                 Msg *copy = msg_duplicate(msg);
                 
                 /* 
-                 * Actually no quarantee of it having been really sent,
+                 * Actually no guarantee of it having been really sent,
                  * but I suppose that doesn't matter since this interface
                  * is just for debugging anyway. The upper layer will send
                  * a SMSC success DLR if mask is set. Be aware that msg is
@@ -296,7 +298,8 @@ static void main_connection_loop(SMSCConn *conn, Connection *client)
                         /* XXX TODO: Provide a SMPP DLR text in msgdata */
                         bb_smscconn_receive(conn, dlrmsg);
                     } else {
-                        error(0,"smsc_fale: got DLR but could not find message or was not interested in it");
+                        error(0,"smsc_fale: got DLR but could not find message or "
+                        		"was not interested in it");
                     }
                     octstr_destroy(tmp);
                 }
@@ -362,7 +365,7 @@ static void fake_listener(void *arg)
             break;
         if (ret == 0) 
             /* 
-             * This thread was woken up from elsewhere, but
+             * This thread was woke up from elsewhere, but
              * if we're not shutting down nothing to do here. 
              */
             continue;
@@ -374,8 +377,8 @@ static void fake_listener(void *arg)
         }
         ip = host_ip(client_addr);
         if (!is_allowed_ip(privdata->allow_ip, privdata->deny_ip, ip)) {
-            info(0, "Fakesmsc connection tried from denied host <%s>,"
-                 " disconnected", octstr_get_cstr(ip));
+            info(0, "Fakesmsc connection tried from denied host <%s>, "
+                    "disconnected", octstr_get_cstr(ip));
             octstr_destroy(ip);
             close(s);
             continue;
@@ -446,7 +449,7 @@ static int add_msg_cb(SMSCConn *conn, Msg *sms)
         char id[UUID_STR_LEN + 1];
         uuid_unparse(sms->sms.id, id);
         tmp = octstr_format("%s", id);
-        dlr_add(conn->id, tmp, sms);
+        dlr_add(conn->id, tmp, sms, 0);
         octstr_destroy(tmp);
     }
     gwlist_produce(privdata->outgoing_queue, copy);

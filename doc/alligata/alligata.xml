@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook V3.1//EN" [
-  <!ENTITY figtype "#FIGTYPE#">
-  <!ENTITY timestamp "#DATE#">
-  <!ENTITY version "#VERSION#">
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.2//EN"
+                      "http://docbook.org/xml/4.2/docbookx.dtd" [
+<!ENTITY figtype "#FIGTYPE#">
+<!ENTITY timestamp "#DATE#">
+<!ENTITY version "#VERSION#">
 ]>
 
 <book>
@@ -154,7 +154,7 @@ Web site:  www.3glab.com</address>
 				<section>
 					<title>Minimum System Requirements
 </title>
-<FormalPara>
+<formalpara>
 <title>Hardware:</title>
 <para>
 					<itemizedlist>
@@ -172,8 +172,8 @@ Web site:  www.3glab.com</address>
 						</listitem>
 					</itemizedlist>
 </para>
-</FormalPara>
-<FormalPara>
+</formalpara>
+<formalpara>
 <title>Software:</title>
 <para>
 					<itemizedlist>
@@ -191,7 +191,7 @@ Mandrake Linux version 7.0 or 7.1
 						</listitem>
 					</itemizedlist>
 </para>
-</FormalPara>
+</formalpara>
 				</section>
 				<section>
 					<title>Optional Hardware Accessories</title>
@@ -213,9 +213,9 @@ Mandrake Linux version 7.0 or 7.1
 				<section>
 					<title>Minimum System Requirements
 </title>
-<FormalPara>
+<formalpara>
 <title>Hardware:</title>
-<Para>
+<para>
 					<itemizedlist>
 						<listitem>
 							<para>Sun UltraSPARC with at least 128 MB of RAM
@@ -230,19 +230,19 @@ Mandrake Linux version 7.0 or 7.1
 </para>
 						</listitem>
 					</itemizedlist>
-</Para>
-</FormalPara>
-<FormalPara>
+</para>
+</formalpara>
+<formalpara>
 <title>Software:</title>
-<Para>
+<para>
 					<itemizedlist>
 						<listitem>
 							<para>Sun Solaris version 7 or 8
 </para>
 						</listitem>
 					</itemizedlist>
-</Para>
-</FormalPara>
+</para>
+</formalpara>
 				</section>
 				<section>
 					<title>Optional Hardware Accessories 
@@ -308,7 +308,7 @@ Mandrake Linux version 7.0 or 7.1
 </para>
 				<mediaobject>
 					<imageobject>
-						<imagedata fileref="wapdiagsmall&figtype;">
+						<imagedata fileref="wapdiagsmall&figtype;"/>
 					</imageobject>
 				</mediaobject>
 				<para>A signal sent by a mobile device is picked up by one of a network operator&apos;s base stations. It is then routed through the mobile network to the Alligata Server using User Datagram Protocol (UDP). If it is an SMS message, it is first sent to the network&apos;s <emphasis role="bold">SMS Centre (SMSC)</emphasis>. The SMSC&apos;s main job is to hold pending SMS messages for recipients whose phones are turned off or otherwise inaccessible.
@@ -417,9 +417,9 @@ Mandrake Linux version 7.0 or 7.1
 			<title>4  Installation from a Graphical User Interface</title>
 			<para>If your Linux or Solaris system includes a graphical user interface, the installation program automatically installs the Alligata Server using the graphical procedure described in this section.
 </para>
-<FormalPara>
+<formalpara>
 <title>To install the Alligata Server from a Linux/Solaris graphical user interface:</title>
-<Para>
+<para>
 			<orderedlist inheritnum="ignore" continuation="restarts">
 
 				<listitem>
@@ -505,7 +505,7 @@ Mandrake Linux version 7.0 or 7.1
 					<para>A dialog box opens containing information on the licences used by the Alligata Server package (see Figure 4.1).</para>
 					<mediaobject>
 						<imageobject>
-							<imagedata fileref="licences&figtype;">
+							<imagedata fileref="licences&figtype;"/>
 						</imageobject>
 						<caption>
 							<para>Figure 4.1: Licence dialog box
@@ -520,7 +520,7 @@ Mandrake Linux version 7.0 or 7.1
 </para>
 					<mediaobject>
 						<imageobject>
-							<imagedata fileref="maininst&figtype;">
+							<imagedata fileref="maininst&figtype;"/>
 						</imageobject>
 						<caption>
 							<para>Figure 4.2: Main Alligata Server installation dialog box
@@ -730,7 +730,7 @@ Mandrake Linux version 7.0 or 7.1
 </para>
 					<mediaobject>
 						<imageobject>
-							<imagedata fileref="nearlydone&figtype;">
+							<imagedata fileref="nearlydone&figtype;"/>
 						</imageobject>
 						<caption>
 							<para>Figure 4.4: &apos;Thank You&apos; dialog box
@@ -751,7 +751,7 @@ Mandrake Linux version 7.0 or 7.1
 </para>
 					<mediaobject>
 						<imageobject>
-							<imagedata fileref="done&figtype;">
+							<imagedata fileref="done&figtype;"/>
 						</imageobject>
 						<caption>
 							<para>Figure 4.5: &apos;Install Complete&apos; dialog box</para>
@@ -767,16 +767,16 @@ Mandrake Linux version 7.0 or 7.1
 </para>
 				</listitem>
 			</orderedlist>
-</Para>
-</FormalPara>
+</para>
+</formalpara>
 
 		</chapter>
 		<chapter>
 			<title>5  Installation from the Command Line</title>
 			<para>If your Linux or Solaris system does not include a graphical user interface, the installation program will install the Alligata Server using the command line procedure described in this section.</para>
-<FormalPara>
+<formalpara>
 <title>To install the Alligata Server from the command line:</title>
-<Para>
+<para>
 			<orderedlist inheritnum="ignore" continuation="restarts">
 				<listitem>
 					<para>Place the Alligata Server CD-ROM in the CD-ROM drive.
@@ -1071,8 +1071,8 @@ Would you like to launch a Web browser? [Y/n]</screen>
 					<para>To start the Alligata Server, follow the instructions in Section 8.1.</para>
 				</listitem>
 			</orderedlist>
-</Para>
-</FormalPara>
+</para>
+</formalpara>
 
 		</chapter>
 		<chapter>
@@ -1084,9 +1084,9 @@ Would you like to launch a Web browser? [Y/n]</screen>
 			<para>You can add any number of extra WAP and SMS Boxes to an installation of the Alligata Server.
 </para>
 
-<FormalPara>
+<formalpara>
 <title>To add a WAP Box to an installation of the Alligata Server:</title>
-<Para>
+<para>
 
 			<orderedlist inheritnum="ignore" continuation="restarts">
 				<listitem>
@@ -1135,11 +1135,11 @@ Would you like to launch a Web browser? [Y/n]</screen>
 </para>
 				</listitem>
 			</orderedlist>
-</Para>
-</FormalPara>
-<FormalPara>
+</para>
+</formalpara>
+<formalpara>
 <title>To add an SMS Box to an installation of the Alligata Server:</title>
-<Para>
+<para>
 
 			<orderedlist inheritnum="ignore" continuation="restarts">
 				<listitem>
@@ -1182,8 +1182,8 @@ Would you like to launch a Web browser? [Y/n]</screen>
 </para>
 				</listitem>
 			</orderedlist>
-</Para>
-</FormalPara>
+</para>
+</formalpara>
 
 		</chapter>
 	</part>
@@ -1568,9 +1568,9 @@ At the command prompt, type</para>
 </title>
 						<para>You can use a set of HTTP commands to set the Alligata Server&apos;s program state (see Section 3.3.1) while it is running. You can also use the <userinput moreinfo="none">status</userinput> command to retrieve information about the Alligata Server&apos;s current activity. Figure 8.3 lists the Alligata Server&apos;s HTTP administration commands.
 </para>
-<FormalPara>
+<formalpara>
 <title>To send the Alligata Server an HTTP administration command:</title>
-<Para>
+<para>
 						<itemizedlist>
 							<listitem>
 								<para>In the &apos;Location&apos; box of a Web browser, type the command using the following syntax:
@@ -1641,8 +1641,8 @@ Enter Alligata Server administration password:
 								</table>
 							</listitem>
 						</itemizedlist>
-</Para>
-</FormalPara>
+</para>
+</formalpara>
 
 					</section>
 					<section>
@@ -1662,9 +1662,9 @@ Enter Alligata Server administration password:
 				<section>
 					<title>8.3.1 Method 1
 </title>
-<FormalPara>
+<formalpara>
 <title>Linux users</title>
-<Para>
+<para>
 					<itemizedlist>
 						<listitem>
 							<para>From the command line, type
@@ -1683,11 +1683,11 @@ Enter Alligata Server administration password:
 							</para>
 						</listitem>
 					</itemizedlist>
-</Para>
-</FormalPara>
-<FormalPara>
+</para>
+</formalpara>
+<formalpara>
 <title>Solaris users</title>
-<Para>
+<para>
 					<itemizedlist>
 						<listitem>
 							<para>From the command line, type
@@ -1706,8 +1706,8 @@ Enter Alligata Server administration password:
 							</para>
 						</listitem>
 					</itemizedlist>
-</Para>
-</FormalPara>
+</para>
+</formalpara>
 				</section>
 				<section>
 					<title>8.3.2 Method 2
@@ -4430,7 +4430,7 @@ Example:</para>
 </para>
 				<mediaobject>
 					<imageobject>
-						<imagedata fileref="11-1&figtype;">
+						<imagedata fileref="11-1&figtype;"/>
 					</imageobject>
 					<caption>
 						<para>Figure 11.1</para>
@@ -4629,7 +4629,7 @@ Example:</para>
 </para>
 				<mediaobject>
 					<imageobject>
-						<imagedata fileref="11-3&figtype;">
+						<imagedata fileref="11-3&figtype;"/>
 					</imageobject>
 					<caption>
 						<para>Figure 11.3</para>
@@ -4643,7 +4643,7 @@ Example:</para>
 </para>
 				<mediaobject>
 					<imageobject>
-						<imagedata fileref="11-4&figtype;">
+						<imagedata fileref="11-4&figtype;"/>
 					</imageobject>
 					<caption>
 						<para>Figure 11.4</para>
@@ -4653,7 +4653,7 @@ Example:</para>
 </para>
 				<mediaobject>
 					<imageobject>
-						<imagedata fileref="11-5&figtype;">
+						<imagedata fileref="11-5&figtype;"/>
 					</imageobject>
 					<caption>
 						<para>Figure 11.5</para>
@@ -4726,13 +4726,13 @@ Example:</para>
 						<tbody>
 							<row>
 								<entry>
-									<literal moreinfo="none">src</literal> * </entry>
+									<literal moreinfo="none">src</literal> *ï¿½</entry>
 								<entry>Specifies the URL of the source file for the image.
 </entry>
 							</row>
 							<row>
 								<entry>
-									<literal moreinfo="none">alt</literal> * </entry>
+									<literal moreinfo="none">alt</literal> *ï¿½</entry>
 								<entry>Specifies text for the browser to display if the image cannot be displayed.
 </entry>
 							</row>
@@ -4790,9 +4790,9 @@ If the height and width attributes do not match the actual height and width of a
 </para>
 			<para>The example sites are illustrations of the kinds of service you can implement using WAP. You can create simple sites using just WML, or you can incorporate dynamic features into them using scripting languages like Perl and PHP. The most important thing to remember is to keep the files you serve as small and simple as possible. A compiled WML file should not be larger than 1400 bytes, which means the size of your source WML file should not exceed about 3000 characters.
 </para>
-<FormalPara>
+<formalpara>
 <title>To view the example WAP sites:</title>
-<Para>
+<para>
 			<orderedlist inheritnum="ignore" continuation="restarts">
 				<listitem>
 					<para>If you have not already done so, install the Alligata Server as described in Sections 4 and 5. If you are installing from a graphical user interface, select &apos;Alligata Server example sites&apos; in the main installation dialog box. If you are installing from the command prompt, enter Y when you are asked, &apos;Install Alligata Server examples?&apos;.
@@ -4907,7 +4907,7 @@ If the height and width attributes do not match the actual height and width of a
 </para>
 					<mediaobject>
 						<imageobject>
-							<imagedata fileref="12-2&figtype;">
+							<imagedata fileref="12-2&figtype;"/>
 						</imageobject>
 						<caption>
 							<para>Figure 12.2: Site Examples index</para>
@@ -4917,8 +4917,8 @@ If the height and width attributes do not match the actual height and width of a
 </para>
 				</listitem>
 			</orderedlist>
-</Para>
-</FormalPara>
+</para>
+</formalpara>
 
 			<section>
 				<title>12.1 Example Site 1: Static WML (Simple)
@@ -4935,7 +4935,7 @@ If the height and width attributes do not match the actual height and width of a
 </para>
 				<mediaobject>
 					<imageobject>
-						<imagedata fileref="12-3&figtype;">
+						<imagedata fileref="12-3&figtype;"/>
 					</imageobject>
 					<caption>
 						<para>Figure 12.3</para>
@@ -4945,7 +4945,7 @@ If the height and width attributes do not match the actual height and width of a
 </para>
 				<mediaobject>
 					<imageobject>
-						<imagedata fileref="12-4&figtype;">
+						<imagedata fileref="12-4&figtype;"/>
 					</imageobject>
 					<caption>
 						<para>Figure 12.4</para>
@@ -4957,7 +4957,7 @@ If the height and width attributes do not match the actual height and width of a
 </para>
 				<mediaobject>
 					<imageobject>
-						<imagedata fileref="12-5&figtype;">
+						<imagedata fileref="12-5&figtype;"/>
 					</imageobject>
 					<caption>
 						<para>Figure 12.5</para>
@@ -4967,7 +4967,7 @@ If the height and width attributes do not match the actual height and width of a
 </para>
 				<mediaobject>
 					<imageobject>
-						<imagedata fileref="12-6&figtype;">
+						<imagedata fileref="12-6&figtype;"/>
 					</imageobject>
 					<caption>
 						<para>Figure 12.6</para>
@@ -5190,7 +5190,7 @@ If the height and width attributes do not match the actual height and width of a
 </para>
 				<mediaobject>
 					<imageobject>
-						<imagedata fileref="12-7&figtype;">
+						<imagedata fileref="12-7&figtype;"/>
 					</imageobject>
 					<caption>
 						<para>Figure 12.7</para>
@@ -5238,7 +5238,7 @@ If the height and width attributes do not match the actual height and width of a
 </para>
 				<mediaobject>
 					<imageobject>
-						<imagedata fileref="12-8&figtype;">
+						<imagedata fileref="12-8&figtype;"/>
 					</imageobject>
 					<caption>
 						<para>Figure 12.8</para>
@@ -5294,7 +5294,7 @@ If the height and width attributes do not match the actual height and width of a
 </para>
 				<mediaobject>
 					<imageobject>
-						<imagedata fileref="12-9&figtype;">
+						<imagedata fileref="12-9&figtype;"/>
 					</imageobject>
 					<caption>
 						<para>Figure 12.9</para>
@@ -5440,7 +5440,7 @@ rd&amp;amp;server=imap.asite.net&quot;/&gt;
 </para>
 				<mediaobject>
 					<imageobject>
-						<imagedata fileref="12-10&figtype;">
+						<imagedata fileref="12-10&figtype;"/>
 					</imageobject>
 					<caption>
 						<para>Figure 12.10</para>
@@ -5450,7 +5450,7 @@ rd&amp;amp;server=imap.asite.net&quot;/&gt;
 </para>
 				<mediaobject>
 					<imageobject>
-						<imagedata fileref="12-11&figtype;">
+						<imagedata fileref="12-11&figtype;"/>
 					</imageobject>
 					<caption>
 						<para>Figure 12.11</para>
@@ -5462,7 +5462,7 @@ rd&amp;amp;server=imap.asite.net&quot;/&gt;
 </para>
 				<mediaobject>
 					<imageobject>
-						<imagedata fileref="12-12&figtype;">
+						<imagedata fileref="12-12&figtype;"/>
 					</imageobject>
 					<caption>
 						<para>Figure 12.12</para>
@@ -5470,7 +5470,7 @@ rd&amp;amp;server=imap.asite.net&quot;/&gt;
 				</mediaobject>
 				<mediaobject>
 					<imageobject>
-						<imagedata fileref="12-13&figtype;">
+						<imagedata fileref="12-13&figtype;"/>
 					</imageobject>
 					<caption>
 						<para>Figure 12.13</para>
@@ -5819,7 +5819,7 @@ All+sales+staff+return+to+office+immediately&amp;smsc=smsc5
 </para>
 					<mediaobject>
 						<imageobject>
-							<imagedata fileref="13-5&figtype;">
+							<imagedata fileref="13-5&figtype;"/>
 						</imageobject>
 						<caption>
 							<para>Figure 13.5: Example HTML form for SMS messaging
@@ -5855,9 +5855,9 @@ All+sales+staff+return+to+office+immediately&amp;smsc=smsc5
 </para>
 				<para>An example set of configuration groups for OTA configuration is shown in Figure 13.6.
 </para>
-<FormalPara>
+<formalpara>
 <title>To configure a WAP client device over the air (system administrator):</title>
-<Para>
+<para>
 				<itemizedlist>
 					<listitem>
 						<para>Send a message to the Alligata Server via HTTP using the following syntax:
@@ -5881,12 +5881,12 @@ password=foo&amp;phonenumber=449999123456
 </para>
 					</listitem>
 				</itemizedlist>
-</Para>
-</FormalPara>
-<FormalPara>
+</para>
+</formalpara>
+<formalpara>
 					<title>To configure a WAP client device over the air (client):
 </title>
-<Para>
+<para>
 
 				<orderedlist inheritnum="ignore" continuation="restarts">
 					<listitem>
@@ -5907,8 +5907,8 @@ password=foo&amp;phonenumber=449999123456
 </para>
 					</listitem>
 				</orderedlist>
-</Para>
-</FormalPara>
+</para>
+</formalpara>
 
 				<para>Figure 13.6: Example settings for OTA configuration
 </para>

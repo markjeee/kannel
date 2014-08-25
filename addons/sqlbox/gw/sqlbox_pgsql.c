@@ -150,7 +150,7 @@ void pgsql_save_msg(Msg *msg, Octstr *momt /*, Octstr smsbox_id */)
         st_num(msg->sms.mclass), st_num(msg->sms.mwi), st_num(msg->sms.coding), st_num(msg->sms.compress),
         st_num(msg->sms.validity), st_num(msg->sms.deferred), st_num(msg->sms.dlr_mask), st_str(msg->sms.dlr_url),
         st_num(msg->sms.pid), st_num(msg->sms.alt_dcs), st_num(msg->sms.rpi), st_str(msg->sms.charset),
-        st_str(msg->sms.boxc_id), st_str(msg->sms.binfo), st_str(msg->sms.meta_data));
+        st_str(msg->sms.boxc_id), st_str(msg->sms.binfo), st_str(msg->sms.meta_data), st_str(msg->sms.foreign_id));
     sql_update(sql);
         //debug("sqlbox", 0, "sql_save_msg: %s", octstr_get_cstr(sql));
     while (stuffcount > 0) {
@@ -185,6 +185,8 @@ Msg *pgsql_fetch_msg()
             id = octstr_null_create(0);
             /* save fields in this row as msg struct */
             msg = msg_create(sms);
+            /* we abuse the foreign_id field in the message struct for our sql_id value */
+            msg->sms.foreign_id = octstr_null_create(0);
             msg->sms.sender     = octstr_null_create(2);
             msg->sms.receiver   = octstr_null_create(3);
             msg->sms.udhdata    = octstr_null_create(4);
@@ -324,6 +326,8 @@ found:
     res->sql_leave = pgsql_leave;
     res->sql_fetch_msg = pgsql_fetch_msg;
     res->sql_save_msg = pgsql_save_msg;
+    res->sql_fetch_msg_list = NULL;
+    res->sql_save_list = NULL;
     return res;
 }
 

@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -71,6 +71,8 @@
 #include "urltrans.h"
 #include "gwlib/gwlib.h"
 #include "gw/sms.h"
+#include "gw/dlr.h"
+#include "gw/meta_data.h"
 
 
 /***********************************************************************
@@ -97,6 +99,7 @@ struct URLTranslation {
     int omit_empty;	/* if the reply is empty, is notification send */
     Octstr *header;	/* string to be inserted to each SMS */
     Octstr *footer;	/* string to be appended to each SMS */
+    Octstr *alt_charset; /* alternative charset to use towards service */
     List *accepted_smsc; /* smsc id's allowed to use this service. If not set,
 			    all messages can use this service */
     List *accepted_account; /* account id's allowed to use this service. If not set,
@@ -125,7 +128,8 @@ struct URLTranslation {
     int args;
     int has_catchall_arg;
     int catch_all;
-    Octstr *dlr_url;	/* Url to call for delivery reports */
+    Octstr *dlr_url;    /* URL to call for delivery reports */
+    long dlr_mask;       /* DLR event mask */
 
     regex_t *keyword_regex;       /* the compiled regular expression for the keyword*/
     regex_t *accepted_smsc_regex;
@@ -319,6 +323,7 @@ static void strip_keyword(Msg *request)
 Octstr *urltrans_fill_escape_codes(Octstr *pattern, Msg *request)
 {
     Octstr *enc;
+    Octstr *meta_group, *meta_param;
     int nextarg, j;
     struct tm tm;
     int num_words;
@@ -327,7 +332,7 @@ Octstr *urltrans_fill_escape_codes(Octstr *pattern, Msg *request)
     long pattern_len;
     long pos;
     int c;
-    long i;
+    long i, k;
     Octstr *temp;
 
     result = octstr_create("");
@@ -397,7 +402,7 @@ Octstr *urltrans_fill_escape_codes(Octstr *pattern, Msg *request)
         break;
 
     case 'C':
-        if(octstr_len(request->sms.charset)) {
+        if (octstr_len(request->sms.charset)) {
             octstr_append(result, request->sms.charset);
         } else {
             switch (request->sms.coding) {
@@ -421,15 +426,6 @@ Octstr *urltrans_fill_escape_codes(Octstr *pattern, Msg *request)
         octstr_url_encode(enc);
         octstr_append(result, enc);
         octstr_destroy(enc);
-        break;
-
-    case 'R': /* dlr_url */
-        if (octstr_len(request->sms.dlr_url)) {
-            enc = octstr_duplicate(request->sms.dlr_url);
-            octstr_url_encode(enc);
-            octstr_append(result, enc);
-            octstr_destroy(enc);
-        }
         break;
 
     case 'D': /* meta_data */
@@ -586,9 +582,18 @@ Octstr *urltrans_fill_escape_codes(Octstr *pattern, Msg *request)
         }
         break;
 
+    case 'R': /* dlr_url */
+        if (octstr_len(request->sms.dlr_url)) {
+            enc = octstr_duplicate(request->sms.dlr_url);
+            octstr_url_encode(enc);
+            octstr_append(result, enc);
+            octstr_destroy(enc);
+        }
+        break;
+
     case 's':
         if (nextarg >= num_words)
-        break;
+        	break;
         enc = octstr_duplicate(gwlist_get(word_list, nextarg));
         octstr_url_encode(enc);
         octstr_append(result, enc);
@@ -598,13 +603,13 @@ Octstr *urltrans_fill_escape_codes(Octstr *pattern, Msg *request)
 
     case 'S':
         if (nextarg >= num_words)
-        break;
+        	break;
         temp = gwlist_get(word_list, nextarg);
         for (i = 0; i < octstr_len(temp); ++i) {
-        if (octstr_get_char(temp, i) == '*')
-            octstr_append_char(result, '~');
-        else
-            octstr_append_char(result, octstr_get_char(temp, i));
+        	if (octstr_get_char(temp, i) == '*')
+        		octstr_append_char(result, '~');
+        	else
+        		octstr_append_char(result, octstr_get_char(temp, i));
         }
         ++nextarg;
         break;
@@ -634,14 +639,58 @@ Octstr *urltrans_fill_escape_codes(Octstr *pattern, Msg *request)
         octstr_destroy(enc);
         }
         break;
+
+    case 'v':
+        if (request->sms.validity != MSG_PARAM_UNDEFINED) {
+            octstr_format_append(result, "%ld", (request->sms.validity - time(NULL)) / 60);
+        }
+        break;
+
+    case 'V':
+        if (request->sms.deferred != MSG_PARAM_UNDEFINED) {
+            octstr_format_append(result, "%ld", (request->sms.deferred - time(NULL)) / 60);
+        }
+        break;
     
+    /*
+     * This allows to pass meta-data individual parameters into urls.
+     * The syntax is as follows: %#group#parameter#
+     * For example: %#smpp#my_param# would be replaced with the value
+     * 'my_param' from the group 'smpp' coming inside the meta_data field.
+     */
+    case '#':
+        /* ASCII 0x23 == '#' */
+        k = octstr_search_char(pattern, 0x23, pos + 2);
+        if (k >= 0) {
+            pos += 2;
+            meta_group = octstr_copy(pattern, pos, (k-pos));
+            pos = k + 1;
+            k = octstr_search_char(pattern, 0x23, pos);
+            if (k >= 0) {
+                meta_param = octstr_copy(pattern, pos, (k-pos));
+                pos = k - 1;
+                if (request->sms.meta_data != NULL) {
+                    enc = meta_data_get_value(request->sms.meta_data,
+                            octstr_get_cstr(meta_group), meta_param);
+                    octstr_url_encode(enc);
+                    octstr_append(result, enc);
+                    octstr_destroy(enc);
+                }
+                octstr_destroy(meta_param);
+            } else {
+                pos++;
+            }
+            octstr_destroy(meta_group);
+        }
+        break;
+
     /* XXX sms.parameters not present in here:
      *   * pid - will we receive this ? 
      *   * alt-dcs - shouldn't be required unless we want to inform 
      *               which alt-dcs external server should use back
      *   * compress - if we use compression, probably kannel would 
      *                decompress and reset this to 0. not required
-     *   * validity, deferred, rpi - we don't receive these from smsc
+     *   * rpi - we don't receive these from smsc
      *   * username, password, dlr-url, account - nonsense to send
      */
     case '%':
@@ -766,6 +815,11 @@ Octstr *urltrans_footer(URLTranslation *t)
     return t->footer;
 }
 
+Octstr *urltrans_alt_charset(URLTranslation *t)
+{
+    return t->alt_charset;
+}
+
 Octstr *urltrans_name(URLTranslation *t) 
 {
     return t->name;
@@ -861,6 +915,15 @@ int urltrans_send_sender(URLTranslation *t)
     return t->send_sender;
 }
 
+Octstr *urltrans_dlr_url(URLTranslation *t)
+{
+    return t->dlr_url;
+}
+
+int urltrans_dlr_mask(URLTranslation *t)
+{
+    return t->dlr_mask;
+}
 
 
 /***********************************************************************
@@ -910,6 +973,9 @@ static URLTranslation *create_onetrans(CfgGroup *grp)
         cfg_get_bool(&ot->catch_all, grp, octstr_imm("catch-all"));
 
         ot->dlr_url = cfg_get(grp, octstr_imm("dlr-url"));
+        if (cfg_get_integer(&ot->dlr_mask, grp, octstr_imm("dlr-mask")) == -1)
+            ot->dlr_mask = DLR_UNDEFINED;
+        ot->alt_charset = cfg_get(grp, octstr_imm("alt-charset"));
 	    
         url = cfg_get(grp, octstr_imm("get-url"));
         if (url == NULL)
@@ -1191,6 +1257,7 @@ static void destroy_onetrans(void *p)
 	octstr_destroy(ot->split_suffix);
 	octstr_destroy(ot->header);
 	octstr_destroy(ot->footer);
+	octstr_destroy(ot->alt_charset);
 	gwlist_destroy(ot->accepted_smsc, octstr_destroy_item);
 	gwlist_destroy(ot->accepted_account, octstr_destroy_item);
 	octstr_destroy(ot->name);

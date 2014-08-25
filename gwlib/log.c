@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -66,13 +66,35 @@
 #include <time.h>
 #include <stdarg.h>
 #include <string.h>
+#include <ctype.h>
 
 #ifdef HAVE_EXECINFO_H
 #include <execinfo.h>
 #endif
 
 #if HAVE_SYSLOG_H
+#define	SYSLOG_NAMES
 #include <syslog.h>
+
+/*
+ * Decode the syslog name to its int value
+ */
+static int decode(char *name)
+{
+    register CODE *c;
+    CODE *facilities = facilitynames;
+    
+    if (isdigit(*name)) {
+        return (atoi(name));
+    }
+    for (c = facilities; c->c_name; c++) {
+        if (!strcasecmp(name, c->c_name)) {
+            return (c->c_val);
+        }
+    }
+    return LOG_DAEMON;
+}
+
 #else
 
 /*
@@ -84,11 +106,16 @@ enum {
     LOG_PID, LOG_DAEMON, LOG_DEBUG, LOG_INFO, LOG_WARNING, LOG_ERR, LOG_ALERT
 };
 
+static int decode(char *name)
+{
+    return LOG_DAEMON;
+}
+
 static void openlog(const char *ident, int option, int facility)
 {
 }
 
-static void syslog(int translog, const char *buf)
+static void syslog(int translog, const char *msg, ...)
 {
 }
 
@@ -144,8 +171,8 @@ static RWLock rwlock;
  * Syslog support.
  */
 static int sysloglevel;
+static int syslogfacility = LOG_DAEMON;
 static int dosyslog = 0;
-
 
 /*
  * Make sure stderr is included in the list.
@@ -192,10 +219,10 @@ void log_set_output_level(enum output_level level)
     int i;
 
     for (i = 0; i < num_logfiles; ++i) {
-	if (logfiles[i].file == stderr) {
-	    logfiles[i].minimum_output_level = level;
-	    break;
-	}
+        if (logfiles[i].file == stderr) {
+            logfiles[i].minimum_output_level = level;
+            break;
+        }
     }
 }
 
@@ -212,16 +239,21 @@ void log_set_log_level(enum output_level level)
     }
 }
 
+void log_set_syslog_facility(char *facility)
+{
+    if (facility != NULL)
+        syslogfacility = decode(facility);
+}
 
 void log_set_syslog(const char *ident, int syslog_level)
 {
     if (ident == NULL)
-	dosyslog = 0;
+        dosyslog = 0;
     else {
-	dosyslog = 1;
-	sysloglevel = syslog_level;
-	openlog(ident, LOG_PID, LOG_DAEMON);
-	debug("gwlib.log", 0, "Syslog logging enabled.");
+        dosyslog = 1;
+        sysloglevel = syslog_level;
+        openlog(ident, LOG_PID, syslogfacility);
+        debug("gwlib.log", 0, "Syslog logging enabled.");
     }
 }
 
@@ -360,15 +392,15 @@ int log_open(char *filename, int level, enum excl_state excl)
 
 #define FORMAT_SIZE (1024)
 static void format(char *buf, int level, const char *place, int e,
-		   const char *fmt, int with_timestamp)
+		   const char *fmt, int with_timestamp_and_pid)
 {
     static char *tab[] = {
-	"DEBUG: ",
-	"INFO: ",
-	"WARNING: ",
-	"ERROR: ",
-	"PANIC: ",
-	"LOG: "
+        "DEBUG: ",
+        "INFO: ",
+        "WARNING: ",
+        "ERROR: ",
+        "PANIC: ",
+        "LOG: "
     };
     static int tab_size = sizeof(tab) / sizeof(tab[0]);
     time_t t;
@@ -378,7 +410,7 @@ static void format(char *buf, int level, const char *place, int e,
     
     p = prefix;
 
-    if (with_timestamp) {
+    if (with_timestamp_and_pid) {
         time(&t);
 #if LOG_TIMESTAMP_LOCALTIME
         tm = gw_localtime(t);
@@ -388,33 +420,38 @@ static void format(char *buf, int level, const char *place, int e,
         sprintf(p, "%04d-%02d-%02d %02d:%02d:%02d ",
         tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
         tm.tm_hour, tm.tm_min, tm.tm_sec);
-    
+
         p = strchr(p, '\0');
+
+        /* print PID and thread ID */
+        gwthread_self_ids(&tid, &pid);
+        sprintf(p, "[%ld] [%ld] ", pid, tid);
+    } else {
+        /* thread ID only */
+        tid = gwthread_self();
+        sprintf(p, "[%ld] ", tid);
     }
 
-    gwthread_self_ids(&tid, &pid);
-    sprintf(p, "[%ld] [%ld] ", pid, tid);
-    
     p = strchr(p, '\0');
     if (level < 0 || level >= tab_size)
-	sprintf(p, "UNKNOWN: ");
+        sprintf(p, "UNKNOWN: ");
     else
-	sprintf(p, "%s", tab[level]);
+        sprintf(p, "%s", tab[level]);
 
     p = strchr(p, '\0');
     if (place != NULL && *place != '\0')
-	sprintf(p, "%s: ", place);
+        sprintf(p, "%s: ", place);
     
     if (strlen(prefix) + strlen(fmt) > FORMAT_SIZE / 2) {
-	sprintf(buf, "%s <OUTPUT message too long>\n", prefix);
-	return;
+        sprintf(buf, "%s <OUTPUT message too long>\n", prefix);
+        return;
     }
     
     if (e == 0)
-	sprintf(buf, "%s%s\n", prefix, fmt);
+        sprintf(buf, "%s%s\n", prefix, fmt);
     else
-	sprintf(buf, "%s%s\n%sSystem error %d: %s\n",
-		prefix, fmt, prefix, e, strerror(e));
+        sprintf(buf, "%s%s\n%sSystem error %d: %s\n",
+                prefix, fmt, prefix, e, strerror(e));
 }
 
 
@@ -431,35 +468,30 @@ static void PRINTFLIKE(1,0) kannel_syslog(char *format, va_list args, int level)
     int translog;
     
     if (level >= sysloglevel && dosyslog) {
-	if (args == NULL) {
-	    strncpy(buf, format, sizeof(buf));
-	    buf[sizeof(buf) - 1] = '\0';
-	} else {
-	    vsnprintf(buf, sizeof(buf), format, args);
-	    /* XXX vsnprint not 100% portable */
-	}
+        vsnprintf(buf, sizeof(buf), format, args);
+        /* XXX vsnprint not 100% portable */
 
-	switch(level) {
-	case GW_DEBUG:
-	    translog = LOG_DEBUG;
-	    break;
-	case GW_INFO:
-	    translog = LOG_INFO;
-	    break;
-	case GW_WARNING:
-	    translog = LOG_WARNING;
-	    break;
-	case GW_ERROR:
-	    translog = LOG_ERR;
-	    break;
-	case GW_PANIC:
-	    translog = LOG_ALERT;
-	    break;
-	default:
-	    translog = LOG_INFO;
-	    break;
-	}
-	syslog(translog, "%s", buf);
+        switch(level) {
+            case GW_DEBUG:
+                translog = LOG_DEBUG;
+                break;
+            case GW_INFO:
+                translog = LOG_INFO;
+                break;
+            case GW_WARNING:
+                translog = LOG_WARNING;
+                break;
+            case GW_ERROR:
+                translog = LOG_ERR;
+                break;
+            case GW_PANIC:
+                translog = LOG_ALERT;
+                break;
+            default:
+                translog = LOG_INFO;
+                break;
+        }
+        syslog(translog, "%s", buf);
     }
 }
 
@@ -476,15 +508,19 @@ static void PRINTFLIKE(1,0) kannel_syslog(char *format, va_list args, int level)
 #define FUNCTION_GUTS(level, place) \
 	do { \
 	    int i; \
+	    int formatted = 0; \
 	    char buf[FORMAT_SIZE]; \
 	    va_list args; \
 	    \
-	    format(buf, level, place, err, fmt, 1); \
             gw_rwlock_rdlock(&rwlock); \
 	    for (i = 0; i < num_logfiles; ++i) { \
 		if (logfiles[i].exclusive == GW_NON_EXCL && \
                     level >= logfiles[i].minimum_output_level && \
                     logfiles[i].file != NULL) { \
+                	if (!formatted) { \
+                	    format(buf, level, place, err, fmt, 1); \
+                	    formatted = 1; \
+                	} \
 		        va_start(args, fmt); \
 		        output(logfiles[i].file, buf, args); \
 		        va_end(args); \
@@ -504,11 +540,11 @@ static void PRINTFLIKE(1,0) kannel_syslog(char *format, va_list args, int level)
 	    char buf[FORMAT_SIZE]; \
 	    va_list args; \
 	    \
-	    format(buf, level, place, err, fmt, 1); \
             gw_rwlock_rdlock(&rwlock); \
             if (logfiles[e].exclusive == GW_EXCL && \
                 level >= logfiles[e].minimum_output_level && \
                 logfiles[e].file != NULL) { \
+                format(buf, level, place, err, fmt, 1); \
                 va_start(args, fmt); \
                 output(logfiles[e].file, buf, args); \
                 va_end(args); \
@@ -524,6 +560,37 @@ static void PRINTFLIKE(2,3) gw_panic_output(int err, const char *fmt, ...)
 }
 #endif
 
+void gw_backtrace(void **stack_frames, size_t size, int lock)
+{
+#if HAVE_BACKTRACE
+    void *frames[50];
+    size_t i;
+    char **strings;
+
+    if (stack_frames == NULL) {
+        stack_frames = frames;
+        size = backtrace(stack_frames, sizeof(frames) / sizeof(void*));
+    }
+
+    strings = backtrace_symbols(stack_frames, size);
+
+    if (strings) {
+        for (i = 0; i < size; i++)
+            gw_panic_output(0, "%s", strings[i]);
+    }
+    else { /* hmm, no memory available */
+        for (i = 0; i < size; i++)
+            gw_panic_output(0, "%p", stack_frames[i]);
+    }
+
+    /*
+     * Note: we must call gw_native_free directly because if gw_free points to gw_check_free we could
+     *       panic's and we have endless loop with SEGFAULT at the end.
+     */
+    gw_native_free(strings);
+#endif
+}
+
 void gw_panic(int err, const char *fmt, ...)
 {
     /*
@@ -532,31 +599,7 @@ void gw_panic(int err, const char *fmt, ...)
      */
     FUNCTION_GUTS(GW_PANIC, "");
 
-#ifdef HAVE_BACKTRACE
-    {
-        void *stack_frames[50];
-        size_t size, i;
-        char **strings;
-
-        size = backtrace(stack_frames, sizeof(stack_frames) / sizeof(void*));
-        strings = backtrace_symbols(stack_frames, size);
-
-        if (strings) {
-            for (i = 0; i < size; i++)
-                gw_panic_output(0, "%s", strings[i]);
-        }
-        else { /* hmm, no memory available */
-            for (i = 0; i < size; i++)
-                gw_panic_output(0, "%p", stack_frames[i]);
-        }
-
-        /*
-         * Note: we don't free 'strings' array because gw_free could panic's and we
-         *       have endless loop with SEGFAULT at the end. And this doesn't care
-         *       us in any case, because we are panic's and exiting immediately. (alex)
-         */
-    }
-#endif
+    gw_backtrace(NULL, 0, 0);
 
 #ifdef SEGFAULT_PANIC
     *((char*)0) = 0;
@@ -608,7 +651,8 @@ static int place_matches(const char *place, const char *pat)
     
     len = strlen(pat);
     if (pat[len-1] == '*')
-	return (strncasecmp(place, pat, len - 1) == 0);
+        return (strncasecmp(place, pat, len - 1) == 0);
+
     return (strcasecmp(place, pat) == 0);
 }
 
@@ -620,9 +664,9 @@ static int place_should_be_logged(const char *place)
     if (num_places == 0)
 	return 1;
     for (i = 0; i < num_places; ++i) {
-	if (*loggable_places[i] != '-' && 
-	    place_matches(place, loggable_places[i]))
-		return 1;
+        if (*loggable_places[i] != '-' && 
+            place_matches(place, loggable_places[i]))
+            return 1;
     }
     return 0;
 }
@@ -635,9 +679,9 @@ static int place_is_not_logged(const char *place)
     if (num_places == 0)
 	return 0;
     for (i = 0; i < num_places; ++i) {
-	if (*loggable_places[i] == '-' &&
-	    place_matches(place, loggable_places[i]+1))
-		return 1;
+        if (*loggable_places[i] == '-' &&
+            place_matches(place, loggable_places[i]+1))
+            return 1;
     }
     return 0;
 }
@@ -670,8 +714,8 @@ void log_set_debug_places(const char *places)
     p = strtok(gw_strdup(places), " ,");
     num_places = 0;
     while (p != NULL && num_places < MAX_LOGGABLE_PLACES) {
-	loggable_places[num_places++] = p;
-	p = strtok(NULL, " ,");
+        loggable_places[num_places++] = p;
+        p = strtok(NULL, " ,");
     }
 }
 
@@ -685,4 +729,3 @@ void log_thread_to(unsigned int idx)
              thread_id, logfiles[idx].filename, logfiles[idx].minimum_output_level);
     thread_to[thread_id] = idx;
 }
-

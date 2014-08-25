@@ -51,7 +51,8 @@ Documentation
     On a Debian GNU/Linux system, you need to install the following
 	packages via: 
 	
-	    $ sudo apt-get install docbook-stylesheets
+           $ sudo apt-get install graphicsmagick-imagemagick-compat \
+                  docbook-dsssl jadetex transfig openjade
     
     On a Red Hat Linux (RHEL) system, you need to install the following
 	packages, in order:

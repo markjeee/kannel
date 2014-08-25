@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -168,39 +168,34 @@ static void add_delimiter(Octstr **content)
     octstr_format_append(*content, "%c", '\n');
 }
 
-static void add_push_application_id(List **push_headers, Octstr *appid_flag,
+static void add_push_application_id(Octstr *appid_flag, Octstr **content,
                                     int use_string)
 {
     if (use_string) {
-        gwlist_append(*push_headers, appid_string);
+        *content = octstr_format("%S\r\n", appid_string);
         return;
     }
 
     if (octstr_compare(appid_flag, octstr_imm("any")) == 0) {
         if (!use_numeric)
-            http_header_add(*push_headers, "X-WAP-Application-Id", 
-                            "http://www.wiral.com:*");
+        	*content = octstr_create("X-WAP-Application-Id: http://www.wiral.com:*\r\n");
         else
-            http_header_add(*push_headers, "X-WAP-Application-Id", "0");
+            *content = octstr_create("X-WAP-Application-Id: 0\r\n");
     } else if (octstr_compare(appid_flag, octstr_imm("ua")) == 0) {
         if (!use_numeric)
-            http_header_add(*push_headers, "X-WAP-Application-Id", 
-                            "http://www.wiral.com:wml.ua");
+        	*content = octstr_create("X-WAP-Application-Id: http://www.wiral.com:wml.ua\r\n");
         else
-            http_header_add(*push_headers, "X-WAP-Application-Id", "2");
+        	*content = octstr_create("X-WAP-Application-Id: 2\r\n");
     } else if (octstr_compare(appid_flag, octstr_imm("mms")) == 0) {
         if (!use_numeric)
-            http_header_add(*push_headers, "X-WAP-Application-Id", 
-                            "mms.ua");
+        	*content = octstr_create("X-WAP-Application-Id: mms.ua\r\n");
         else
-            http_header_add(*push_headers, "X-WAP-Application-Id", "4");
+        	*content = octstr_create("X-WAP-Application-Id: 4\r\n");
     } else if (octstr_compare(appid_flag, octstr_imm("scrap")) == 0) {
         if (!use_numeric)
-            http_header_add(*push_headers, "X-WAP-Application-Id", 
-                        "no appid at all");
+        	*content = octstr_create("X-WAP-Application-Id: no appid at all\r\n");
         else
-            http_header_add(*push_headers, "X-WAP-Application-Id", 
-                            "this is not a numeric header");
+        	*content = octstr_create("X-WAP-Application-Id: this is not a numeric header\r\n");
     }
 }
 
@@ -226,29 +221,21 @@ static void add_part_header(Octstr *content_keader, Octstr **wap_content)
 }
 
 
-static void add_content_type(Octstr *content_flag, Octstr **wap_content)
+static void add_content_type(Octstr *content_flag, Octstr **content)
 {
+	if (*content == NULL)
+		*content = octstr_create("");
+
     if (octstr_compare(content_flag, octstr_imm("wml")) == 0)
-        *wap_content = octstr_format("%s", 
-            "Content-Type: text/vnd.wap.wml");
+    	octstr_append_cstr(*content, "Content-Type: text/vnd.wap.wml\r\n");
     else if (octstr_compare(content_flag, octstr_imm("si")) == 0)
-	    *wap_content = octstr_format("%s",
-            "Content-Type: text/vnd.wap.si");
+	    octstr_append_cstr(*content, "Content-Type: text/vnd.wap.si\r\n");
     else if (octstr_compare(content_flag, octstr_imm("sl")) == 0)
-	    *wap_content = octstr_format("%s",
-            "Content-Type: text/vnd.wap.sl");
+	    octstr_append_cstr(*content, "Content-Type: text/vnd.wap.sl\r\n");
     else if (octstr_compare(content_flag, octstr_imm("multipart")) == 0)
-        *wap_content = octstr_format("%s",
-            "Content-Type: multipart/related; boundary=fsahgwruijkfldsa");
+        octstr_append_cstr(*content, "Content-Type: multipart/related; boundary=fsahgwruijkfldsa\r\n");
     else if (octstr_compare(content_flag, octstr_imm("mms")) == 0) 
-        *wap_content = octstr_format("%s", 
-            "Content-Type: application/vnd.wap.mms-message"); 
-    else if (octstr_compare(content_flag, octstr_imm("scrap")) == 0)
-        *wap_content = octstr_format("%s", "no type at all"); 
-    else if (octstr_compare(content_flag, octstr_imm("nil")) == 0)
-        *wap_content = octstr_create("");
-    if (octstr_len(*wap_content) > 0)
-        add_delimiter(wap_content);
+        octstr_append_cstr(*content, "Content-Type: application/vnd.wap.mms-message\r\n");
 }
 
 static void add_content_transfer_encoding_type(Octstr *content_flag, 
@@ -341,7 +328,6 @@ static List *push_headers_create(size_t content_len)
                         octstr_get_cstr(mos = make_multipart_value(boundary)));
     if (use_headers)
         http_add_basic_auth(push_headers, username, password);
-    add_push_application_id(&push_headers, appid_flag, use_string);
     add_connection_header(&push_headers, connection);
     if (use_dlr_mask)
         add_dlr_mask(&push_headers, dlr_mask);
@@ -412,6 +398,7 @@ static Octstr *push_content_create(void)
                  "--asdlfkjiurwgasf--\r\n\r\n"
                  "");
     } else {
+        add_push_application_id(appid_flag, &wap_content, use_string);
         add_content_type(content_flag, &wap_content);
         add_content_transfer_encoding_type(content_transfer_encoding, 
                                            wap_content);

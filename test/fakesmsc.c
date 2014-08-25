@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -307,6 +307,8 @@ int main(int argc, char **argv)
             /* something went off, let's see if it's stdin */
             if (FD_ISSET(fileno(fp), &rset)) { /* stdin is readable */
                 cptr = fgets(buffer, IN_BUFSIZE, stdin);
+                if (!cptr)
+                    goto over;
                 if( strlen( cptr ) < 2 )
                     goto rcv;
             } else { /* timer kicked in */

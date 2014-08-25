@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -332,6 +332,26 @@ static Octstr *httpd_reload_lists(List *cgivars, int status_type)
         return octstr_create("Black/white lists re-loaded");
 }
 
+static Octstr *httpd_remove_message(List *cgivars, int status_type)
+{
+    Octstr *reply;
+    Octstr *message_id;
+    if ((reply = httpd_check_authorization(cgivars, 0))!= NULL) return reply;
+    if ((reply = httpd_check_status())!= NULL) return reply;
+
+    /* check if the smsc id is given */
+    message_id = http_cgi_variable(cgivars, "id");
+    if (message_id) {
+        if (octstr_len(message_id) != UUID_STR_LEN)
+            return octstr_format("Message id should be %d characters long", UUID_STR_LEN);
+        if (bb_remove_message(message_id) == -1)
+            return octstr_format("Could not remove message id `%s'", octstr_get_cstr(message_id));
+        else
+            return octstr_format("Message id `%s' removed", octstr_get_cstr(message_id));
+    } else
+        return octstr_create("Message id not given");
+}
+
 /* Known httpd commands and their functions */
 static struct httpd_command {
     const char *command;
@@ -351,6 +371,7 @@ static struct httpd_command {
     { "add-smsc", httpd_add_smsc },
     { "remove-smsc", httpd_remove_smsc },
     { "reload-lists", httpd_reload_lists },
+    { "remove-message", httpd_remove_message },
     { NULL , NULL } /* terminate list */
 };
 

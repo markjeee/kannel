@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -97,7 +97,7 @@ static struct dlr_storage *handles = NULL;
 
 /*
  * Function to allocate a new struct dlr_entry entry
- * and intialize it to zero
+ * and initialize it to zero
  */
 struct dlr_entry *dlr_entry_create(void)
 {
@@ -175,6 +175,9 @@ struct dlr_db_fields *dlr_db_fields_create(CfgGroup *grp)
 
     if (!(ret->table = cfg_get(grp, octstr_imm("table"))))
    	    panic(0, "DLR: DB: directive 'table' is not specified!");
+    ret->ttl = 0;
+    if (cfg_get_integer(&ret->ttl, grp, octstr_imm("ttl")) == -1 || ret->ttl < 0)
+        ret->ttl = 0;
     if (!(ret->field_smsc = cfg_get(grp, octstr_imm("field-smsc"))))
    	    panic(0, "DLR: DB: directive 'field-smsc' is not specified!");
     if (!(ret->field_ts = cfg_get(grp, octstr_imm("field-timestamp"))))
@@ -248,7 +251,9 @@ void dlr_init(Cfg* cfg)
     }
 
     /* call the sub-init routine */
-    if (octstr_compare(dlr_type, octstr_imm("mysql")) == 0) {
+    if (octstr_compare(dlr_type, octstr_imm("spool")) == 0) {
+        handles = dlr_init_spool(cfg);
+    } else if (octstr_compare(dlr_type, octstr_imm("mysql")) == 0) {
         handles = dlr_init_mysql(cfg);
     } else if (octstr_compare(dlr_type, octstr_imm("sdb")) == 0) {
         handles = dlr_init_sdb(cfg);
@@ -260,6 +265,10 @@ void dlr_init(Cfg* cfg)
         handles = dlr_init_pgsql(cfg);
     } else if (octstr_compare(dlr_type, octstr_imm("mssql")) == 0) {
         handles = dlr_init_mssql(cfg);
+    } else if (octstr_compare(dlr_type, octstr_imm("sqlite3")) == 0) {
+        handles = dlr_init_sqlite3(cfg);
+    } else if (octstr_compare(dlr_type, octstr_imm("redis")) == 0) {
+        handles = dlr_init_redis(cfg);
     }
 
     /*
@@ -313,9 +322,9 @@ const char* dlr_type(void)
 }
  
 /*
- * Add new dlr entry into dlr storage
+ * Add new dlr entry into dlr storage.
  */
-void dlr_add(const Octstr *smsc, const Octstr *ts, Msg *msg)
+void dlr_add(const Octstr *smsc, const Octstr *ts, Msg *msg, int use_dst)
 {
     struct dlr_entry *dlr = NULL;
 
@@ -331,7 +340,7 @@ void dlr_add(const Octstr *smsc, const Octstr *ts, Msg *msg)
         split->orig->sms.foreign_id = octstr_duplicate(ts);
     }
 
-    if(octstr_len(smsc) == 0) {
+    if (octstr_len(smsc) == 0) {
         warning(0, "DLR[%s]: Can't add a dlr without smsc-id", dlr_type());
         return;
     }
@@ -357,6 +366,7 @@ void dlr_add(const Octstr *smsc, const Octstr *ts, Msg *msg)
     dlr->url = (msg->sms.dlr_url ? octstr_duplicate(msg->sms.dlr_url) : octstr_create(""));
     dlr->boxc_id = (msg->sms.boxc_id ? octstr_duplicate(msg->sms.boxc_id) : octstr_create(""));
     dlr->mask = msg->sms.dlr_mask;
+    dlr->use_dst = use_dst;
 
     debug("dlr.dlr", 0, "DLR[%s]: Adding DLR smsc=%s, ts=%s, src=%s, dst=%s, mask=%d, boxc=%s",
           dlr_type(), octstr_get_cstr(dlr->smsc), octstr_get_cstr(dlr->timestamp),
@@ -498,6 +508,7 @@ Msg* create_dlr_from_msg(const Octstr *smsc, const Msg *msg, const Octstr *reply
     dlrmsg->sms.boxc_id = octstr_duplicate(msg->sms.boxc_id);
     dlrmsg->sms.foreign_id = octstr_duplicate(msg->sms.foreign_id);
     time(&dlrmsg->sms.time);
+    dlrmsg->sms.meta_data = octstr_duplicate(msg->sms.meta_data);
 
     debug("dlr.dlr", 0,"SMSC[%s]: DLR = %s",
                 (smsc ? octstr_get_cstr(smsc) : "UNKNOWN"),

@@ -1,7 +1,7 @@
-/* ==================================================================== 
+/* ====================================================================
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2010 Kannel Group  
+ * Copyright (c) 2001-2014 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -92,7 +92,7 @@ struct SMPP_PDU {
     const char *type_name;
     union {
         #define OPTIONAL_BEGIN
-        #define TLV_INTEGER(name, octets) unsigned long name;
+        #define TLV_INTEGER(name, octets) long name;
         #define TLV_NULTERMINATED(name, max_len) Octstr *name;
         #define TLV_OCTETS(name, min_len, max_len) Octstr *name;
         #define OPTIONAL_END Dict *tlv;
@@ -106,7 +106,7 @@ struct SMPP_PDU {
 
 
 /******************************************************************************
-* Numering Plan Indicator and Type of Number codes from
+* Numbering Plan Indicator and Type of Number codes from
 * GSM 03.40 Version 5.3.0 Section 9.1.2.5.
 * http://www.etsi.org/
 */
@@ -126,7 +126,9 @@ struct SMPP_PDU {
 #define GSM_ADDR_NPI_NATIONAL         0x00000008
 #define GSM_ADDR_NPI_PRIVATE          0x00000009
 #define GSM_ADDR_NPI_ERMES            0x0000000A /* ETSI DE/PS 3 01-3 */
+#define GSM_ADDR_NPI_INTERNET         0x0000000E /* SMPP v5.0, sec. 4.7.2, page 113 */
 #define GSM_ADDR_NPI_EXTENSION        0x0000000F /* Reserved */
+#define GSM_ADDR_NPI_WAP_CLIENT_ID    0x00000012 /* SMPP v5.0, sec. 4.7.2, page 113 */
 
 /******************************************************************************
  * esm_class parameters for both submit_sm and deliver_sm PDUs
@@ -234,7 +236,7 @@ void smpp_pdu_destroy(SMPP_PDU *pdu);
 int smpp_pdu_is_valid(SMPP_PDU *pdu); /* XXX */
 Octstr *smpp_pdu_pack(Octstr *smsc_id, SMPP_PDU *pdu);
 SMPP_PDU *smpp_pdu_unpack(Octstr *smsc_id, Octstr *data_without_len);
-void smpp_pdu_dump(SMPP_PDU *pdu);
+void smpp_pdu_dump(Octstr *smsc_id, SMPP_PDU *pdu);
 
 long smpp_pdu_read_len(Connection *conn);
 Octstr *smpp_pdu_read_data(Connection *conn, long len);
