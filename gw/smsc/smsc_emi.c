@@ -586,6 +586,8 @@ static int handle_operation(SMSCConn *conn, Connection *server,
     int st_code;
     PrivData *privdata = conn->data;
 
+    struct tm tm;
+    char p[20];
 
     switch(emimsg->ot) {
 
@@ -833,6 +835,24 @@ static int handle_operation(SMSCConn *conn, Connection *server,
 	msg->sms.smsc_id = octstr_duplicate(conn->id);
 	bb_smscconn_receive(conn, msg);
 	reply = emimsg_create_reply(52, emimsg->trn, 1, privdata->name);
+
+        /*
+         * Create a system message field for UCP52 ack message.
+         * The system message has the recipient's address + a timestamp.
+         * Some SMSC (eg. T-Mobile) requires it.
+         */
+        Octstr *tmpstr;
+        tmpstr = octstr_create("");
+        /* Get the recipient's address. */
+        octstr_append(tmpstr, emimsg->fields[E50_ADC]);
+        octstr_append_char(tmpstr, ':');
+        /* Create a timestamp. */
+        tm = gw_localtime(time(NULL) + msg->sms.deferred * 60);
+        sprintf(p, "%02d%02d%02d%02d%02d%02d", tm.tm_mday, tm.tm_mon + 1, tm.tm_year % 100, tm.tm_hour, tm.tm_min, tm.tm_sec);
+        octstr_append(tmpstr, octstr_create(p));
+        /* Concatenate and insert the fields (number + timestamp) above. */
+        reply->fields[2] = tmpstr;
+
 	if (emi2_emimsg_send(conn, server, reply) < 0) {
 	    emimsg_destroy(reply);
 	    return -1;
@@ -885,6 +905,24 @@ static int handle_operation(SMSCConn *conn, Connection *server,
         bb_smscconn_receive(conn, msg);
     }
 	reply = emimsg_create_reply(53, emimsg->trn, 1, privdata->name);
+
+        /*
+         * Create a system message field for UCP53 ack message.
+         * The system message has the recipient's address + a timestamp.
+         * Some SMSC (eg. T-Mobile) requires it.
+         */
+        Octstr *tmhactresp;
+        tmhactresp = octstr_create("");
+        /* Get the recipient's address. */
+        octstr_append(tmhactresp, emimsg->fields[E50_ADC]);
+        octstr_append_char(tmhactresp, ':');
+        /* Create a timestamp. */
+        tm = gw_localtime(time(NULL) + msg->sms.deferred * 60);
+        sprintf(p, "%02d%02d%02d%02d%02d%02d", tm.tm_mday, tm.tm_mon + 1, tm.tm_year % 100, tm.tm_hour, tm.tm_min, tm.tm_sec);
+        octstr_append(tmhactresp, octstr_create(p));
+        /* Concatenate and insert the fields (number + timestamp) above. */
+        reply->fields[2] = tmhactresp;
+
 	if (emi2_emimsg_send(conn, server, reply) < 0) {
 	    emimsg_destroy(reply);
 	    return -1;
