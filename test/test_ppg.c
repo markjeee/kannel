@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -64,7 +64,7 @@
  * Repetitions and use of multiple threads can be requested, in addition of 
  * setting of some headers. 
  *
- * By Aarno Syv‰nen for Wiral Ltd and Global Networks Inc.
+ * By Aarno Syv√§nen for Wiral Ltd and Global Networks Inc.
  */
 
 #define MAX_THREADS 1024
@@ -139,7 +139,7 @@ static void read_test_ppg_config(Octstr *name)
         ssl_client_certkey_file = cfg_get(grp, 
             octstr_imm("ssl-client-certkey-file"));
         if (ssl_client_certkey_file != NULL) {
-            use_global_client_certkey_file(ssl_client_certkey_file);
+            conn_use_global_client_certkey_file(ssl_client_certkey_file);
         } else { 
             error(0, "cannot set up SSL without client certkey file");
             exit(1);

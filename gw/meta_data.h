@@ -1,7 +1,7 @@
 /* ====================================================================
  * The Kannel Software License, Version 1.0
  *
- * Copyright (c) 2001-2014 Kannel Group
+ * Copyright (c) 2001-2016 Kannel Group
  * Copyright (c) 1998-2001 WapIT Ltd.
  * All rights reserved.
  *
@@ -65,10 +65,15 @@
 #ifndef META_DATA_H
 #define META_DATA_H
 
-#define METADATA_DLR_GROUP            "dlr"
-#define METADATA_DLR_GROUP_DONETIME   "donetime"
-#define METADATA_DLR_GROUP_SUBMITTIME "submittime"
-#define METADATA_DLR_GROUP_ERRORCODE  "errorcode"
+#define METADATA_DLR_GROUP					"dlr"
+#define METADATA_DLR_GROUP_DONETIME   		"donetime"
+#define METADATA_DLR_GROUP_SUBMITTIME 		"submittime"
+#define METADATA_DLR_GROUP_ERRORCODE  		"errorcode"
+
+#define METADATA_ORIG_MSG_GROUP       		"orig_msg"
+#define METADATA_ORIG_MSG_GROUP_DLR_MASK 	"dlr_mask"
+
+#define METADATA_SMPP_GROUP           		"smpp"
 
 /**
  * Get Dictionary with all values for this group.

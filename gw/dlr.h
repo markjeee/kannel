@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -61,6 +61,7 @@
  *
  * Andreas Fink <andreas@fink.org>, 18.08.2001
  * Stipe Tolj <stolj@wapme.de>, 22.03.2002
+ * Alexander Malysh <amalysh at kannel.org>, 2016
  */
 
 #ifndef	DLR_H
@@ -72,21 +73,21 @@
 #define	DLR_FAIL            0x02
 #define	DLR_BUFFERED        0x04
 #define	DLR_SMSC_SUCCESS    0x08
-#define	DLR_SMSC_FAIL       0x10
-#define	DLR_INTERMEDIATE    0x20
+#define DLR_SMSC_FAIL       0x10
+#define DLR_EXPIRED         0x20|DLR_FAIL
+#define DLR_UNKNOWN         0x40|DLR_FAIL
 
 #define DLR_IS_DEFINED(dlr)          (dlr != DLR_UNDEFINED)
-#define DLR_IS_ENABLED(dlr)          (DLR_IS_DEFINED(dlr) && (dlr & (DLR_SUCCESS | DLR_FAIL | DLR_BUFFERED | DLR_SMSC_SUCCESS | DLR_SMSC_FAIL)))
-#define DLR_IS_ENABLED_DEVICE(dlr)   (DLR_IS_DEFINED(dlr) && (dlr & (DLR_SUCCESS | DLR_FAIL | DLR_BUFFERED)))
+#define DLR_IS_ENABLED(dlr)          (DLR_IS_DEFINED(dlr) && (dlr & (DLR_SUCCESS | DLR_FAIL | DLR_BUFFERED | DLR_SMSC_SUCCESS | DLR_SMSC_FAIL | DLR_EXPIRED | DLR_UNKNOWN)))
+#define DLR_IS_ENABLED_DEVICE(dlr)   (DLR_IS_DEFINED(dlr) && (dlr & (DLR_SUCCESS | DLR_FAIL | DLR_BUFFERED | DLR_EXPIRED | DLR_UNKNOWN)))
 #define DLR_IS_ENABLED_SMSC(dlr)     (DLR_IS_DEFINED(dlr) && (dlr & (DLR_SMSC_SUCCESS | DLR_SMSC_FAIL)))
 #define DLR_IS_NOT_FINAL(dlr)        (DLR_IS_DEFINED(dlr) && (dlr & (DLR_BUFFERED | DLR_SMSC_SUCCESS)))
-#define DLR_IS_SUCCESS_OR_FAIL(dlr)  (DLR_IS_DEFINED(dlr) && (dlr & (DLR_SUCCESS | DLR_FAIL)))
+#define DLR_IS_SUCCESS_OR_FAIL(dlr)  (DLR_IS_DEFINED(dlr) && (dlr & (DLR_SUCCESS | DLR_FAIL | DLR_EXPIRED | DLR_UNKNOWN)))
 #define DLR_IS_SUCCESS(dlr)          (DLR_IS_DEFINED(dlr) && (dlr & DLR_SUCCESS))
-#define DLR_IS_FAIL(dlr)             (DLR_IS_DEFINED(dlr) && (dlr & DLR_FAIL))
+#define DLR_IS_FAIL(dlr)             (DLR_IS_DEFINED(dlr) && (dlr & (DLR_FAIL|DLR_EXPIRED|DLR_UNKNOWN)))
 #define DLR_IS_BUFFERED(dlr)         (DLR_IS_DEFINED(dlr) && (dlr & DLR_BUFFERED))
 #define DLR_IS_SMSC_SUCCESS(dlr)     (DLR_IS_DEFINED(dlr) && (dlr & DLR_SMSC_SUCCESS))
 #define DLR_IS_SMSC_FAIL(dlr)        (DLR_IS_DEFINED(dlr) && (dlr & DLR_SMSC_FAIL))
-#define DLR_IS_INTERMEDIATE(dlr)     (DLR_IS_DEFINED(dlr) && (dlr & DLR_INTERMEDIATE))
 
 /* DLR initialization routine (abstracted) */
 void dlr_init(Cfg *cfg);

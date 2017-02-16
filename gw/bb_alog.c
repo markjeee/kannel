@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -98,6 +98,7 @@ static Octstr *custom_log_format = NULL;
  *   %S - same as %s, but '*' is converted to '~' 
  *   %r - words not yet used by %s
  *   %b - the original SMS message
+ *   %N - the DLR notification message
  *   %L - length of SMS message
  *   %t - the time of the message, formatted as "YYYY-MM-DD HH:MM:SS"
  *   %T - the time of the message, in UNIX epoch timestamp format
@@ -268,6 +269,11 @@ static Octstr *get_pattern(SMSCConn *conn, Msg *msg, const char *message)
             case 'R':
                 if (msg->sms.dlr_url != NULL)
                     octstr_append(result, msg->sms.dlr_url);
+                break;
+
+            case 'N':
+                if (msg->sms.sms_type == report_mo && text != NULL)
+                    octstr_append(result, text);
                 break;
 
             case 'D': /* meta_data */

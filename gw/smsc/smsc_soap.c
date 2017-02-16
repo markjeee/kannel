@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -141,7 +141,7 @@
 #define SOAP_MO_URI	        "/mo"
 #define SOAP_DLR_URI		"/dlr"
 
-/* default reponses to HTTP queries */
+/* default responses to HTTP queries */
 #define SOAP_DEFAULT_MESSAGE				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<Error>No method by that name</Error>"
 #define SOAP_ERROR_NO_DLR_MESSAGE			"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<Error>Sorry - no DLR for that MT</Error>"
 #define SOAP_ERROR_DLR_MESSAGE				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<Error>Fatal error while trying to parse delivery report</Error>"
@@ -1267,7 +1267,7 @@ static long long soap_parse_response(PrivData* privdata, Octstr* xmlResponse)
 /*
  * function soap_parse_mo()
  *	parse an incoming MO xml request, build a message from it and sent it.
- *	also generate the reponse text and status code
+ *	also generate the response text and status code
  * Input: module public state data, request body
  * Output: response body
  * Returns: HTTP status code on successful parse or -1 on failure
@@ -1494,7 +1494,7 @@ static long soap_parse_mo(SMSCConn *conn, Octstr *request, Octstr **response)
 
     *response = soap_format_xml(privdata->mo_xml_file,msg,privdata);
     if (*response)
-        debug("bb.soap.reponse_dlr",0,"SOAP[%s]: data dump: %s", octstr_get_cstr(privdata->name), octstr_get_cstr(*response));
+        debug("bb.soap.response_dlr",0,"SOAP[%s]: data dump: %s", octstr_get_cstr(privdata->name), octstr_get_cstr(*response));
 
     bb_smscconn_receive(conn,msg);
 
@@ -1504,7 +1504,7 @@ static long soap_parse_mo(SMSCConn *conn, Octstr *request, Octstr **response)
 /*
  * function soap_parse_dlr()
  *	parse an incoming DLR xml request, build a message from it and sent it.
- *	also generate the reponse text and status code
+ *	also generate the response text and status code
  * Input: module public state data, request body
  * Output: response body
  * Returns: HTTP status code on successful parse or -1 on failure
@@ -1655,7 +1655,7 @@ static long soap_parse_dlr(SMSCConn *conn, Octstr *request, Octstr **response)
 
     *response = soap_format_xml(privdata->dlr_xml_file, dlrmsg, privdata);
     if (*response)
-        debug("bb.soap.reponse_dlr",0,"SOAP[%s]: data dump: %s", octstr_get_cstr(privdata->name), octstr_get_cstr(*response));
+        debug("bb.soap.response_dlr",0,"SOAP[%s]: data dump: %s", octstr_get_cstr(privdata->name), octstr_get_cstr(*response));
 
     /* send to bearerbox */
     bb_smscconn_receive(conn, dlrmsg);

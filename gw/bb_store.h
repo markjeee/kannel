@@ -1,7 +1,7 @@
 /* ====================================================================
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -98,21 +98,26 @@ extern Octstr* (*store_msg_pack)(Msg *msg);
 extern Msg* (*store_msg_unpack)(Octstr *os);
 
 /* initialize system. Return -1 if fname is bad (too long). */
-int store_init(const Octstr *type, const Octstr *fname, long dump_freq,
+int store_init(Cfg *cfg, const Octstr *type, const Octstr *fname, long dump_freq,
                void *pack_func, void *unpack_func);
 
 /* init shutdown (system dies when all acks have been processed) */
 extern void (*store_shutdown)(void);
 
 /* return all containing messages in the current store */
-extern Octstr* (*store_status)(int status_type);
+Octstr* store_status(int status_type);
+
+extern void (*store_for_each_message)(void(*callback_fn)(Msg*, void*), void *data);
+
 
 /**
  * Init functions for different store types.
  */
 int store_spool_init(const Octstr *fname);
 int store_file_init(const Octstr *fname, long dump_freq);
-
+#ifdef HAVE_REDIS
+int store_redis_init(Cfg *cfg);
+#endif
 
 #endif /*BB_STORE_H_*/
 

@@ -1,7 +1,7 @@
 dnl /* ==================================================================== 
 dnl  * The Kannel Software License, Version 1.0 
 dnl  * 
-dnl  * Copyright (c) 2001-2014 Kannel Group  
+dnl  * Copyright (c) 2001-2016 Kannel Group  
 dnl  * Copyright (c) 1998-2001 WapIT Ltd.   
 dnl  * All rights reserved. 
 dnl  * 
@@ -86,6 +86,12 @@ AC_SUBST(GW_VERSION)
 AC_SUBST(VERSION)
 AC_CONFIG_SECTION([Configuring for Kannel gateway version $VERSION])
 
+AM_INIT_AUTOMAKE(Kannel,$VERSION)
+AC_LANG_C
+AC_DISABLE_STATIC
+AC_PROG_LIBTOOL
+dnl AC_SUBST(LIBTOOL_DEPS)
+
 dnl Solaris pkgadd support definitions
 PKGADD_PKG="KANNELgateway"
 PKGADD_NAME="Kannel - WAP and SMS gateway"
@@ -121,7 +127,7 @@ dnl Apply system specific rules.
 dnl Executable extension for systems that need one, i.e. Cygwin
 dnl Set the LIBTOOL to be used to create libs
 EXE_EXT=""
-LIBTOOL="$AR rc"
+OLD_LIBTOOL="$AR rc"
 case "$host" in
   *-sun-solaris*) 
     CFLAGS="$CFLAGS -DSunOS=1"
@@ -153,7 +159,7 @@ case "$host" in
     else
       CFLAGS="$CFLAGS -DDARWIN=1" 
     fi
-    LIBTOOL="libtool -static -o" 
+    OLD_LIBTOOL="libtool -static -o"
     ;;
   *-linux-*)
     CFLAGS="$CFLAGS -D_XOPEN_SOURCE=600 -D_BSD_SOURCE"
@@ -170,7 +176,7 @@ case "$host" in
     ;;
 esac
 AC_SUBST(EXE_EXT)
-AC_SUBST(LIBTOOL)
+AC_SUBST(OLD_LIBTOOL)
 
 AC_ARG_WITH(cflags,
 [  --with-cflags=FLAGS     use FLAGS for CFLAGS],
@@ -218,6 +224,7 @@ AC_CHECK_LIB(bind, inet_ntop)
 if test -z "$pthread"; then
     AC_CHECK_LIB(pthread, pthread_exit, [LIBS="$LIBS -lpthread"])
 fi
+AC_CHECK_LIB(iconv, libiconv, [LIBS="$LIBS -liconv"])
 
 dnl Checks for header files.
 
@@ -863,9 +870,9 @@ if test "$ssl" = "yes" ; then
         ssllib="$loc"
       fi
     done
-    if test "x$sslib" = "x"; then
+    if test "x$sslib" = "x" && test -n "$GCC"; then
       for lib in libssl.a libssl.so libssl.dylib; do
-        name=`gcc -print-file-name=$lib`
+        name=`$CC -print-file-name=$lib`
         if test -f "$name"; then
           ssllib=`dirname $name`
         fi
@@ -1357,6 +1364,49 @@ AC_ARG_WITH(mssql,
     AC_MSG_RESULT(disabled)
 ])
 
+dnl Implement the --with-cassandra option. This will set HAVE_CASS in gw-config.h
+
+AC_MSG_CHECKING([whether to compile with Cassandra support])
+AC_ARG_WITH(cassandra,
+[  --with-cassandra            enable Cassandra storage @<:@disabled@:>@], [
+if test "$withval" != yes ; then
+    AC_MSG_RESULT(disabled)
+else
+    dnl Implement the --with-cassandra-dir option.
+    AC_ARG_WITH(cassandra-dir,
+    [  --with-cassandra-dir=DIR    where to look for Cassandra libs and header files
+                          DIR points to the installation @<:@/usr/local@:>@],
+    [
+        cassloc=""
+        if test -d "$withval" ; then
+        cassloc="$withval"
+        fi
+    ])
+    
+    AC_MSG_RESULT(searching)
+    found=""
+    for loc in $cassloc /usr /usr/local ; do
+        if test "x$found" = "x" ; then
+            AC_MSG_CHECKING([for Cassandra include files in])
+            AC_MSG_RESULT($loc)
+            AC_CHECK_FILE("$loc/include/cassandra.h",
+              [CFLAGS="$CFLAGS -I$loc/include"; LIBS="$LIBS -L$loc/lib -lcassandra"]; found=1
+            )
+        fi
+    done
+    if test "x$found" != "x1" ; then
+        AC_MSG_ERROR([Unable to find cassandra.h, please provide a --with-cassandra-dir=<dir> location])
+    fi
+    AC_CHECK_HEADERS(cassandra.h)
+    AC_DEFINE(HAVE_CASS)
+    AC_MSG_CHECKING([whether to compile with Cassandra support])
+    AC_MSG_RESULT(yes)
+    CASS="yes"
+fi
+],[
+  AC_MSG_RESULT(disabled)
+])
+
 
 dnl Implement the --with-wtls option.
 dnl Check to see if we should include WTLS support, and which library to use.
@@ -1449,7 +1499,11 @@ AC_ARG_WITH(gsoap,
 dnl Final Output
 
 AC_CONFIG_SECTION([Generating output files]) 
-AC_OUTPUT(gwlib/gw_uuid_types.h Makefile soap/Makefile)
+AC_OUTPUT([
+	gwlib/gw_uuid_types.h
+	Makefile
+	soap/Makefile
+])
 
 
 dnl LICENSE notice

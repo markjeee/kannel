@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -200,6 +200,10 @@ static long fill_threadinfo(pthread_t id, const char *name,
         if (ti->number == first_try + THREADTABLE_SIZE) {
             error(0, "Cannot have more than %d active threads", THREADTABLE_SIZE);
             ti->number = -1;
+            close(ti->wakefd_recv);
+            ti->wakefd_recv = -1;
+            close(ti->wakefd_send);
+            ti->wakefd_send = -1;
             return -1;
         }
     } while (THREAD(ti->number) != NULL);
@@ -357,8 +361,8 @@ static void *new_thread(void *arg)
     if (p->failed) {
         /* Must free p before signaling our exit, otherwise there is
         * a race with gw_check_leaks at shutdown. */
+        gw_free(p->ti);
         gw_free(p);
-        delete_threadinfo();
         unlock();
         return NULL;
     }
@@ -468,6 +472,7 @@ static long spawn_thread(gwthread_func_t *func, const char *name, void *arg)
     if (active_threads >= THREADTABLE_SIZE) {
         unlock();
         warning(0, "Too many threads, could not create new thread.");
+        gw_free(p->ti);
         gw_free(p);
         return -1;
     }
@@ -476,6 +481,7 @@ static long spawn_thread(gwthread_func_t *func, const char *name, void *arg)
     if (ret != 0) {
         unlock();
         error(ret, "Could not create new thread.");
+        gw_free(p->ti);
         gw_free(p);
         return -1;
     }

@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -201,5 +201,12 @@ void prepend_catenation_udh(Msg *sms, int part_no, int num_messages, int msg_seq
  * @return -1 of a < b; 0 a = b; 1 a > b
  */
 int sms_priority_compare(const void *a, const void *b);
+
+/*
+ * Re-encode an SMSmessage , based on the 'charset' that defines the content
+ * encoding and the 'coding' that defines the desired target encoding.
+ * Return 0 on success, -1 otherwise.
+ */
+int sms_charset_processing(Octstr *charset, Octstr *body, int coding);
 
 #endif

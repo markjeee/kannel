@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -174,6 +174,6 @@ void log_close_all(void);
  * Register a thread to a specific logfiles[] index and hence 
  * to a specific exclusive log file.
  */
-void log_thread_to(unsigned int idx);
+void log_thread_to(int idx);
 
 #endif

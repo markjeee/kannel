@@ -1,7 +1,7 @@
 /* ====================================================================
  * The Kannel Software License, Version 1.0
  *
- * Copyright (c) 2001-2014 Kannel Group
+ * Copyright (c) 2001-2016 Kannel Group
  * Copyright (c) 1998-2001 WapIT Ltd.
  * All rights reserved.
  *
@@ -192,7 +192,7 @@ static void xidris_parse_reply(SMSCConn *conn, Msg *msg, int status,
                     SMSCCONN_FAILED_MALFORMED, octstr_duplicate(desc));
         }
     } else {
-        error(0, "HTTP[%s]: Message was rejected. SMSC reponse was:",
+        error(0, "HTTP[%s]: Message was rejected. SMSC response was:",
               octstr_get_cstr(conn->id));
         octstr_dump(body, 0);
         bb_smscconn_send_failed(conn, msg,

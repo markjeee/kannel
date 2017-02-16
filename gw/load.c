@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -67,7 +67,7 @@
 struct load_entry {
     float prev;
     float curr;
-    time_t last;
+    double last;
     int interval;
     int dirty;
 };
@@ -80,6 +80,19 @@ struct load {
     RWLock *lock;
 };
 
+static double microtime(double *p) {
+    struct timeval tv;
+    double result;
+
+    gettimeofday(&tv, NULL);
+    result = tv.tv_sec + (1e-6 * tv.tv_usec);
+    
+    if(p != NULL) {
+        *p = result;
+    }
+    
+    return result;
+}
 
 Load* load_create_real(int heuristic)
 {
@@ -117,7 +130,7 @@ int load_add_interval(Load *load, int interval)
     entry->prev = entry->curr = 0.0;
     entry->interval = interval;
     entry->dirty = 1;
-    time(&entry->last);
+    microtime(&entry->last);
     
     load->entries = gw_realloc(load->entries, sizeof(struct load*) * (load->len + 1));
     load->entries[load->len] = entry;
@@ -147,17 +160,18 @@ void load_destroy(Load *load)
 
 void load_increase_with(Load *load, unsigned long value)
 {
-    time_t now;
+    double now;
     int i;
     
     if (load == NULL)
         return;
+
     gw_rwlock_wrlock(load->lock);
-    time(&now);
+    microtime(&now);
     for (i = 0; i < load->len; i++) {
         struct load_entry *entry = load->entries[i];
         /* check for special case, load over whole live time */
-        if (entry->interval != -1 && now >= entry->last + entry->interval) {
+        if((entry->interval != -1 && now >= entry->last + entry->interval)) { 
             /* rotate */
             entry->curr /= entry->interval;
             if (entry->prev > 0)
@@ -174,10 +188,10 @@ void load_increase_with(Load *load, unsigned long value)
 }
 
 
-float load_get(Load *load, int pos)
+double load_get(Load *load, int pos)
 {
-    float ret;
-    time_t now;
+    double ret;
+    double now;
     struct load_entry *entry;
 
     if (load == NULL || pos >= load->len) {
@@ -187,15 +201,16 @@ float load_get(Load *load, int pos)
     /* first maybe rotate load */
     load_increase_with(load, 0);
     
-    time(&now);
+    microtime(&now);
     gw_rwlock_rdlock(load->lock);
     entry = load->entries[pos];
     if (load->heuristic && !entry->dirty) {
         ret = entry->prev;
     } else {
-        time_t diff = (now - entry->last);
+        double diff = (now - entry->last);
         if (diff == 0) diff = 1;
         ret = entry->curr/diff;
+        ret = (ret > entry->curr ? entry->curr : ret);
     }
     gw_rwlock_unlock(load->lock);
 

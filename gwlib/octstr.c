@@ -1,7 +1,7 @@
 /* ====================================================================
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -384,7 +384,6 @@ Octstr *octstr_cat(Octstr *ostr1, Octstr *ostr2)
 
     seems_valid(ostr1);
     seems_valid(ostr2);
-    gw_assert(!ostr1->immutable);
 
     ostr = octstr_create("");
     ostr->len = ostr1->len + ostr2->len;

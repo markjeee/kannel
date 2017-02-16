@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -91,7 +91,7 @@ static void help(void)
     info(0, "-S string");
     info(0, "    the SQL string that is performed while the queries (default: SHOW STATUS)");
     info(0, "-T type");
-    info(0, "    the type of database to use [mysql|oracle|sqlite]");
+    info(0, "    the type of database to use [mysql|oracle|sqlite|cassandra]");
 }
 
 /* global variables */
@@ -337,6 +337,62 @@ static void sqlite3_client_thread(void *arg)
 }
 #endif
 
+#ifdef HAVE_CASS
+
+static void cass_client_thread(void *arg)
+{
+    unsigned long i, succeeded, failed;
+    DBPool *pool = arg;
+    List *result;
+    DBPoolConn *pconn;
+
+    succeeded = failed = 0;
+
+    info(0,"Client thread started with %ld queries to perform on pool", queries);
+
+    for (i = 1; i <= queries; i++) {
+        pconn = dbpool_conn_consume(pool);
+
+        if (pconn == NULL)
+            continue;
+#if 1 /* selects */
+        if (dbpool_conn_select(pconn, sql, NULL, &result) == 0) {
+            long i,j;
+            for (i=0; i < gwlist_len(result); i++) {
+                List *row = gwlist_get(result, i);
+                for (j=0; j < gwlist_len(row); j++)
+                    debug("", 0, "col = %ld   value = '%s'", j, octstr_get_cstr(gwlist_get(row,j)));
+                gwlist_destroy(row, octstr_destroy_item);
+            }
+            succeeded++;
+        } else {
+            failed++;
+        }
+        gwlist_destroy(result, NULL);
+        dbpool_conn_produce(pconn);
+#else /* only updates */
+        debug("", 0, "rows processed = %d ", dbpool_conn_update(pconn, sql, NULL));
+        dbpool_conn_produce(pconn);
+#endif
+    }
+    info(0, "This thread: %ld succeeded, %ld failed.", succeeded, failed);
+}
+
+static DBConf *cass_create_conf(Octstr *user, Octstr *pass, Octstr *db, Octstr *host)
+{
+    DBConf *conf;
+    conf = gw_malloc(sizeof(DBConf));
+    conf->cass = gw_malloc(sizeof(CassConf));
+
+    conf->cass->username = octstr_duplicate(user);
+    conf->cass->password = octstr_duplicate(pass);
+    conf->cass->database = octstr_duplicate(db);
+    conf->cass->host = octstr_duplicate(host);
+
+    return conf;
+}
+#endif
+
 static void inc_dec_thread(void *arg)
 {
     DBPool *pool = arg;
@@ -448,6 +504,10 @@ int main(int argc, char **argv)
         info(0, "Do tests for sqlite3 database.");
         database_type = DBPOOL_SQLITE3;
     }
+    else if (octstr_case_compare(db_type, octstr_imm("cassandra")) == 0) {
+        info(0, "Do tests for cassandra database.");
+        database_type = DBPOOL_CASS;
+    }
     else {
         panic(0, "Unknown database type '%s'", octstr_get_cstr(db_type));
     }
@@ -460,6 +520,9 @@ int main(int argc, char **argv)
         case DBPOOL_SQLITE:
         case DBPOOL_SQLITE3:
             bail_out = (!db) ? 1 : 0;
+            break;
+        case DBPOOL_CASS:
+            bail_out = (!host || !db) ? 1 : 0;
             break;
         default:
             bail_out = (!host || !user || !pass || !db) ? 1 : 0;
@@ -496,6 +559,12 @@ int main(int argc, char **argv)
         case DBPOOL_SQLITE3:
             conf = sqlite3_create_conf(db);
             client_thread = sqlite3_client_thread;
+            break;
+#endif
+#ifdef HAVE_CASS
+        case DBPOOL_CASS:
+            conf = cass_create_conf(user,pass,db,host);
+            client_thread = cass_client_thread;
             break;
 #endif
         default:

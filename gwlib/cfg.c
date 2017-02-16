@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -143,6 +143,21 @@ static void set_group_name(CfgGroup *grp, Octstr *name)
 {
     octstr_destroy(grp->name);
     grp->name = octstr_duplicate(name);
+}
+
+
+static int octstr_sort_cb(const void *a, const void *b)
+{
+    const Octstr *fa = a;
+    const Octstr *fb = b;
+
+    return octstr_compare(fa, fb);
+}
+
+
+static int octstr_cmp_cb(void *a, void *b)
+{
+    return (octstr_compare((Octstr*)a, (Octstr*)b) == 0);
 }
 
 
@@ -643,6 +658,56 @@ List *cfg_get_multi_group(Cfg *cfg, Octstr *name)
 Octstr *cfg_get_group_name(CfgGroup *grp)
 {
     return octstr_duplicate(grp->name);
+}
+
+Octstr *cfg_get_group_checksum(CfgGroup *grp, ...)
+{
+    va_list args;
+	Octstr *ret, *os, *key, *val;
+	List *exclude, *keys;
+
+	exclude = gwlist_create();
+
+	/*
+	 * Variadic Octstr* arguments may contain the
+	 * config key names that DO NOT go into the
+	 * checksum computation. This allows differential
+	 * compares and detection of single changes.
+	 */
+    va_start(args, grp);
+    while ((os = va_arg(args, Octstr*)) != NULL) {
+    	gwlist_append(exclude, os);
+    }
+    va_end(args);
+
+    /* all configured config names of this group */
+    keys = dict_keys(grp->vars);
+
+    /* remove all excluded configs names */
+    while ((os = gwlist_extract_first(exclude)) != NULL) {
+    	if ((key = gwlist_search(keys, os, octstr_cmp_cb)) != NULL) {
+    		if (gwlist_delete_equal(keys, key) != 1)
+    			panic(0, "%s: multiple config variables with same name `%s'?!", __func__,
+    				  octstr_get_cstr(key));
+    		octstr_destroy(key);
+    	}
+    }
+    gwlist_destroy(exclude, NULL);
+
+    os = octstr_duplicate(grp->name);
+    gwlist_sort(keys, octstr_sort_cb);
+    while ((key = gwlist_extract_first(keys)) != NULL) {
+    	octstr_append(os, key);
+    	if ((val = dict_get(grp->vars, key)) != NULL)
+    		octstr_append(os, val);
+    	octstr_destroy(key);
+    }
+    gwlist_destroy(keys, NULL);
+
+    ret = md5(os);
+    octstr_destroy(os);
+
+    return ret;
 }
 
 Octstr *cfg_get_configfile(CfgGroup *grp)

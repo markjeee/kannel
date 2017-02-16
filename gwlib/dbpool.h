@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -67,14 +67,15 @@
 #if defined(HAVE_MYSQL) || defined(HAVE_SDB) || \
     defined(HAVE_ORACLE) || defined(HAVE_SQLITE) || \
     defined(HAVE_PGSQL) || defined(HAVE_SQLITE3) || \
-    defined(HAVE_MSSQL) || defined(HAVE_REDIS)
+    defined(HAVE_MSSQL) || defined(HAVE_REDIS) || \
+    defined(HAVE_CASS)
 #define HAVE_DBPOOL 1
 #endif
 
 /* supported databases for connection pools */
 enum db_type {
     DBPOOL_MYSQL, DBPOOL_SDB, DBPOOL_ORACLE, DBPOOL_SQLITE, DBPOOL_PGSQL,
-    DBPOOL_SQLITE3, DBPOOL_MSSQL, DBPOOL_REDIS
+    DBPOOL_SQLITE3, DBPOOL_MSSQL, DBPOOL_REDIS, DBPOOL_CASS
 };
 
 
@@ -151,6 +152,15 @@ typedef struct {
     long idle_timeout;
 } RedisConf;
 
+typedef struct {
+    Octstr *host;
+    long port;
+    Octstr *username;
+    Octstr *password;
+    Octstr *database;
+    long idle_timeout;
+} CassConf;
+
 typedef union {
     MSSQLConf *mssql;
     MySQLConf *mysql;
@@ -160,6 +170,7 @@ typedef union {
     SQLite3Conf *sqlite3;
     PgSQLConf *pgsql;
     RedisConf *redis;
+    CassConf *cass;
 } DBConf;
 
 /*

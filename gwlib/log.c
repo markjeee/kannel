@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -720,12 +720,16 @@ void log_set_debug_places(const char *places)
 }
 
 
-void log_thread_to(unsigned int idx)
+void log_thread_to(int idx)
 {
     long thread_id = thread_slot();
 
-    if (idx > 0) 
+    if (idx > 0) {
         info(0, "Logging thread `%ld' to logfile `%s' with level `%d'.", 
              thread_id, logfiles[idx].filename, logfiles[idx].minimum_output_level);
-    thread_to[thread_id] = idx;
+        thread_to[thread_id] = idx;
+    } else if (idx != 0 && num_logfiles > 0) {
+        warning(0, "Logging thread `%ld' to logfile `%s' with level `%d'.",
+                thread_id, logfiles[0].filename, logfiles[0].minimum_output_level);
+    }
 }

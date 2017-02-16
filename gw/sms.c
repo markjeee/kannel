@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -274,7 +274,14 @@ static Octstr *extract_msgdata_part_by_coding(Msg *msg, Octstr *split_chars,
         return extract_msgdata_part(msg->sms.msgdata, split_chars, max_part_len);
     }
 
-    /* convert to and the from gsm, so we drop all non GSM chars */
+    /*
+     * XXX TODO
+     * Convert to and the from gsm, so we drop all non GSM chars.
+     * This means effectively that we can NOT use any encoding specific
+     * characters in the SMSC module scope that are NOT in the GSM 03.38
+     * alphabet, i.e. UTF-8 0xC2 0xAE is latin1 0xAE and maps to an unknown
+     * character due to this round-trip transcoding.
+     */
     charset_utf8_to_gsm(msg->sms.msgdata);
     charset_gsm_to_utf8(msg->sms.msgdata);
 
@@ -408,3 +415,44 @@ int sms_priority_compare(const void *a, const void *b)
     return ret;
 }
 
+
+int sms_charset_processing(Octstr *charset, Octstr *body, int coding)
+{
+    int resultcode = 0;
+
+    /*
+    debug("gw.sms", 0, "%s: enter, charset=%s, coding=%d, msgdata is:",
+          __func__, octstr_get_cstr(charset), coding);
+    octstr_dump(body, 0);
+    */
+
+    if (octstr_len(charset)) {
+        if (coding == DC_7BIT) {
+            /*
+             * For 7 bit, convert to UTF-8
+             */
+            if (charset_convert(body, octstr_get_cstr(charset), "UTF-8") < 0) {
+                error(0, "Failed to convert msgdata from charset <%s> to <%s>, will leave as is.",
+                      octstr_get_cstr(charset), "UTF-8");
+                resultcode = -1;
+            }
+        } else if (coding == DC_UCS2) {
+            /*
+             * For UCS-2, convert to UTF-16BE
+             */
+            if (charset_convert(body, octstr_get_cstr(charset), "UTF-16BE") < 0) {
+                error(0, "Failed to convert msgdata from charset <%s> to <%s>, will leave as is.",
+                      octstr_get_cstr(charset), "UTF-16BE");
+                resultcode = -1;
+            }
+        }
+    }
+
+    /*
+    debug("gw.sms", 0, "%s: exit, charset=%s, coding=%d, msgdata is:",
+          __func__, octstr_get_cstr(charset), coding);
+    octstr_dump(body, 0);
+    */
+
+    return resultcode;
+}

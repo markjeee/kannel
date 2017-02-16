@@ -54,7 +54,7 @@ soap/plugin/mecevp.c: $(GSOAP_PLUGIN)/mecevp.c
 	ln -sf $(GSOAP_PLUGIN)/mecevp.c soap/plugin/mecevp.c
 
 libsoap_plugin.a: $(soap_plugin_objs)
-	@LIBTOOL@ libsoap_plugin.a $(soap_plugin_objs)
+	@OLD_LIBTOOL@ libsoap_plugin.a $(soap_plugin_objs)
 	$(RANLIB) libsoap_plugin.a
 
 #
@@ -77,7 +77,7 @@ $(soap_parlayx_cpphdr): $(soap_parlayx_cppwrap) $(soap_parlayx_cppsrc)
 	$(SOAPCPP) -d `dirname $(soap_parlayx_cpphdr)` -I $(GSOAP_IMPORT) -I soap/service/parlayx -cLxw $(soap_parlayx_cppwrap)
 	
 libsoap_parlayx.a: $(soap_parlayx_cpphdr) $(soap_parlayx_plugin_srcs) $(soap_parlayx_objs)
-	@LIBTOOL@ libsoap_parlayx.a $(soap_parlayx_objs)
+	@OLD_LIBTOOL@ libsoap_parlayx.a $(soap_parlayx_objs)
 	$(RANLIB) libsoap_parlayx.a
 
 #

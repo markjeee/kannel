@@ -1,3 +1,7 @@
+2015-11-10  Rnne Kluwen <rene dot kluwen at chimit.nl>
+    - Initializing mysql port to 3306 if not set in config.
+      Thanks to Vyronas Tsingaras <vtsingaras at amdtelecom.net> for the patch.
+
 2014-04-29  Stipe Tolj  <stolj at kannel.org>
     * doc/userguide.xml: move from DocBook V3.1 to V4.2 and fix various XML
       tag errors. No content change.

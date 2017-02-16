@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -100,8 +100,7 @@ static void dlr_redis_shutdown()
 
 static void dlr_redis_add(struct dlr_entry *entry)
 {
-    Octstr *key, *sql, *os_mask;
-    Octstr *dstclean, *srcclean, *tsclean;
+    Octstr *key, *sql, *os;
     DBPoolConn *pconn;
     List *binds;
     int res, len;
@@ -116,42 +115,25 @@ static void dlr_redis_add(struct dlr_entry *entry)
         return;
     }
 
-    /*
-     * This code is needed as we are mis-using the Hiredis API and
-     * passing a fully-formed Redis command rather than tokenized
-     * command components. Redis treats a space are a command delimiter
-     * so any component that can include a space needs to be quoted.
-     * Should be re-written to use the RedisCommandArgv() API.
-     */
-
-    dstclean = octstr_duplicate(entry->destination);
-    octstr_replace(dstclean, octstr_imm(" "), octstr_imm("__space__"));
-
-    srcclean = octstr_duplicate(entry->source);
-    octstr_replace(srcclean, octstr_imm(" "), octstr_imm("__space__"));
-
-    tsclean = octstr_duplicate(entry->timestamp);
-    octstr_replace(tsclean, octstr_imm(" "), octstr_imm("__space__"));
-
     if (entry->use_dst && entry->destination) {
         Octstr *dst_min;
 
         /* keep a shorten version for the key part */
-        dst_min = octstr_duplicate(dstclean);
+        dst_min = octstr_duplicate(entry->destination);
         len = octstr_len(dst_min);
         if (len > MIN_DST_LEN)
             octstr_delete(dst_min, 0, len - MIN_DST_LEN);
 
         key = octstr_format("%S:%S:%S:%S", fields->table,
                 entry->smsc,
-                tsclean,
+                entry->timestamp,
                 dst_min);
 
         octstr_destroy(dst_min);
     } else {
         key = octstr_format("%S:%S:%S", fields->table,
                 entry->smsc,
-                tsclean);
+                entry->timestamp);
     }
 
 #ifdef REDIS_PRECHECK
@@ -175,50 +157,46 @@ static void dlr_redis_add(struct dlr_entry *entry)
 #endif
 
     binds = gwlist_create();
-    sql = octstr_format("HMSET %S %S ? %S ? %S ? %S ? %S ? %S ? %S ? %S ? %S 0",
-            key,
-            fields->field_smsc,
-            fields->field_ts,
-            fields->field_src,
-            fields->field_dst,
-            fields->field_serv,
-            fields->field_url,
-            fields->field_mask,
-            fields->field_boxc,
-            fields->field_status);
-
-    /* prepare values */
-    if (entry->url) {
-        octstr_url_encode(entry->url);
-        octstr_replace(entry->url, octstr_imm("%"), octstr_imm("%%"));
-    }
-    os_mask = octstr_format("%d", entry->mask);
-
+    sql = octstr_create("");
+    gwlist_append(binds, octstr_imm("HMSET"));
+    gwlist_append(binds, key);
+    gwlist_append(binds, fields->field_smsc);
     gwlist_append(binds, entry->smsc);
-    gwlist_append(binds, tsclean);
-    gwlist_append(binds, srcclean);
-    gwlist_append(binds, dstclean);
+    gwlist_append(binds, fields->field_ts);
+    gwlist_append(binds, entry->timestamp);
+    gwlist_append(binds, fields->field_src);
+    gwlist_append(binds, entry->source);
+    gwlist_append(binds, fields->field_dst);
+    gwlist_append(binds, entry->destination);
+    gwlist_append(binds, fields->field_serv);
     gwlist_append(binds, entry->service);
+    gwlist_append(binds, fields->field_url);
+    octstr_url_encode(entry->url);
     gwlist_append(binds, entry->url);
-    gwlist_append(binds, os_mask);
+    gwlist_append(binds, fields->field_mask);
+    os = octstr_format("%d", entry->mask);
+    gwlist_append(binds, os);
+    gwlist_append(binds, fields->field_boxc);
     gwlist_append(binds, entry->boxc_id);
 
     res = dbpool_conn_update(pconn, sql, binds);
 
     if (res == -1) {
-        error(0, "DLR: REDIS: Error while adding dlr entry %s:%s:%s:%s",
-              octstr_get_cstr(fields->table),
-              octstr_get_cstr(entry->smsc),
-              octstr_get_cstr(tsclean),
-              octstr_get_cstr(dstclean));
+        error(0, "DLR: REDIS: Error while adding dlr entry %s",
+              octstr_get_cstr(key));
     }
     else  {
         /* HMSET returned OK. Set EXPIRE if applicable and then
          * increment the DLR counter */
         if (fields->ttl) {
-            octstr_destroy(sql);
-            sql = octstr_format("EXPIRE %S %ld", key, fields->ttl);
-            res = dbpool_conn_update(pconn, sql, NULL);
+            gwlist_destroy(binds, NULL);
+            binds = gwlist_create();
+            gwlist_append(binds, octstr_imm("EXPIRE"));
+            gwlist_append(binds, key);
+            octstr_destroy(os);
+            os = octstr_format("%ld", fields->ttl);
+            gwlist_append(binds, os);
+            res = dbpool_conn_update(pconn, sql, binds);
         }
         /* We are not performing an 'INCR <table>:Count'
          * operation here, since we can't be accurate due
@@ -227,12 +205,9 @@ static void dlr_redis_add(struct dlr_entry *entry)
     }
 
     dbpool_conn_produce(pconn);
-    octstr_destroy(os_mask);
     octstr_destroy(sql);
     octstr_destroy(key);
-    octstr_destroy(tsclean);
-    octstr_destroy(dstclean);
-    octstr_destroy(srcclean);
+    octstr_destroy(os);
     gwlist_destroy(binds, NULL);
     dlr_entry_destroy(entry);
 }
@@ -264,13 +239,16 @@ static struct dlr_entry *dlr_redis_get(const Octstr *smsc, const Octstr *ts, con
 
     /* If the destination address is not NULL, then
      * it has been shortened by the abstractive layer. */
-    key = octstr_format((dst ? "%S:?:?:?" : "%S:?:?"), fields->table);
-
-    sql = octstr_format("HMGET %S ? ? ? ? ? ?", key);
-    gwlist_append(binds, (Octstr *)smsc); /* key */
-    gwlist_append(binds, (Octstr *)ts); /* key */
     if (dst)
-        gwlist_append(binds, (Octstr *)dst); /* key */
+        key = octstr_format("%S:%S:%S:%S", fields->table,
+                (Octstr*) smsc, (Octstr*) ts, (Octstr*) dst);
+    else
+        key = octstr_format("%S:%S:%S", fields->table,
+                (Octstr*) smsc, (Octstr*) ts);
+
+    sql = octstr_create("");
+    gwlist_append(binds, octstr_imm("HMGET"));
+    gwlist_append(binds, key);
     gwlist_append(binds, fields->field_mask);
     gwlist_append(binds, fields->field_serv);
     gwlist_append(binds, fields->field_url);
@@ -314,9 +292,6 @@ static struct dlr_entry *dlr_redis_get(const Octstr *smsc, const Octstr *ts, con
             get_octstr_value(&res->destination, row, 4);
             get_octstr_value(&res->boxc_id, row, 5);
             res->smsc = octstr_duplicate(smsc);
-
-            octstr_replace(res->source, octstr_imm("__space__"), octstr_imm(" "));
-            octstr_replace(res->destination, octstr_imm("__space__"), octstr_imm(" "));
         }
         gwlist_destroy(row, octstr_destroy_item);
     }
@@ -344,18 +319,16 @@ static void dlr_redis_remove(const Octstr *smsc, const Octstr *ts, const Octstr 
         return;
     }
 
-    /*
-    octstr_replace(dst, octstr_imm(" "), octstr_imm(""));
-    octstr_replace(ts, octstr_imm(" "), octstr_imm(""));
-    */
-
-    key = octstr_format((dst ? "%S:?:?:?" : "%S:?:?"), fields->table);
-
-    sql = octstr_format("DEL %S", key, fields->table);
-    gwlist_append(binds, (Octstr *)smsc); /* key */
-    gwlist_append(binds, (Octstr *)ts); /* key */
     if (dst)
-        gwlist_append(binds, (Octstr *)dst); /* key */
+        key = octstr_format("%S:%S:%S:%S", fields->table,
+                (Octstr*) smsc, (Octstr*) ts, (Octstr*) dst);
+    else
+        key = octstr_format("%S:%S:%S", fields->table,
+                (Octstr*) smsc, (Octstr*) ts);
+
+    sql = octstr_create("");
+    gwlist_append(binds, octstr_imm("DEL"));
+    gwlist_append(binds, key);
 
     res = dbpool_conn_update(pconn, sql, binds);
  

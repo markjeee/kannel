@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -85,10 +85,10 @@ Usage: fakesmsc [-H host] [-r port] [-i interval] [-m max] [-z <type>] <msg> ...
 *        where the given static elements in <msg> are used as constant prefixes,\n\
 * <msg> is message to send, if several are given, they are sent randomly.\n\
 \n\
-msg format: \"sender receiver type(text/data/udh/route) [udhdata|route] msgdata\"\n\
+msg format: \"sender receiver type(text|data|ucs2|udh-data|udh-text|route|dlr-mask) [udhdata|route|dlrmask] msgdata\"\n\
 \n\
-Type \"text\" means plaintext msgdata, \"data\" urlcoded, \"udh\" urlcoded udh+msg\n\
-and \"route\" means smsbox-id routed plaintext msgdata\n\
+Type \"text\" means plaintext msgdata, \"data\" urlcoded, \"udh\" url-encoded udh+msg,\n\
+\"ucs2\" unicode url-encoded msgdata and \"route\" means smsbox-id routed plaintext msgdata\n\
 Examples: \n\
 \n\
 fakesmsc -m 1 \"123 345 udh %04udh%3f message+data+here\"\n\

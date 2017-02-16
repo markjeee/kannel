@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -109,7 +109,7 @@ static void init_reroute(SMSCConn *conn, CfgGroup *grp)
     if ((rule = cfg_get(grp, octstr_imm("reroute-receiver"))) != NULL) {
         List *routes;
 
-        /* create hash disctionary for this smsc-id */
+        /* create hash dictionary for this smsc-id */
         conn->reroute_by_receiver = dict_create(100, (void(*)(void *)) octstr_destroy);
 
         routes = octstr_split(rule, octstr_imm(";"));
@@ -146,6 +146,19 @@ static void init_reroute(SMSCConn *conn, CfgGroup *grp)
 }
 
 
+unsigned int smscconn_instances(CfgGroup *grp)
+{
+    long i;
+
+    if (cfg_get_integer(&i, grp, octstr_imm("instances")) == -1)
+        i = 1;
+    else if (i < 0)
+        i = 0;
+
+    return i;
+}
+
+
 SMSCConn *smscconn_create(CfgGroup *grp, int start_as_stopped)
 {
     SMSCConn *conn;
@@ -168,6 +181,36 @@ SMSCConn *smscconn_create(CfgGroup *grp, int start_as_stopped)
     conn->status = SMSCCONN_CONNECTING;
     conn->connect_time = -1;
     conn->is_stopped = start_as_stopped;
+
+#define OCTSTR(os)	octstr_imm(#os)
+
+    /* checksum of the whole config, without instance multiplier */
+    conn->chksum = cfg_get_group_checksum(grp,
+            NULL
+    );
+
+    /* checksum of the connection related part, without routing
+     * and without instance multiplier */
+    conn->chksum_conn = cfg_get_group_checksum(grp,
+		    OCTSTR(denied-smsc-id),
+		    OCTSTR(allowed-smsc-id),
+		    OCTSTR(preferred-smsc-id),
+		    OCTSTR(allowed-prefix),
+		    OCTSTR(denied-prefix),
+		    OCTSTR(preferred-prefix),
+		    OCTSTR(unified-prefix),
+		    OCTSTR(reroute),
+		    OCTSTR(reroute-smsc-id),
+		    OCTSTR(reroute-receiver),
+		    OCTSTR(reroute-dlr),
+		    OCTSTR(allowed-smsc-id-regex),
+		    OCTSTR(denied-smsc-id-regex),
+		    OCTSTR(preferred-smsc-id-regex),
+		    OCTSTR(allowed-prefix-regex),
+		    OCTSTR(denied-prefix-regex),
+		    OCTSTR(preferred-prefix-regex),
+		    NULL
+    );
 
     conn->received = counter_create();
     conn->received_dlr = counter_create();
@@ -335,10 +378,11 @@ SMSCConn *smscconn_create(CfgGroup *grp, int start_as_stopped)
 void smscconn_shutdown(SMSCConn *conn, int finish_sending)
 {
     gw_assert(conn != NULL);
+
     mutex_lock(conn->flow_mutex);
     if (conn->status == SMSCCONN_DEAD) {
-	mutex_unlock(conn->flow_mutex);
-	return;
+    	mutex_unlock(conn->flow_mutex);
+    	return;
     }
 
     /* Call SMSC specific destroyer */
@@ -348,10 +392,10 @@ void smscconn_shutdown(SMSCConn *conn, int finish_sending)
          * and will try to lock this mutex.Otherwise we have deadlock!
          */
         mutex_unlock(conn->flow_mutex);
-	conn->shutdown(conn, finish_sending);
+        conn->shutdown(conn, finish_sending);
     }
     else {
-	conn->why_killed = SMSCCONN_KILLED_SHUTDOWN;
+    	conn->why_killed = SMSCCONN_KILLED_SHUTDOWN;
         mutex_unlock(conn->flow_mutex);
     }
 
@@ -390,6 +434,8 @@ int smscconn_destroy(SMSCConn *conn)
     octstr_destroy(conn->unified_prefix);
     octstr_destroy(conn->our_host);
     octstr_destroy(conn->log_file);
+    octstr_destroy(conn->chksum);
+    octstr_destroy(conn->chksum_conn);
 
     if (conn->denied_smsc_id_regex != NULL) gw_regex_destroy(conn->denied_smsc_id_regex);
     if (conn->allowed_smsc_id_regex != NULL) gw_regex_destroy(conn->allowed_smsc_id_regex);
@@ -470,20 +516,22 @@ int smscconn_usable(SMSCConn *conn, Msg *msg)
     gw_assert(conn != NULL);
     gw_assert(msg != NULL && msg_type(msg) == sms);
 
-    if (conn->status == SMSCCONN_DEAD || conn->why_killed != SMSCCONN_ALIVE)
-	return -1;
+    /* dead transmitter or active receiver connections are not feasible */
+    if (conn->status == SMSCCONN_DEAD || conn->status == SMSCCONN_ACTIVE_RECV ||
+            conn->why_killed != SMSCCONN_ALIVE)
+        return -1;
 
     /* if allowed-smsc-id set, then only allow this SMSC if message
      * smsc-id matches any of its allowed SMSCes
      */
     if (conn->allowed_smsc_id && (msg->sms.smsc_id == NULL ||
-         gwlist_search(conn->allowed_smsc_id, msg->sms.smsc_id, octstr_item_match) == NULL)) {
+            gwlist_search(conn->allowed_smsc_id, msg->sms.smsc_id, octstr_item_match) == NULL)) {
         return -1;
     }
     /* ..if no allowed-smsc-id set but denied-smsc-id and message smsc-id
      * is set, deny message if smsc-ids match */
     else if (conn->denied_smsc_id && msg->sms.smsc_id != NULL &&
-                 gwlist_search(conn->denied_smsc_id, msg->sms.smsc_id, octstr_item_match) != NULL) {
+            gwlist_search(conn->denied_smsc_id, msg->sms.smsc_id, octstr_item_match) != NULL) {
         return -1;
     }
 
@@ -500,51 +548,46 @@ int smscconn_usable(SMSCConn *conn, Msg *msg)
     }
 
     /* Have allowed */
-    if (conn->allowed_prefix && ! conn->denied_prefix && 
-       (does_prefix_match(conn->allowed_prefix, msg->sms.receiver) != 1))
-	return -1;
+    if (conn->allowed_prefix && !conn->denied_prefix &&
+            (does_prefix_match(conn->allowed_prefix, msg->sms.receiver) != 1))
+        return -1;
     
-    if (conn->allowed_prefix_regex && ! conn->denied_prefix_regex) {
-        if (gw_regex_match_pre(conn->allowed_prefix_regex, msg->sms.receiver) == 0)
-            return -1;
-    }
+    if (conn->allowed_prefix_regex && !conn->denied_prefix_regex &&
+            gw_regex_match_pre(conn->allowed_prefix_regex, msg->sms.receiver) == 0)
+        return -1;
 
     /* Have denied */
-    if (conn->denied_prefix && ! conn->allowed_prefix &&
-       (does_prefix_match(conn->denied_prefix, msg->sms.receiver) == 1))
-	return -1;
+    if (conn->denied_prefix && !conn->allowed_prefix &&
+            (does_prefix_match(conn->denied_prefix, msg->sms.receiver) == 1))
+        return -1;
 
-    if (conn->denied_prefix_regex && ! conn->allowed_prefix_regex) {
-        if (gw_regex_match_pre(conn->denied_prefix_regex, msg->sms.receiver) == 1)
-            return -1;
-    }
+    if (conn->denied_prefix_regex && !conn->allowed_prefix_regex &&
+            gw_regex_match_pre(conn->denied_prefix_regex, msg->sms.receiver) == 1)
+        return -1;
 
     /* Have allowed and denied */
     if (conn->denied_prefix && conn->allowed_prefix &&
-       (does_prefix_match(conn->allowed_prefix, msg->sms.receiver) != 1) &&
-       (does_prefix_match(conn->denied_prefix, msg->sms.receiver) == 1) )
-	return -1;
+            (does_prefix_match(conn->allowed_prefix, msg->sms.receiver) != 1) &&
+            (does_prefix_match(conn->denied_prefix, msg->sms.receiver) == 1))
+        return -1;
 
-    if (conn->allowed_prefix_regex && conn->denied_prefix_regex) {
-        if (gw_regex_match_pre(conn->allowed_prefix_regex, msg->sms.receiver) == 0 &&
+    if (conn->allowed_prefix_regex && conn->denied_prefix_regex &&
+            gw_regex_match_pre(conn->allowed_prefix_regex, msg->sms.receiver) == 0 &&
             gw_regex_match_pre(conn->denied_prefix_regex, msg->sms.receiver) == 1)
-            return -1;
-    }
+        return -1;
     
     /* then see if it is preferred one */
     if (conn->preferred_smsc_id && msg->sms.smsc_id != NULL &&
-         gwlist_search(conn->preferred_smsc_id, msg->sms.smsc_id, octstr_item_match) != NULL) {
+            gwlist_search(conn->preferred_smsc_id, msg->sms.smsc_id, octstr_item_match) != NULL)
         return 1;
-    }
 
-    if (conn->preferred_prefix)
-	if (does_prefix_match(conn->preferred_prefix, msg->sms.receiver) == 1)
-	    return 1;
+    if (conn->preferred_prefix &&
+            does_prefix_match(conn->preferred_prefix, msg->sms.receiver) == 1)
+        return 1;
 
     if (conn->preferred_prefix_regex &&
-        gw_regex_match_pre(conn->preferred_prefix_regex, msg->sms.receiver) == 1) {
+            gw_regex_match_pre(conn->preferred_prefix_regex, msg->sms.receiver) == 1)
         return 1;
-    }
         
     return 0;
 }
@@ -658,3 +701,57 @@ int smscconn_info(SMSCConn *conn, StatusInfo *infotable)
 }
 
 
+void smscconn_reconfig(SMSCConn *conn, CfgGroup *grp)
+{
+    Octstr *tmp;
+
+    gw_assert(conn != NULL);
+
+    if (grp == NULL)
+    	return;
+
+#define GET_OPTIONAL_VAL(x, n) \
+		octstr_destroy(x); \
+		x = cfg_get(grp, octstr_imm(n))
+#define SPLIT_OPTIONAL_VAL(x, n) \
+		gwlist_destroy(x, octstr_destroy_item); \
+		if ((tmp = cfg_get(grp, octstr_imm(n))) != NULL) \
+			x = octstr_split(tmp, octstr_imm(";")); \
+		else \
+    		x = NULL; \
+		octstr_destroy(tmp);
+#define GET_OPTIONAL_REGEX(x, n) \
+		gw_regex_destroy(x); \
+	    if ((tmp = cfg_get(grp, octstr_imm(n))) != NULL) { \
+	        if ((x = gw_regex_comp(tmp, REG_EXTENDED)) == NULL) \
+	            error(0, "Could not compile pattern '%s'", octstr_get_cstr(tmp)); \
+	        octstr_destroy(tmp); \
+	    }
+
+    SPLIT_OPTIONAL_VAL(conn->allowed_smsc_id, "allowed-smsc-id");
+    SPLIT_OPTIONAL_VAL(conn->denied_smsc_id, "denied-smsc-id");
+    SPLIT_OPTIONAL_VAL(conn->preferred_smsc_id, "preferred-smsc-id");
+    GET_OPTIONAL_VAL(conn->allowed_prefix, "allowed-prefix");
+    GET_OPTIONAL_VAL(conn->denied_prefix, "denied-prefix");
+    GET_OPTIONAL_VAL(conn->preferred_prefix, "preferred-prefix");
+    GET_OPTIONAL_VAL(conn->unified_prefix, "unified-prefix");
+    GET_OPTIONAL_REGEX(conn->allowed_smsc_id_regex, "allowed-smsc-id-regex");
+    GET_OPTIONAL_REGEX(conn->denied_smsc_id_regex, "denied-smsc-id-regex");
+    GET_OPTIONAL_REGEX(conn->preferred_smsc_id_regex, "preferred-smsc-id-regex");
+    GET_OPTIONAL_REGEX(conn->allowed_prefix_regex, "allowed-prefix-regex");
+    GET_OPTIONAL_REGEX(conn->denied_prefix_regex, "denied-prefix-regex");
+    GET_OPTIONAL_REGEX(conn->preferred_prefix_regex, "preferred-prefix-regex");
+
+    octstr_destroy(conn->reroute_to_smsc);
+    dict_destroy(conn->reroute_by_receiver);
+    init_reroute(conn, grp);
+
+    /*
+     * Since we applied changes, we need to re-compute
+     * at least the overall checksum. The other one
+     * is not changed as the routing values are excluded.
+     * also the checksum hash values.
+     */
+    octstr_destroy(conn->chksum);
+    conn->chksum = cfg_get_group_checksum(grp, NULL);
+}

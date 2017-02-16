@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -319,6 +319,30 @@ static int copy_until_nul(const char *field_name, Octstr *os, long *pos, long ma
     return 0;
 }
 
+static int is_defined_field(long type, const char *field_name)
+{
+    switch (type) {
+    #define OPTIONAL_BEGIN
+    #define TLV_INTEGER(name, octets) OCTETS(name, octets)
+    #define TLV_NULTERMINATED(name, max_len) OCTETS(name, max_len)
+    #define TLV_OCTETS(name, min_len, max_len) OCTETS(name, min_len)
+    #define OPTIONAL_END
+    #define INTEGER(name, octets) OCTETS(name, octets)
+    #define NULTERMINATED(name, max_octets) OCTETS(name, max_octets)
+    #define OCTETS(name, field_giving_octetst) \
+            if (strncmp(#name, field_name, sizeof(#name) - 1) == 0) \
+                return 1;
+    #define PDU(name, id, fields) \
+        case id: { \
+            fields \
+        } break;
+    #include "smpp_pdu.def"
+    default:
+        break;
+    }
+
+    return 0;
+}
 
 SMPP_PDU *smpp_pdu_create(unsigned long type, unsigned long seq_no)
 {
@@ -442,7 +466,8 @@ Octstr *smpp_pdu_pack(Octstr *smsc_id, SMPP_PDU *pdu)
             while(keys != NULL && (key = gwlist_extract_first(keys)) != NULL) { \
                 tlv = smpp_tlv_get_by_name(smsc_id, key); \
                 if (tlv == NULL) { \
-                    error(0, "SMPP: Unknown TLV `%s', don't send.", octstr_get_cstr(key)); \
+                    if (!is_defined_field(pdu->type, octstr_get_cstr(key))) \
+                        error(0, "SMPP: Unknown TLV `%s', don't send.", octstr_get_cstr(key)); \
                     octstr_destroy(key); \
                     continue; \
                 } \
@@ -573,6 +598,11 @@ SMPP_PDU *smpp_pdu_unpack(Octstr *smsc_id, Octstr *data_without_len)
                         pos += opt_len; \
                         continue; \
                     } \
+                    if(p->mname != NULL) { \
+                        warning(0, "SMPP: Optional field (%s) was sent more than once, overwriting", #mname); \
+                        octstr_destroy(p->mname); \
+                        p->mname = NULL; \
+                    } \
                     copy_until_nul(#mname, data_without_len, &pos, opt_len, &p->mname); \
                     if (tlv != NULL) dict_put(p->tlv, tlv->name, octstr_duplicate(p->mname)); \
                 } else
@@ -584,6 +614,11 @@ SMPP_PDU *smpp_pdu_unpack(Octstr *smsc_id, Octstr *data_without_len)
                             #mname, opt_len, min_len, max_len);  \
                         pos += opt_len; \
                         continue; \
+                    } \
+                    if(p->mname != NULL) { \
+                        warning(0, "SMPP: Optional field (%s) was sent more than once, overwriting", #mname); \
+                        octstr_destroy(p->mname); \
+                        p->mname = NULL; \
                     } \
                     p->mname = octstr_copy(data_without_len, pos, opt_len); \
                     pos += opt_len; \
@@ -725,6 +760,59 @@ void smpp_pdu_dump(Octstr *smsc_id, SMPP_PDU *pdu)
 }
 
 
+void smpp_pdu_dump_line(Octstr *smsc_id, SMPP_PDU *pdu)
+{
+    Octstr *str = octstr_create("");
+
+    octstr_format_append(str, "SMPP PDU %p dump: [type_name:%d:%s]", (void *) pdu, strlen(pdu->type_name), pdu->type_name);
+    switch (pdu->type) {
+    #define OPTIONAL_BEGIN
+    #define TLV_INTEGER(name, max_len) \
+        if (p->name != -1)  { \
+            INTEGER(name, max_len) \
+        }
+    #define TLV_NULTERMINATED(name, max_len) \
+        if (p->name != NULL) { \
+            NULTERMINATED(name, max_len) \
+        }
+    #define TLV_OCTETS(name, min_len, max_len) \
+        if (p->name != NULL) { \
+            OCTETS(name, max_len) \
+        }
+    #define OPTIONAL_END \
+        if (p->tlv != NULL) { \
+            List *keys; \
+            Octstr *key; \
+            struct smpp_tlv *tlv; \
+            keys = dict_keys(p->tlv); \
+            while(keys != NULL && (key = gwlist_extract_first(keys)) != NULL) { \
+                tlv = smpp_tlv_get_by_name(smsc_id, key); \
+                if (tlv != NULL) { \
+                    Octstr *val = dict_get(p->tlv, key); \
+                    octstr_format_append(str, " [%E:%d:%E]", key, octstr_len(val), val); \
+                } \
+                octstr_destroy(key); \
+            } \
+            gwlist_destroy(keys, octstr_destroy_item); \
+        }
+    #define INTEGER(name, octets) \
+        octstr_format_append(str, " [%s:0:0x%08lx]", #name, p->name);
+    #define NULTERMINATED(name, max_octets) \
+        octstr_format_append(str, " [%s:%d:%E]", #name, octstr_len(p->name), (p->name != NULL ? p->name : octstr_imm("NULL")));
+    #define OCTETS(name, field_giving_octets) \
+        octstr_format_append(str, " [%s:%d:%E]", #name, octstr_len(p->name), (p->name != NULL ? p->name : octstr_imm("NULL")));
+    #define PDU(name, id, fields) \
+        case id: { struct name *p = &pdu->u.name; fields } break;
+    #include "smpp_pdu.def"
+    default:
+        error(0, "Unknown SMPP_PDU type, internal error.");
+        break;
+    }
+    debug("sms.smpp", 0, "%s", octstr_get_cstr(str));
+    octstr_destroy(str);
+}
+
+
 long smpp_pdu_read_len(Connection *conn)
 {
     Octstr *os;
@@ -780,7 +868,7 @@ const char *smpp_error_to_string(enum SMPP_ERROR_MESSAGES error)
             return "Invalid Command ID";
         case SMPP_ESME_RINVBNDSTS:
             return "Incorrect BIND Status for given command";
-        case SMPP_ESME_RALYNBD:
+        case SMPP_ESME_RALYBND:
             return "ESME Already in Bound State";
         case SMPP_ESME_RINVPRTFLG:
             return "Invalid Priority Flag";

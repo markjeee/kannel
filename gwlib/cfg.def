@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -106,10 +106,18 @@ SINGLE_GROUP(core,
     OCTSTR(store-type)
     OCTSTR(store-location)
     OCTSTR(unified-prefix)
-    OCTSTR(white-list)
+    OCTSTR(white-list)			/* deprecated, supported until next major stable release - start */
     OCTSTR(white-list-regex)
     OCTSTR(black-list)
-    OCTSTR(black-list-regex)
+    OCTSTR(black-list-regex)	/* deprecated, supported until next major stable release - end */
+    OCTSTR(white-list-sender)
+    OCTSTR(white-list-sender-regex)
+    OCTSTR(black-list-sender)
+    OCTSTR(black-list-sender-regex)
+    OCTSTR(white-list-receiver)
+    OCTSTR(white-list-receiver-regex)
+    OCTSTR(black-list-receiver)
+    OCTSTR(black-list-receiver-regex)
     OCTSTR(http-proxy-host)
     OCTSTR(http-proxy-port)
     OCTSTR(http-proxy-ssl)
@@ -123,7 +131,7 @@ SINGLE_GROUP(core,
     OCTSTR(ssl-trusted-ca-file)
     OCTSTR(dlr-storage)
     OCTSTR(dlr-spool)
-    OCTSTR(maximum-queue-length)
+    OCTSTR(maximum-queue-length)    /* deprecated, supported until next major stable release */
     OCTSTR(sms-incoming-queue-limit)
     OCTSTR(sms-outgoing-queue-limit)
     OCTSTR(sms-resend-freq)
@@ -138,8 +146,7 @@ SINGLE_GROUP(wapbox,
     OCTSTR(bearerbox-host)
     OCTSTR(timer-freq)
     OCTSTR(url-map)
-    /* to be deprecated (begin) */
-    OCTSTR(map-url)
+    OCTSTR(map-url)                 /* deprecated, supported until next major stable release - start */
     OCTSTR(map-url-max)
     OCTSTR(map-url-0)
     OCTSTR(map-url-1)
@@ -150,8 +157,7 @@ SINGLE_GROUP(wapbox,
     OCTSTR(map-url-6)
     OCTSTR(map-url-7)
     OCTSTR(map-url-8)
-    OCTSTR(map-url-9)
-    /* to be deprecated (end) */
+    OCTSTR(map-url-9)               /* deprecated, supported until next major stable release - end */
     OCTSTR(device-home)
     OCTSTR(log-file)
     OCTSTR(log-level)
@@ -317,6 +323,7 @@ MULTI_GROUP(smsc,
     OCTSTR(reroute-dlr)
     OCTSTR(log-file)
     OCTSTR(log-level)
+    OCTSTR(log-format)
     OCTSTR(our-host)
     OCTSTR(alt-dcs)
     OCTSTR(throughput)
@@ -425,6 +432,7 @@ MULTI_GROUP(smsc,
     OCTSTR(generic-status-sent)
     OCTSTR(generic-status-error)
     OCTSTR(generic-foreign-id-regex)
+    OCTSTR(instances)
 )
 
 
@@ -626,7 +634,18 @@ MULTI_GROUP(redis-connection,
     OCTSTR(max-connections)
     OCTSTR(idle-timeout)
 )
- 
+
+MULTI_GROUP(cassandra-connection,
+    OCTSTR(id)
+    OCTSTR(host)
+    OCTSTR(port)
+    OCTSTR(username)
+    OCTSTR(password)
+    OCTSTR(database)
+    OCTSTR(max-connections)
+    OCTSTR(idle-timeout)
+)
+
 SINGLE_GROUP(dlr-db,
     OCTSTR(id)
     OCTSTR(table)
@@ -640,6 +659,12 @@ SINGLE_GROUP(dlr-db,
     OCTSTR(field-mask)
     OCTSTR(field-status)
     OCTSTR(field-boxc-id)
+)
+
+SINGLE_GROUP(store-db,
+    OCTSTR(id)
+    OCTSTR(table)
+    OCTSTR(hash)
 )
 
 

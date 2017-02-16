@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -65,6 +65,7 @@
  * Robert Gaach <robert.galach@my.tenbit.pl> 
  */
  
+#include <inttypes.h>
 #include <libxml/xmlmemory.h>
 #include <libxml/tree.h>
 #include <libxml/debugXML.h>
@@ -2073,6 +2074,9 @@ static int parse_struct(xmlDocPtr doc, xmlNodePtr node,
 {
     int status = 0;
   
+    if (node == NULL)
+        return -1;
+
     /* call for the parser function of the node type. */
     switch (node->type) {
 
@@ -2097,7 +2101,7 @@ static int parse_struct(xmlDocPtr doc, xmlNodePtr node,
     }
 
     if (node->next != NULL)
-           if (parse_struct(doc, node->next, xrdoc, members) == -1)
+        if (parse_struct(doc, node->next, xrdoc, members) == -1)
             return -1;
 
     return status;
@@ -2223,7 +2227,7 @@ static int parse_member_element(xmlDocPtr doc, xmlNodePtr node,
         return -1;
     }
 
-    name = octstr_create(node->name);
+    name = octstr_create((const char*)node->name);
     if (octstr_len(name) == 0) {
         octstr_destroy(name);
         return -1;
@@ -2262,7 +2266,7 @@ static int parse_member_element(xmlDocPtr doc, xmlNodePtr node,
         }
         content_buff = xmlNodeListGetString(doc, node->xmlChildrenNode, 1);
         if (content_buff != NULL) {
-            member->name = octstr_create(content_buff);
+            member->name = octstr_create((const char*)content_buff);
             xmlFree(content_buff);
         } else {
             xrdoc->parse_status = XMLRPC_PARSING_FAILED;
@@ -2286,6 +2290,9 @@ static int parse_array(xmlDocPtr doc, xmlNodePtr node,
 {
     int status = 0;
   
+    if (node == NULL)
+        return -1;
+
     /* call for the parser function of the node type. */
     switch (node->type) {
 
@@ -2310,7 +2317,7 @@ static int parse_array(xmlDocPtr doc, xmlNodePtr node,
     }
 
     if (node->next != NULL)
-           if (parse_array(doc, node->next, xrdoc, elements) == -1)
+        if (parse_array(doc, node->next, xrdoc, elements) == -1)
             return -1;
 
     return status;

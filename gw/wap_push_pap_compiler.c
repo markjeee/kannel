@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -82,13 +82,14 @@
  * By  Aarno Syvänen for Wapit Ltd and for Wiral Ltd.
  */
 
+#include <ctype.h>
+#include <string.h>
+#include <inttypes.h>
 #include <libxml/xmlmemory.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <libxml/debugXML.h>
 #include <libxml/encoding.h>
-#include <ctype.h>
-#include <string.h>
 
 #include "shared.h"
 #include "wap_push_pap_compiler.h"
@@ -949,7 +950,7 @@ static int parse_pap_value(Octstr *attr_name, Octstr *attr_value, WAPEvent **e)
          * XXX This is a kludge. 
          * We can't add the product-name value to the WAPEvent, because
          * the wap_event_create() is created in the deeper layer, which
-         * means as soon as we see <push-message> or <reponse-message>.
+         * means as soon as we see <push-message> or <response-message>.
          * But we would have to decide which WAPEvent to create while 
          * being on the higher <pap> level. 
          * How's this to be solved?! -- Stipe

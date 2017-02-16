@@ -286,7 +286,6 @@ Octstr *octstr_cat(Octstr *ostr1, Octstr *ostr2)
 
     seems_valid(ostr1);
     seems_valid(ostr2);
-    gw_assert(!ostr1->immutable);
 
     ostr = octstr_create("");
     ostr->len = ostr1->len + ostr2->len;

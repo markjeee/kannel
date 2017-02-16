@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group
+ * Copyright (c) 2001-2016 Kannel Group
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -296,7 +296,7 @@ static void dlr_update_sqlite3(const Octstr *smsc, const Octstr *ts, const Octst
 
     sql = octstr_format("UPDATE %S SET %S=?1 WHERE ROWID IN (SELECT ROWID FROM %S WHERE %S=?2 AND %S=?3 %S LIMIT 1)",
                         fields->table, fields->field_status, fields->table,
-                        fields->field_smsc, fields->field_ts, fields->field_dst);
+                        fields->field_smsc, fields->field_ts, like);
 
     os_status = octstr_format("%d", status);
     gwlist_append(binds, (Octstr *)os_status); /* ?1 */

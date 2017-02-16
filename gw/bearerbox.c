@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -135,8 +135,9 @@ volatile sig_atomic_t bb_status;
  * Flags for main thread to check what is to do.
  */
 enum {
-    BB_LOGREOPEN = 1,
-    BB_CHECKLEAKS = 2
+    BB_GRACEFUL_RESTART = 1,
+    BB_CHECKLEAKS = 2,
+    BB_LOGREOPEN = 3
 };
 /* Here we will set above flags */
 static volatile sig_atomic_t bb_todo = 0;
@@ -191,6 +192,10 @@ static void signal_handler(int signum)
             break;
 
         case SIGHUP:
+            bb_todo |= BB_GRACEFUL_RESTART;
+            break;
+
+        case SIGUSR2:
             bb_todo |= BB_LOGREOPEN;
             break;
 
@@ -216,6 +221,7 @@ static void setup_signal_handlers(void)
     sigaction(SIGQUIT, &act, NULL);
     sigaction(SIGHUP, &act, NULL);
     sigaction(SIGPIPE, &act, NULL);
+    sigaction(SIGUSR2, &act, NULL);
 }
 
 
@@ -451,7 +457,7 @@ static Cfg *init_bearerbox(Cfg *cfg)
         log = cfg_get(grp, octstr_imm("store-location"));
         val = cfg_get(grp, octstr_imm("store-type"));
     }
-    if (store_init(val, log, store_dump_freq, msg_pack, msg_unpack_wrapper) == -1)
+    if (store_init(cfg, val, log, store_dump_freq, msg_pack, msg_unpack_wrapper) == -1)
         panic(0, "Could not start with store init failed.");
     octstr_destroy(val);
     octstr_destroy(log);
@@ -755,8 +761,16 @@ int main(int argc, char **argv)
             continue;
         }
 
+        if (bb_todo & BB_GRACEFUL_RESTART) {
+            warning(0, "SIGHUP received, re-opening logs and gracefully restarting.");
+            log_reopen();
+            alog_reopen();
+            bb_graceful_restart();
+            bb_todo = bb_todo & ~BB_GRACEFUL_RESTART;
+        }
+
         if (bb_todo & BB_LOGREOPEN) {
-            warning(0, "SIGHUP received, catching and re-opening logs");
+            warning(0, "SIGUSR2 received, re-opening logs.");
             log_reopen();
             alog_reopen();
             bb_todo = bb_todo & ~BB_LOGREOPEN;
@@ -774,6 +788,9 @@ int main(int argc, char **argv)
 
     /* call shutdown */
     bb_shutdown();
+
+    /* wake up any sleeping threads */
+    gwthread_wakeup_all();
 
     /* wait until flow threads exit */
     while (gwlist_consume(flow_threads) != NULL)
@@ -932,6 +949,11 @@ int bb_restart(void)
 {
     restart = 1;
     return bb_shutdown();
+}
+
+int bb_graceful_restart(void)
+{
+    return smsc2_graceful_restart();
 }
 
 int bb_reload_lists(void)

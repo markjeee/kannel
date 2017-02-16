@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -176,6 +176,7 @@ struct dlr_storage *dlr_init_pgsql(Cfg *cfg);
 struct dlr_storage *dlr_init_mssql(Cfg *cfg);
 struct dlr_storage *dlr_init_sqlite3(Cfg *cfg);
 struct dlr_storage *dlr_init_redis(Cfg *cfg);
+struct dlr_storage *dlr_init_cass(Cfg *cfg);
 
 
 #endif /* DLR_P_H */

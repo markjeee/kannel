@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -2100,6 +2100,8 @@ static Msg *cimd2_accept_delivery_report_message(struct packet *request,
     switch(st_code)
     {
     case 2:  /* validity period expired */
+	code = DLR_EXPIRED;
+	break;
     case 3:  /* delivery failed */
     case 6: /* last no response */
     case 7: /* message cancelled */

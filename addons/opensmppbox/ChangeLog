@@ -1,3 +1,6 @@
+2015-05-14 Rene Kluwen <rene.kluwen at chimit.nl>
+    Fixed crash when garbage was sent to the opensmppbox port.
+
 2014-04-29  Stipe Tolj  <stolj at kannel.org>
     * doc/userguide.xml: move from DocBook V3.1 to V4.2 and fix various XML
       tag errors. No content change.
