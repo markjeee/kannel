@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -685,7 +685,7 @@ static int X28_open_send_link(int padfd, char *nua) {
 	}
 	if(readonce > 0)
 	    readall += readonce;
-	/* Search for reponse line. */
+	/* Search for response line. */
 	if(readall > 2 &&
 	   readbuff[readall-1] == '\n' && 
 	   readbuff[readall-2] == '\r') {

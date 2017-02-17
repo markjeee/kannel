@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -112,7 +112,7 @@ int main(int argc, char **argv)
         char *rsub;
         debug("regex",0,"RE: regex <%s> matches.", octstr_get_cstr(re));
         debug("regex",0,"RE: substring matches are:");
-        for (i = 0; i <= REGEX_MAX_SUB_MATCH; i++) {
+        for (i = 0; i <= regexp->re_nsub; i++) {
             if (pmatch[i].rm_so != -1 && pmatch[i].rm_eo != -1) {
                 Octstr *s = octstr_copy(os, pmatch[i].rm_so, pmatch[i].rm_eo - pmatch[i].rm_so);
                 debug("regex",0,"RE:  %d: <%s>", i, octstr_get_cstr(s));

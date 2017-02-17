@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -97,7 +97,7 @@ static int dlr_mask = 0;
 static Octstr *dlr_url = NULL;
 static Octstr *smsc_id = NULL;
 static double delay = 0;
-
+static int no_smsbox_id = 0;
 
 static void write_pid_file(void) {
     FILE *f;
@@ -212,8 +212,14 @@ static int send_message(Msg *msg)
      * Encode our smsbox-id to the msg structure.
      * This will allow bearerbox to return specific answers to the
      * same smsbox, mainly for DLRs and SMS proxy modes.
+     *
+     * In addition the -x flag can be used to identify the mtbatch
+     * instance with an own smsbox-id, but let the normal smsbox
+     * daemons handle the DLRs coming back, as the mtbatch shuts down
+     * after all MTs have been injected. It's not meant to process
+     * the DLR messages.
      */
-    if (smsbox_id != NULL) {
+    if (no_smsbox_id == 0 && smsbox_id != NULL) {
         msg->sms.boxc_id = octstr_duplicate(smsbox_id);
     }
     
@@ -244,11 +250,13 @@ static void help(void)
     info(0, "-b host");
     info(0, "    defines the host of bearerbox (default: localhost)");
     info(0, "-p port");
-    info(0, "    the smsbox port to connect to (default: 13002)");
+    info(0, "    the smsbox port to connect to (default: 13001)");
     info(0, "-s");
     info(0, "    inidicatr to use SSL for bearerbox connection (default: no)");
     info(0, "-i smsbox-id");
     info(0, "    defines the smsbox-id to be used for bearerbox connection (default: none)");
+    info(0, "-x");
+    info(0, "    indicator to not use smsbox-id in messages send to bearerbox (default: yes)");
     info(0, "-f sender");
     info(0, "    which sender address should be used");
     info(0, "-D dlr-mask");
@@ -326,10 +334,15 @@ static unsigned long run_batch(void)
                       lineno, octstr_get_cstr(no));
                 msg_destroy(msg);
             }
-            octstr_destroy(no);
         }
+        else {
+            linerr++;
+            error(0, "Receiver `%s' at line <%ld> contains non-digit characters, discarded!",
+                  octstr_get_cstr(no), lineno);
+        }
+        octstr_destroy(no);
     }
-    info(0,"mtbatch has processed %ld messages with %ld errors", lineno, linerr);
+    info(0,"mtbatch has processed %ld messages with %ld errors.", lineno, linerr);
     return lineno;
 } 
 
@@ -345,7 +358,7 @@ int main(int argc, char **argv)
     bb_port = 13001;
     bb_ssl = 0;
         
-    while ((opt = getopt(argc, argv, "hv:b:p:si:n:a:f:D:u:d:r:")) != EOF) {
+    while ((opt = getopt(argc, argv, "hv:b:p:si:xn:a:f:D:u:d:r:")) != EOF) {
         switch (opt) {
             case 'v':
                 log_set_output_level(atoi(optarg));
@@ -362,6 +375,9 @@ int main(int argc, char **argv)
                 break;
             case 'i':
                 smsbox_id = octstr_create(optarg);
+                break;
+            case 'x':
+                no_smsbox_id = 1;
                 break;
             case 'n':
                 service = octstr_create(optarg);
@@ -419,7 +435,7 @@ int main(int argc, char **argv)
     sended = run_batch();
 
     /* avoid exiting before sending all msgs */
-    while(sended > counter_value(counter)) {
+    while (sended > counter_value(counter)) {
          gwthread_sleep(0.1);
     }
 

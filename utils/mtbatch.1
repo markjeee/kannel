@@ -4,28 +4,39 @@
 mtbatch \- Sends SMS in batch mode
 .SH SYNOPSIS
 .B mtbatch
-.IR "" [options] content-file receivers-file ...
-.SH DESCRIPTION
-.B mtbatch
--v number
-    set log level for stderr logging
--b host
-    defines the host of bearerbox (default: localhost)
--p port
-    the smsbox port to connect to (default: 13002)
--s
-    inidicatr to use SSL for bearerbox connection (default: no)
--i smsbox-id
-    defines the smsbox-id to be used for bearerbox connection (default: none)
--f sender
-    which sender address should be used
--n service
-    defines which service name should be logged (default: none)
--a account
-    defines which account name should be logged (default: none)
--d seconds
-    delay between message sending to bearerbox (default: 0)
--r smsc-id
-    use a specific route for the MT traffic
+.IR "" [ options ]
+.I content-file receivers-file
+\&...
+.SH OPTIONS
+.TP
+.BI \-v\  number
+set log level for stderr logging
+.TP
+.BI \-b\  host
+defines the host of bearerbox (default: localhost)
+.TP
+.BI \-p\  port
+the smsbox port to connect to (default: 13002)
+.TP
+.B \-s
+inidicatr to use SSL for bearerbox connection (default: no)
+.TP
+.BI \-i\  smsbox-id
+defines the smsbox-id to be used for bearerbox connection (default: none)
+.TP
+.BI \-f\  sender
+which sender address should be used
+.TP
+.BI \-n\  service
+defines which service name should be logged (default: none)
+.TP
+.BI \-a\  account
+defines which account name should be logged (default: none)
+.TP
+.BI \-d\  seconds
+delay between message sending to bearerbox (default: 0)
+.TP
+.BI \-r\  smsc-id
+use a specific route for the MT traffic
 .SH "SEE ALSO"
 .BR kannel (8)

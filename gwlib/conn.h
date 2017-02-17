@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -316,19 +316,19 @@ void server_shutdown_ssl(void);
  * conn_init_ssl() must be called first. This checks that the private 
  * key matches with the certificate and will panic if it doesn't.
  */
-void use_global_client_certkey_file(Octstr *certkeyfile);
+void conn_use_global_client_certkey_file(Octstr *certkeyfile);
 
 /* Specifies a global PEM-encoded certificate and a private key file 
  * to be used with SSL server connections (incoming HTTP requests). 
  * conn_init_ssl() must be called first. This checks that the private 
  * key matches with the certificate and will panic if it doesn't.
  */
-void use_global_server_certkey_file(Octstr *certfile, Octstr *keyfile); 
+void conn_use_global_server_certkey_file(Octstr *certfile, Octstr *keyfile); 
 
 /* Specifies files containing certificates Kannel is willing to trusted when
  * actins as https clients
  */
-void use_global_trusted_ca_file(Octstr *ssl_trusted_ca_file);
+void conn_use_global_trusted_ca_file(Octstr *ssl_trusted_ca_file);
 
 /* Configures all global variables for client and server SSL mode 
  * from the values specified within the configuration file.

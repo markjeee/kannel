@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -91,6 +91,7 @@
 #include "sms.h"
 #include "dlr.h"
 #include "dlr_p.h"
+#include "meta_data.h"
 
 /* Our callback functions */
 static struct dlr_storage *handles = NULL;
@@ -269,6 +270,8 @@ void dlr_init(Cfg* cfg)
         handles = dlr_init_sqlite3(cfg);
     } else if (octstr_compare(dlr_type, octstr_imm("redis")) == 0) {
         handles = dlr_init_redis(cfg);
+    } else if (octstr_compare(dlr_type, octstr_imm("cassandra")) == 0) {
+        handles = dlr_init_cass(cfg);
     }
 
     /*
@@ -386,6 +389,7 @@ Msg *dlr_find(const Octstr *smsc, const Octstr *ts, const Octstr *dst, int typ, 
     Msg	*msg = NULL;
     struct dlr_entry *dlr = NULL;
     Octstr *dst_min = NULL;
+    Octstr *dlr_mask;
     
     if(octstr_len(smsc) == 0) {
 	warning(0, "DLR[%s]: Can't find a dlr without smsc-id", dlr_type());
@@ -438,6 +442,17 @@ Msg *dlr_find(const Octstr *smsc, const Octstr *ts, const Octstr *dst, int typ, 
          * route this msg back to originating smsbox
          */
         O_SET(msg->sms.boxc_id, dlr->boxc_id);
+        /*
+         * We will provide the DLR request bitmask in the DLR going back
+         * to the smsbox connection for processing. This allows smsbox
+         * connection type applications to avoid temporary storing and
+         * resolving data to pull up this information.
+         */
+        dlr_mask = octstr_format("%ld", dlr->mask);
+        msg->sms.meta_data = octstr_create("");
+        meta_data_set_value(msg->sms.meta_data, METADATA_ORIG_MSG_GROUP,
+                            octstr_imm(METADATA_ORIG_MSG_GROUP_DLR_MASK), dlr_mask, 1);
+        octstr_destroy(dlr_mask);
 
         time(&msg->sms.time);
         debug("dlr.dlr", 0, "DLR[%s]: created DLR message for URL <%s>",
@@ -451,7 +466,7 @@ Msg *dlr_find(const Octstr *smsc, const Octstr *ts, const Octstr *dst, int typ, 
 #undef O_SET
  
     /* check for end status and if so remove from storage */
-    if ((typ & DLR_BUFFERED) && ((dlr->mask & DLR_SUCCESS) || (dlr->mask & DLR_FAIL))) {
+    if (DLR_IS_NOT_FINAL(typ) && DLR_IS_SUCCESS_OR_FAIL(dlr->mask)) {
         debug("dlr.dlr", 0, "DLR[%s]: DLR not destroyed, still waiting for other delivery report", dlr_type());
         /* update dlr entry status if function defined */
         if (handles != NULL && handles->dlr_update != NULL){
@@ -509,6 +524,16 @@ Msg* create_dlr_from_msg(const Octstr *smsc, const Msg *msg, const Octstr *reply
     dlrmsg->sms.foreign_id = octstr_duplicate(msg->sms.foreign_id);
     time(&dlrmsg->sms.time);
     dlrmsg->sms.meta_data = octstr_duplicate(msg->sms.meta_data);
+
+    /* add original DLR bit-mask, as we do in dlr_find() */
+    if (DLR_IS_ENABLED(msg->sms.dlr_mask)) {
+        Octstr *dlr_mask = octstr_format("%ld", msg->sms.dlr_mask);
+        if (dlrmsg->sms.meta_data == NULL)
+            dlrmsg->sms.meta_data = octstr_create("");
+        meta_data_set_value(dlrmsg->sms.meta_data, METADATA_ORIG_MSG_GROUP,
+                            octstr_imm(METADATA_ORIG_MSG_GROUP_DLR_MASK), dlr_mask, 1);
+        octstr_destroy(dlr_mask);
+    }
 
     debug("dlr.dlr", 0,"SMSC[%s]: DLR = %s",
                 (smsc ? octstr_get_cstr(smsc) : "UNKNOWN"),

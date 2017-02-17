@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -305,6 +305,8 @@ static void help(void)
     info(0, "    use HTTPS scheme to access SSL-enabled HTTP server");
     info(0, "-c ssl_client_cert_key_file");
     info(0, "    use this file as the SSL certificate and key file");
+    info(0, "-C ssl_ca_file");
+    info(0, "    use this file as the SSL certificate authority");
     info(0, "-f");
     info(0, "    don't follow redirects");
 }
@@ -325,6 +327,7 @@ int main(int argc, char **argv)
     double run_time;
     FILE *fp;
     int ssl = 0;
+    Octstr *ca_file;
     
     gwlib_init();
     
@@ -338,7 +341,7 @@ int main(int argc, char **argv)
     file = 0;
     fp = NULL;
     
-    while ((opt = getopt(argc, argv, "hv:qr:p:P:Se:t:i:a:u:sc:H:B:m:f")) != EOF) {
+    while ((opt = getopt(argc, argv, "hv:qr:p:P:Se:t:i:a:u:sc:H:B:m:fC:")) != EOF) {
 	switch (opt) {
 	case 'v':
 	    log_set_output_level(atoi(optarg));
@@ -448,6 +451,12 @@ int main(int argc, char **argv)
         follow_redirect = 0;
         break;
 
+    case 'C':
+        ca_file = octstr_create(optarg);
+        conn_use_global_trusted_ca_file(ca_file);
+        octstr_destroy(ca_file);
+        break;
+
     case '?':
 	default:
 	    error(0, "Invalid option %c", opt);
@@ -468,7 +477,7 @@ int main(int argc, char **argv)
      */
     if (ssl || proxy_ssl) {
         if (ssl_client_certkey_file != NULL) {
-            use_global_client_certkey_file(ssl_client_certkey_file);
+            conn_use_global_client_certkey_file(ssl_client_certkey_file);
         } else {
             panic(0, "client certkey file need to be given!");
         }

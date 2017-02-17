@@ -1,7 +1,7 @@
 /* ====================================================================
  * The Kannel Software License, Version 1.0
  *
- * Copyright (c) 2001-2014 Kannel Group
+ * Copyright (c) 2001-2016 Kannel Group
  * Copyright (c) 1998-2001 WapIT Ltd.
  * All rights reserved.
  *
@@ -60,7 +60,7 @@
  * This 'generic' type will handle the 'send-url' directive in the
  * group the same way the 'sms-service' for smsbox does, via
  * URLTranslation. Response interpretation is based on the three
- * regex value that match against the reponse body. The HTTP reponse
+ * regex value that match against the response body. The HTTP response
  * code is not obeyed.
  *
  * Example config group:
@@ -517,7 +517,7 @@ static void generic_parse_reply(SMSCConn *conn, Msg *msg, int status,
             SMSCCONN_FAILED_TEMPORARILY, octstr_duplicate(body));
     }
     else {
-        error(0, "HTTP[%s]: Message was rejected. SMSC reponse was:",
+        error(0, "HTTP[%s]: Message was rejected. SMSC response was:",
               octstr_get_cstr(conn->id));
         octstr_dump(body, 0);
         bb_smscconn_send_failed(conn, msg,
@@ -531,12 +531,6 @@ static int generic_init(SMSCConn *conn, CfgGroup *cfg)
     ConnData *conndata = conn->data;
     struct generic_values *values;
 
-    /* we need at least the criteria for a successful sent */
-    if ((os = cfg_get(cfg, octstr_imm("status-success-regex"))) == NULL) {
-        error(0, "HTTP[%s]: 'status-success-regex' required for generic http smsc",
-              octstr_get_cstr(conn->id));
-        return -1;
-    }
     conndata->data = values = gw_malloc(sizeof(*values));
     /* reset */
     memset(conndata->data, 0, sizeof(*values));
@@ -547,11 +541,16 @@ static int generic_init(SMSCConn *conn, CfgGroup *cfg)
     values->map = generic_get_field_map(cfg);
 
     /* pre-compile regex expressions */
-    if (os != NULL) {   /* this is implicit due to the above if check */
+    if ((os = cfg_get(cfg, octstr_imm("status-success-regex"))) != NULL) {
         if ((values->success_regex = gw_regex_comp(os, REG_EXTENDED|REG_NOSUB)) == NULL)
             error(0, "HTTP[%s]: Could not compile pattern '%s' defined for variable 'status-success-regex'",
                   octstr_get_cstr(conn->id), octstr_get_cstr(os));
         octstr_destroy(os);
+    } else {
+        /* we need at least the criteria for a successful sent */
+        error(0, "HTTP[%s]: 'status-success-regex' required for generic http smsc",
+              octstr_get_cstr(conn->id));
+        return -1;
     }
     if ((os = cfg_get(cfg, octstr_imm("status-permfail-regex"))) != NULL) {
         if ((values->permfail_regex = gw_regex_comp(os, REG_EXTENDED|REG_NOSUB)) == NULL)

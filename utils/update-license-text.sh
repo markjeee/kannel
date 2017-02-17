@@ -6,11 +6,15 @@
 # current LICENSE text file to all source code files.
 #
 
-old="2001-2013 Kannel Group"
-new="2001-2014 Kannel Group"
+# to avoid sed errors like:
+# RE error: illegal byte sequence
+export LC_ALL=C
+
+old="2001-2015 Kannel Group"
+new="2001-2016 Kannel Group"
 
 prog=`basename $0`
-files=`find -type f ! -name "${prog}" ! -path "*/.svn/*" ! -path "./addons/*" | xargs fgrep -lr "${old}"`
+files=`find . -type f ! -name "${prog}" ! -path "*/.svn/*" ! -path "./addons/*" | xargs fgrep -lr "${old}"`
 for i in $files; do
   echo ${i}
   cat ${i} | sed "s/${old}/${new}/" > ${i}.new

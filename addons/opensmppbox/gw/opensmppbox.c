@@ -1619,6 +1619,9 @@ static void handle_pdu(Connection *conn, Boxc *box, SMPP_PDU *pdu) {
 				msgid = octstr_create(id);
 				dict_put(box->msg_acks, msgid, resp);
 				resp = NULL;
+				if (msg != msg2) {
+					msg_destroy(msg);
+				}
 				send_msg(box->bearerbox_connection, box, msg2);
 				if (parts_list) {
 					/* destroy values */
@@ -1662,6 +1665,9 @@ static void handle_pdu(Connection *conn, Boxc *box, SMPP_PDU *pdu) {
 				dict_put(box->msg_acks, msgid, resp);
 				octstr_destroy(msgid);
 				resp = NULL;
+				if (msg != msg2) {
+					msg_destroy(msg);
+				}
 				send_msg(box->bearerbox_connection, box, msg2);
 				if (parts_list) {
 					/* destroy values */
@@ -1748,6 +1754,7 @@ static Boxc *boxc_create(int fd, Octstr *ip, int ssl)
     boxc->validityperiod = -1;	
     boxc->priority = 0;
     boxc->mo_recode = 0;
+    boxc->sms_service = NULL;
 
     return boxc;
 }
@@ -1775,7 +1782,8 @@ static void boxc_destroy(Boxc *boxc)
 	    octstr_destroy(boxc->client_ip);
     dict_destroy(boxc->msg_acks);
     dict_destroy(boxc->deliver_acks);
-    octstr_destroy(boxc->sms_service);
+    if (boxc->sms_service)
+	octstr_destroy(boxc->sms_service);
     gw_free(boxc);
 }
 
@@ -2404,6 +2412,8 @@ static void init_smppbox(Cfg *cfg)
 	CfgGroup *grp;
 	Octstr *logfile;
 	long lvl;
+	Octstr *val, *log; /* temporary store variables */
+	long store_dump_freq = -1; /* dummy variable */
 
 	/* some default values */
 	smppbox_port = 13005;
@@ -2417,6 +2427,22 @@ static void init_smppbox(Cfg *cfg)
 
 	/* init dlr storage */
 	dlr_init(cfg);
+	/* init storage store */
+	grp= cfg_get_single_group(cfg, octstr_imm("core"));
+	if (grp != NULL) {
+		log = cfg_get(grp, octstr_imm("log-file"));
+		if (log != NULL) {
+			warning(0, "'store-file' option deprecated, please use 'store-location' and 'store-type' instead.");
+			val = octstr_create("file");
+		} else {
+			log = cfg_get(grp, octstr_imm("store-location"));
+			val = cfg_get(grp, octstr_imm("store-type"));
+		}
+		if (store_init(cfg, val, log, store_dump_freq, msg_pack, msg_unpack_wrapper) == -1)
+			panic(0, "Could not start with store init failed.");
+		octstr_destroy(val);
+		octstr_destroy(log);
+	}
 
 	/* initialize low level PDUs */
 	if (smpp_pdu_init(cfg) == -1)

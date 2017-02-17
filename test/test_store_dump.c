@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -93,7 +93,7 @@ int main(int argc, char **argv)
     type = octstr_create("file");
     
     /* init store subsystem */
-    store_init(type, octstr_imm(argv[cf_index]), -1, msg_pack, msg_unpack_wrapper);
+    store_init(NULL, type, octstr_imm(argv[cf_index]), -1, msg_pack, msg_unpack_wrapper);
 
     /* pass every entry in the store to callback print_msg() */
     store_load(print_msg);

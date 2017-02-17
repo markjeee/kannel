@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -62,6 +62,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <string.h>
+#include <inttypes.h>
 
 /* libxml & xpath things */
 #include <libxml/tree.h>
@@ -148,8 +149,6 @@ static Timerset *timerset = NULL;
 
 /* Maximum requests that we handle in parallel */
 static Semaphore *max_pending_requests;
-
-int charset_processing (Octstr *charset, Octstr *text, int coding);
 
 /* for delayed HTTP answers.
  * Dict key is uuid, value is HTTPClient pointer
@@ -748,7 +747,7 @@ static void get_x_kannel_from_xml(int requesttype , Octstr **type, Octstr **body
 
     /* smsc */
     XPATH_SEARCH_OCTSTR("/message/submit/smsc", *smsc, 0);
-    if (smsc == NULL)
+    if (*smsc == NULL)
         XPATH_SEARCH_OCTSTR("/message/submit/to", *smsc, 0);
 
     /* pid */
@@ -793,12 +792,21 @@ static void get_x_kannel_from_xml(int requesttype , Octstr **type, Octstr **body
     if (doc->encoding != NULL)
         *charset = octstr_create((const char*) doc->encoding);
     else
-	*charset = octstr_create("UTF-8");
+        *charset = octstr_create("UTF-8");
 
     /* text */
+    /* first try to receive type, default text */
+    tmp = NULL;
+    XPATH_SEARCH_OCTSTR("/message/submit/ud/@type", tmp, 0);
+    /* now receive message body */
     XPATH_SEARCH_OCTSTR("/message/submit/ud", text, 0);
-    if (text != NULL && octstr_hex_to_binary(text) == -1)
-        octstr_url_decode(text);
+    if (text != NULL) {
+        if (tmp != NULL && octstr_str_case_compare(tmp, "binary") == 0)
+            octstr_hex_to_binary(text);
+        else
+            octstr_url_decode(text);
+    }
+    octstr_destroy(tmp);
 
     octstr_truncate(*body, 0);
     if(text != NULL) {
@@ -1151,7 +1159,7 @@ static void url_result_thread(void *arg)
             /*
              * Ensure now that we transcode to our internal encoding.
              */
-            if (charset_processing(charset, replytext, coding) == -1) {
+            if (sms_charset_processing(charset, replytext, coding) == -1) {
                 replytext = octstr_duplicate(reply_couldnotrepresent);
             }
             octstr_destroy(type);
@@ -2179,7 +2187,7 @@ static Octstr *smsbox_req_handle(URLTranslation *t, Octstr *client_ip,
 	msg->sms.dlr_url = octstr_create("");
     }
 
-    if ( dlr_mask < -1 || dlr_mask > 63 ) { /* 00111111 */
+    if ( dlr_mask < -1 || dlr_mask > 66 ) { /* 01000010 */
 	returnerror = octstr_create("DLR-Mask field misformed, rejected");
 	goto field_error;
     }
@@ -2271,9 +2279,9 @@ static Octstr *smsbox_req_handle(URLTranslation *t, Octstr *client_ip,
     } else
 	msg->sms.smsc_id = NULL;
 
-    if (charset_processing(charset, msg->sms.msgdata, msg->sms.coding) == -1) {
-	returnerror = octstr_create("Charset or body misformed, rejected");
-	goto field_error;
+    if (sms_charset_processing(charset, msg->sms.msgdata, msg->sms.coding) == -1) {
+        returnerror = octstr_create("Charset or body misformed, rejected");
+        goto field_error;
     }
 
     msg->sms.meta_data = octstr_duplicate(meta_data);
@@ -3664,45 +3672,4 @@ int main(int argc, char **argv)
     gwlib_shutdown();
 
     return 0;
-}
-
-int charset_processing(Octstr *charset, Octstr *body, int coding)
-{
-    int resultcode = 0;
-
-	/*
-	debug("sms.http", 0, "%s: enter, charset=%s, coding=%d, msgdata is:",
-	      __func__, octstr_get_cstr(charset), coding);
-	octstr_dump(body, 0);
-	*/
-
-    if (octstr_len(charset)) {
-    	if (coding == DC_7BIT) {
-    		/*
-    		 * For 7 bit, convert to UTF-8
-    		 */
-    		if (charset_convert(body, octstr_get_cstr(charset), "UTF-8") < 0) {
-                error(0, "Failed to convert msgdata from charset <%s> to <%s>, will leave as is.",
-                	  octstr_get_cstr(charset), "UTF-8");
-    			resultcode = -1;
-    		}
-    	} else if (coding == DC_UCS2) {
-    		/*
-    		 * For UCS-2, convert to UTF-16BE
-    		 */
-    		if (charset_convert(body, octstr_get_cstr(charset), "UTF-16BE") < 0) {
-                error(0, "Failed to convert msgdata from charset <%s> to <%s>, will leave as is.",
-                	  octstr_get_cstr(charset), "UTF-16BE");
-    			resultcode = -1;
-    		}
-    	}
-    }
-
-	/*
-	debug("sms.http", 0, "%s: exit, charset=%s, coding=%d, msgdata is:",
-	      __func__, octstr_get_cstr(charset), coding);
-	octstr_dump(body, 0);
-	*/
-
-    return resultcode;
 }

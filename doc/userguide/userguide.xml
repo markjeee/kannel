@@ -69,7 +69,7 @@
 		<surname>Malysh</surname>
 		<affiliation>
 			<jobtitle>Senior Software Engineer</jobtitle>
-			<orgname>GTX Ltd.</orgname>
+			<orgname>GTX Messaging GmbH.</orgname>
 			<address> 
 				<email>amalysh at kannel.org</email>
 				<otheraddr>http://www.gtx-messaging.com/</otheraddr>
@@ -667,6 +667,15 @@
             <listitem><para><literal>--with-redis-dir=</literal><replaceable>DIR</replaceable>
                 
                 Where to look for the hiredis library and header files.</para></listitem>
+
+        <listitem><para><literal>--with-cassandra</literal>
+                
+            Enable using Cassandra for DBPool and DLR support. Requires the DataStax C/C++ driver for 
+            Apache Cassandra.</para></listitem>
+            
+            <listitem><para><literal>--with-cassandra-dir=</literal><replaceable>DIR</replaceable>
+                
+                Where to look for the DataStax C/C++ Cassandra library and header files.</para></listitem>
 
 	<!-- XXX DAVI add openssl and others in here -->
 
@@ -1397,39 +1406,124 @@ admin-password = f00bar
     <row><entry><literal>white-list</literal></entry>
      <entry>URL</entry>
      <entry valign="bottom">
+        (Deprecated, see <literal>white-list-sender</literal>).
+     </entry></row>
+
+     <row><entry><literal>white-list-regex</literal></entry>
+        <entry>POSIX regular expression</entry>
+        <entry valign="bottom">
+        (Deprecated, see <literal>white-list-sender-regex</literal>).
+        </entry>   
+     </row>
+
+    <row><entry><literal>black-list</literal></entry>
+     <entry>URL</entry>
+     <entry valign="bottom">
+        (Deprecated, see <literal>black-list-sender</literal>).
+     </entry></row>
+
+     <row><entry><literal>black-list-regex</literal></entry>
+        <entry>POSIX regular expression</entry>
+        <entry valign="bottom">
+        (Deprecated, see <literal>black-list-sender-regex</literal>).
+        </entry>   
+     </row>
+
+    <row><entry><literal>white-list-sender</literal></entry>
+     <entry>URL</entry>
+     <entry valign="bottom">
         Load a list of accepted senders of SMS messages. If a sender
         of an SMS message is not in this list, any message received
-        from the SMS Center is discarded. See notes of phone number
+        from the SMS Center, or tried to be delivered to the SMS Center
+        is rejected. See notes of phone number
         format from numhash.h header file. NOTE: the system has only
         a precision of last 9 or 18 digits of phone numbers, so
         beware!
      </entry></row>
 
-    <row><entry><literal>black-list</literal></entry>
+     <row><entry><literal>white-list-sender-regex</literal></entry>
+        <entry>POSIX regular expression</entry>
+        <entry valign="bottom">
+        A regular expression defining the set of accepted senders.
+        See section on <xref linkend="regular-expressions"/> for details.
+        </entry>   
+     </row>
+
+    <row><entry><literal>black-list-sender</literal></entry>
      <entry>URL</entry>
      <entry valign="bottom">
-        As white-list, but SMS messages to these numbers are
-        automatically discarded
+        As white-list-sender, but SMS messages from these sender numbers are
+        automatically rejected.
      </entry></row>
+
+     <row><entry><literal>black-list-sender-regex</literal></entry>
+        <entry>POSIX regular expression</entry>
+        <entry valign="bottom">
+        A regular expression defining the set of rejected senders.
+        See section on <xref linkend="regular-expressions"/> for details.
+        </entry>   
+     </row>
+
+    <row><entry><literal>white-list-receiver</literal></entry>
+     <entry>URL</entry>
+     <entry valign="bottom">
+        Load a list of accepted receiver of SMS messages. If a receiver
+        of an SMS message is not in this list, any message received
+        from the SMS Center, or tried to be delivered to the SMS Center
+        is rejected. See notes of phone number
+        format from numhash.h header file. NOTE: the system has only
+        a precision of last 9 or 18 digits of phone numbers, so
+        beware!
+     </entry></row>
+
+     <row><entry><literal>white-list-receiver-regex</literal></entry>
+        <entry>POSIX regular expression</entry>
+        <entry valign="bottom">
+        A regular expression defining the set of accepted receivers.
+        See section on <xref linkend="regular-expressions"/> for details.
+        </entry>   
+     </row>
+
+    <row><entry><literal>black-list-receiver</literal></entry>
+     <entry>URL</entry>
+     <entry valign="bottom">
+        As white-list, but SMS messages from these receiver numbers are
+        automatically rejected.
+     </entry></row>
+
+     <row><entry><literal>black-list-receiver-regex</literal></entry>
+        <entry>POSIX regular expression</entry>
+        <entry valign="bottom">
+        A regular expression defining the set of rejected receivers.
+        See section on <xref linkend="regular-expressions"/> for details.
+        </entry>   
+     </row>
 
     <row><entry><literal>store-type</literal></entry>
      <entry>filename</entry>
      <entry valign="bottom">
         Kannel can use store subsystem that means storing messages
-        on hard disk until they are successfully handled. By using
-        this subsystem, no SMS messages are lost in Kannel even by
+        on hard disk or in a remote key store until they are successfully 
+        handled. By using this subsystem, no SMS messages are lost in Kannel even by
         crash, but theoretically some messages can duplicate when
         system is taken down violently. 
         This variable defines a type of backend used for store
         subsystem. Now two types are supported:
         a) file: writes store into one single file
         b) spool: writes store into spool directory (one file for each message)
+        c) redis: writes store into a redis key storage. For redis as message storage
+           you will need a <literal>group = redis-connection</literal> and a
+           <literal>group = store-db</literal> configuration group that define the
+           connection to the redis server and the table name to be used. See file
+           <literal>doc/examples/store-redis.conf</literal> for an example config
+           secttion.
      </entry></row>
 
     <row><entry><literal>store-location</literal></entry>
      <entry>filename</entry>
      <entry valign="bottom">
-        Depends on <literal>store-type</literal> option used, it is ether file or spool directory.
+        Depends on <literal>store-type</literal> option used, it is ether file or spool directory,
+        or none if redis is used as storage subsystem.
      </entry></row>
 
     <row><entry><literal>store-dump-freq</literal></entry>
@@ -1532,8 +1626,9 @@ admin-password = f00bar
         <literal>sdb</literal>,
         <literal>mssql</literal>,
         <literal>sqlite3</literal>,
-        <literal>oracle</literal> and
-        <literal>redis</literal>.
+        <literal>oracle</literal>,
+        <literal>redis</literal> and
+        <literal>cassandra</literal>.
         By default this is set to <literal>internal</literal>.
      </entry></row>
 
@@ -1547,7 +1642,7 @@ admin-password = f00bar
      <row><entry><literal>maximum-queue-length</literal></entry>
 	  <entry>number of messages</entry>
      <entry valign="bottom">
-   	 (deprecated, see <literal>sms-incoming-queue-limit</literal>).
+   	 (Deprecated, see <literal>sms-incoming-queue-limit</literal>).
      </entry></row>
 
      <row><entry><literal>sms-incoming-queue-limit</literal></entry>
@@ -1568,21 +1663,6 @@ admin-password = f00bar
         has hit this value, Kannel began to discard them.
         The default value, 1 million, works for most installations.
      </entry></row>
-
-     <row><entry><literal>white-list-regex</literal></entry>
-        <entry>POSIX regular expression</entry>
-        <entry valign="bottom">
-        A regular expression defining the set of accepted senders.
-        See section on <xref linkend="regular-expressions"/> for details.
-        </entry>   
-     </row>
-     <row><entry><literal>black-list-regex</literal></entry>
-        <entry>POSIX regular expression</entry>
-        <entry valign="bottom">
-        A regular expression defining the set of rejected senders.
-        See section on <xref linkend="regular-expressions"/> for details.
-        </entry>   
-     </row>
 
      <row><entry><literal>smsbox-max-pending</literal></entry>
         <entry>number of messages</entry>
@@ -2018,9 +2098,23 @@ commands never arrive nor can you restart it via WAP anymore.</para>
 
 	<row><entry><literal>restart</literal></entry>
    <entry valign="bottom">
-        Re-start whole bearerbox, hence all SMSC links. Password required.
- 		  Beware that you loose the smsbox connections in such a case.
+        This is the hard restarting version, where we fully stop the
+        bearerbox and then initiate from ground up.
+        Beware that you loose the smsbox connections in such a case.
    </entry></row>
+
+    <row><entry><literal>graceful-restart</literal></entry>
+    <entry valign="bottom">
+        Re-start bearerbox gracefully, hence only the changes in the
+        configuration for the SMSC connections are performed. I.e.
+        an added SMSC group will be start, and a removed SMSC group
+        will be shutdown and destroyed. Any unchanged SMSC connection
+        keeps on running without interruption. Password required.
+        This is the soft restarting version, where we keep all internal
+        parts of the bearebox running, including the smsbox connections.
+        The same graceful restart can be initiated by sending a SIGHUP
+        signal to the bearerbox daemon process.
+    </entry></row>
 
 	<row><entry><literal>log-level</literal></entry>
    <entry valign="bottom">
@@ -2937,6 +3031,15 @@ secret-nas = radius
         to activate it. Defaults to 'false' if not present.</entry>
      </row>
 
+     <row><entry><literal>instances</literal></entry>
+        <entry>number</entry>
+        <entry valign="bottom">
+        The number of same instances of this group to be created. This allows to declare
+        the config group one time in the configuration and to multiply it by this value
+        for the numner of runtime instances. (default: 1)
+        </entry>   
+     </row>
+
   </tbody>
   </tgroup>
  </table>
@@ -3373,7 +3476,8 @@ address-range = ""
    <row><entry><literal>use-ssl</literal></entry>
      <entry><literal>bool</literal></entry>
      <entry valign="bottom">
-        Defines whether we should try to bind with SSL enabled connection.
+        Defines whether we should try to bind with SSL enabled connection
+        to create a SSMPP (secure SMPP) session.
      </entry></row>
 
     <row><entry><literal>ssl-client-certkey-file (c)</literal></entry>
@@ -3639,6 +3743,14 @@ address-range = ""
        Change the "esm_class" parameter sent from Kannel. 
        Accepted values are 0 (Default SMSC Mode) and 3 (Store and Forward). 
        Defaults to 3.
+     </entry></row>
+
+   <row><entry><literal>log-format</literal></entry>
+     <entry><literal>number</literal></entry>
+     <entry valign="bottom">
+       Selects which SMPP PDU dump format to use:
+       	1 - for multiline (default)
+       	2 - for one line
      </entry></row>
 
    </tbody></tgroup></informaltable>
@@ -5960,6 +6072,46 @@ field-boxc-id = boxc
             </table>
         </sect3>
 	</sect2>
+
+    <sect2>
+        <title>Cassandra DLR storage</title>
+        <para>To store DLR information using Cassandra (http://cassandra.apache.org/) database, you should set the
+            <literal>dlr-storage = cassandra</literal> configuration directive in the
+            <literal>core</literal> group.
+        </para>
+        <para>In addition, you must have a <literal>dlr-db</literal> group defined that specifies 
+            the field names that are used to store the DLR attributes and a 
+            <literal>cassandra-connection</literal> group that defines the connection to Cassandra.
+        </para>
+        <para>Here is the example configuration from
+            <literal>doc/examples/dlr-cassandra.conf</literal>:
+            
+            <programlisting>
+                group = cassandra-connection
+                id = mydlr
+                host = localhost
+                #username = foo
+                #password = bar
+                #database = dlr
+                max-connections = 1
+                
+                group = dlr-db
+                id = mydlr
+                ttl = 604800
+                table = dlr
+                field-smsc = smsc
+                field-timestamp = ts
+                field-destination = destination
+                field-source = source
+                field-service = service
+                field-url = url
+                field-mask = mask
+                field-status = status
+                field-boxc-id = boxc
+            </programlisting>
+            
+        </para>
+    </sect2>
     
         <sect2>
 	<title>DLR database field configuration</title>
@@ -7052,7 +7204,12 @@ squeezed to one
 </entry></row>
 
 <row><entry><literal>%b</literal></entry><entry>
-the original SMS message, in a binary form
+the original SMS message, in a binary form (URL-encoded)
+</entry></row>
+
+<row><entry><literal>%e</literal></entry><entry>
+the original SMS message, in a binary form (printable hexadecimal byte codes). 
+I.e. "xyz" would be send as byte codes "78797A".
 </entry></row>
 
 <row><entry><literal>%t</literal></entry><entry>
@@ -7094,6 +7251,10 @@ the delivery report value
 
 <row><entry><literal>%R</literal></entry><entry>
 the delivery report URL value
+</entry></row>
+
+<row><entry><literal>%N</literal></entry><entry>
+the delivery report notification message
 </entry></row>
 
 <row><entry><literal>%D</literal></entry><entry>
@@ -9393,7 +9554,6 @@ ssl-server-key-file = "/etc/kannel/key1.pem"
 	<listitem><para>4: message buffered</para></listitem>
 	<listitem><para>8: smsc submit</para></listitem>
 	<listitem><para>16: smsc reject</para></listitem>
-	<listitem><para>32: smsc intermediate notifications</para></listitem>
 	</itemizedlist>
 	If you want multiple report types, you simply add the values together. For example if you want to get delivery success and/or failure
 	you set the <literal>dlr-mask</literal> value to 1+2. and so on. If you specify <literal>dlr-mask</literal> on the URL you pass on to
@@ -9616,19 +9776,26 @@ test/fakesmsc -i 0.1 -m 100 "100 200 text nop" "100 300 text echo this"
     <para>The parts of a message are separated with spaces. As each message is
     taken as one argument, it must be put in quotation marks.</para>
 
-    <para>Message type must be one of the following: "text", "data" and "udh".
-    Here's an example of using each:</para>
+    <para>Message type must be one of the following: "text", "data", "ucs2", 
+    "udh-data", "udh-text", "route" and "dlr-mask".
+    Here are some examples:</para>
 
 <programlisting>
 test/fakesmsc -i 0.01 -v 1 -m 1000 "100 300 text echo this message"
 test/fakesmsc -i 0.01 -m 1000 "100 300 data echo+these+chars%03%04%7f"
-test/fakesmsc -m 1 "100 500 udh %0eudh+stuff+here main+message"
+test/fakesmsc -m 1 "100 500 udh-data %0eudh+stuff+here main+message"
 </programlisting>
 
     <para>For "text", the rest of the argument is taken as the literal
     message. For "data", the next part must be the url-encoded version of
-    the message. Space is coded as '+'. For "udh", the next 2 parts
-    are the UDH and main message. Both must be in url-encoded form.</para>
+    the message. Space is coded as '+'. For "ucs2", the next part must be the
+    url-encoded version of the message. For "udh-data", the next 2 parts
+    are the UDH and main message. Both must be in url-encoded form. For "udh-text",
+    the UDH part must be url-encoded, and the message is taken as literals.
+    For "route" both values are literal, where the first value defines the smsbox
+    route destination. For "dlr-mask" noth values are literal, where the first
+    value defines the numerical DLR event.
+    </para>
 
     <para>If multiple messages are given, fakesmsc randomly chooses
     one for each sending.</para>
@@ -10456,6 +10623,17 @@ smsc-id = a;b;c
 	</tbody>
   </tgroup>
 </informaltable>
+<para>
+Beside defined in the configuration <literal>smpp-tlv</literal> group, SMPP also supports some hardcoded <literal>meta-data</literal>
+values:
+<itemizedlist>
+<listitem><para>source_addr_ton</para></listitem>
+<listitem><para>source_addr_npi</para></listitem>
+<listitem><para>dest_addr_ton</para></listitem>
+<listitem><para>dest_addr_npi</para></listitem>
+</itemizedlist>
+</para>
+
       <sect2>
         <title>MO Messages</title>
         <para>Meta Data coming from MO messages comes urlencoded into the <literal>%D</literal> parameter. Only TLV parameters defined on the configuration file are honored.</para>
@@ -10620,9 +10798,12 @@ smsc-id = a;b;c
         to /etc/logrotate.d) is shown below. In this example the Kannel log files found 
         in /var/log/kannel are rotated and compressed daily over 365 days.  See the 
         documentation for logrotate for more details.  Of particular note however is the 
-        postrotate command, this killall -HUP issues a HUP command to each Kannel
-        box running. The HUP signal has the effect of reopening the log file, without this 
-        command Kannel will continue to write to the rotated log file.
+        postrotate command, this killall -HUP issues a SIGHUP signal to each Kannel
+        box process running. The SIGHUP signal has the effect of reopening the log file, 
+        and performing graceful restart of SMSC connections. Without this command Kannel 
+        will continue to write to the rotated log file. Kannel bearerbox can use the 
+        SIGUSR2 to reopen the logs only, without performing the graceful restart. This
+        may be more applicable for logrotate usage. 
         </para>
 
         <screen><userinput>
@@ -10636,7 +10817,7 @@ smsc-id = a;b;c
               create 640 kannel adm
               sharedscripts
               postrotate
-                    killall -HUP bearerbox smsbox wapbox || true > /dev/null 2> /dev/null
+                    killall -USR2 bearerbox && killall -HUP smsbox wapbox || true > /dev/null 2> /dev/null
               endscript
         }
         </userinput></screen>

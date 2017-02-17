@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -102,11 +102,12 @@ void load_destroy(Load *load);
 /**
  * Get measured load value at position @pos.
  */
-float load_get(Load *load, int pos);
+double load_get(Load *load, int pos);
 
 /**
  * Get length of intervals.
  */
 int load_len(Load *load);
+
 
 #endif

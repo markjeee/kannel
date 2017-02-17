@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -65,6 +65,30 @@
 
 #ifdef HAVE_MYSQL
 #include <mysql.h>
+#include <mysqld_error.h>
+
+
+/*
+ * Handle temporary error codes, that will cause
+ * mysql_stmt_execute() to be retried.
+ * Add more error codes if applicable from mysql's
+ * <include>/mysq/mysqld_errno.h header file
+ */
+static inline int mysql_er_temp(const int rc)
+{
+    switch (rc) {
+    case ER_LOCK_WAIT_TIMEOUT:
+    case ER_LOCK_DEADLOCK:
+    case ER_GET_TEMPORARY_ERRMSG:
+        return 1;
+        break;
+    default:
+        return 0;
+        break;
+    }
+
+    return 0;
+}
 
 
 static void *mysql_open_conn(const DBConf *db_conf)
@@ -311,7 +335,7 @@ static int mysql_update(void *conn, const Octstr *sql, List *binds)
         return -1;
     }
     if (mysql_stmt_prepare(stmt, octstr_get_cstr(sql), octstr_len(sql))) {
-        error(0, "MYSQL: Unable to prepare statement: %s", mysql_stmt_error(stmt));
+        error(0, "MYSQL: Unable to prepare statement: `%s'", mysql_stmt_error(stmt));
         mysql_stmt_close(stmt);
         return -1;
     }
@@ -337,11 +361,20 @@ static int mysql_update(void *conn, const Octstr *sql, List *binds)
     }
 
     /* execute statement */
-    if (mysql_stmt_execute(stmt)) {
-        error(0, "MYSQL: mysql_stmt_execute() failed: `%s'", mysql_stmt_error(stmt));
-        gw_free(bind);
-        mysql_stmt_close(stmt);
-        return -1;
+retry:
+    ret = mysql_stmt_execute(stmt);
+    if (ret != 0) {
+        ret = mysql_stmt_errno(stmt);
+        if (mysql_er_temp(ret)) {
+            warning(0, "MYSQL: mysql_stmt_execute() failed: %d: `%s'. Retrying.", ret, mysql_stmt_error(stmt));
+            goto retry;
+        }
+        else {
+            error(0, "MYSQL: mysql_stmt_execute() failed: %d: `%s'", ret, mysql_stmt_error(stmt));
+            gw_free(bind);
+            mysql_stmt_close(stmt);
+            return -1;
+        }
     }
     gw_free(bind);
 

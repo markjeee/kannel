@@ -1,7 +1,7 @@
 /* ====================================================================
  * The Kannel Software License, Version 1.0
  *
- * Copyright (c) 2001-2014 Kannel Group
+ * Copyright (c) 2001-2016 Kannel Group
  * Copyright (c) 1998-2001 WapIT Ltd.
  * All rights reserved.
  *
@@ -273,6 +273,15 @@ static void deliver_sms_to_queue(Msg *msg, Boxc *conn)
              * bb_smscconn_send_failed() within smsc2_route() did
              * it already.
              */
+            mack->ack.nack = ack_failed;
+
+            /* destroy original message */
+            msg_destroy(msg);
+            break;
+
+        case SMSCCONN_FAILED_REJECTED:      /* white/black-list rejection */
+            warning(0, "Message rejected by bearerbox, white/black listed!");
+
             mack->ack.nack = ack_failed;
 
             /* destroy original message */
@@ -1672,7 +1681,7 @@ static void sms_to_smsboxes(void *arg)
 
     newmsg = startmsg = msg = NULL;
 
-    while(bb_status != BB_DEAD) {
+    while (bb_status != BB_SHUTDOWN && bb_status != BB_DEAD) {
 
         if (newmsg == startmsg) {
             /* check if we are in shutdown phase */

@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -81,6 +81,7 @@
 #include "dbpool_pgsql.c"
 #include "dbpool_mssql.c"
 #include "dbpool_redis.c"
+#include "dbpool_cass.c"
 
 
 static void dbpool_conn_destroy(DBPoolConn *conn)
@@ -153,6 +154,11 @@ DBPool *dbpool_create(enum db_type db_type, DBConf *conf, unsigned int connectio
 #ifdef HAVE_REDIS
        case DBPOOL_REDIS:
            p->db_ops = &redis_ops;
+           break;
+#endif
+#ifdef HAVE_CASS
+       case DBPOOL_CASS:
+           p->db_ops = &cass_ops;
            break;
 #endif
         default:

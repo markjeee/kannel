@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -236,6 +236,21 @@ static Octstr *httpd_restart(List *cgivars, int status_type)
     return octstr_create("Restarting.....");
 }
 
+static Octstr *httpd_graceful_restart(List *cgivars, int status_type)
+{
+    Octstr *reply;
+    if ((reply = httpd_check_authorization(cgivars, 0))!= NULL) return reply;
+    if ((reply = httpd_check_status())!= NULL) return reply;
+
+    if (bb_status == BB_SHUTDOWN) {
+        bb_status = BB_DEAD;
+        bb_restart();
+        return octstr_create("Already in shutdown phase, restarting hard...");
+    }
+    bb_graceful_restart();
+    return octstr_create("Restarting gracefully.....");
+}
+
 static Octstr *httpd_flush_dlr(List *cgivars, int status_type)
 {
     Octstr *reply;
@@ -365,6 +380,7 @@ static struct httpd_command {
     { "isolate", httpd_isolate },
     { "resume", httpd_resume },
     { "restart", httpd_restart },
+    { "graceful-restart", httpd_graceful_restart },
     { "flush-dlr", httpd_flush_dlr },
     { "stop-smsc", httpd_stop_smsc },
     { "start-smsc", httpd_restart_smsc },

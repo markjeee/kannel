@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -168,6 +168,8 @@ struct smscconn {
     /* SMSCConn variables set in smscconn.c */
     volatile sig_atomic_t 	is_stopped;
 
+    Octstr *chksum;			/* MD5 hash of the whole configuration */
+    Octstr *chksum_conn;	/* MD5 hash minus the routing configuration */
     Octstr *name;		/* Descriptive name filled from connection info */
     Octstr *id;			/* Abstract name specified in configuration and
 				   used for logging and routing */

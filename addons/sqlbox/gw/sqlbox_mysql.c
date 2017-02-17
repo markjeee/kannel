@@ -146,6 +146,7 @@ Msg *mysql_fetch_msg()
             msg->sms.charset    = octstr_null_create(row[23]);
             msg->sms.binfo      = octstr_null_create(row[25]);
             msg->sms.meta_data  = octstr_null_create(row[26]);
+            msg->sms.priority   = atol_null(row[27]);
             if (row[24] == NULL) {
                 msg->sms.boxc_id= octstr_duplicate(sqlbox_id);
             }
@@ -211,6 +212,7 @@ int mysql_fetch_msg_list(List *qlist, long limit)
                 msg->sms.charset    = octstr_null_create(row[23]);
                 msg->sms.binfo      = octstr_null_create(row[25]);
                 msg->sms.meta_data  = octstr_null_create(row[26]);
+                msg->sms.priority   = atol_null(row[27]);
                 if (row[24] == NULL) {
                     msg->sms.boxc_id= octstr_duplicate(sqlbox_id);
                 }
@@ -263,7 +265,7 @@ void mysql_save_msg(Msg *msg, Octstr *momt)
         st_num(msg->sms.mclass), st_num(msg->sms.mwi), st_num(msg->sms.coding), st_num(msg->sms.compress),
         st_num(msg->sms.validity), st_num(msg->sms.deferred), st_num(msg->sms.dlr_mask), st_str(msg->sms.dlr_url),
         st_num(msg->sms.pid), st_num(msg->sms.alt_dcs), st_num(msg->sms.rpi), st_str(msg->sms.charset),
-        st_str(msg->sms.boxc_id), st_str(msg->sms.binfo), st_str(msg->sms.meta_data), st_str(msg->sms.foreign_id));
+        st_str(msg->sms.boxc_id), st_str(msg->sms.binfo), st_str(msg->sms.meta_data), st_num(msg->sms.priority), st_str(msg->sms.foreign_id));
     sql_update(sql);
     while (stuffcount > 0) {
         octstr_destroy(stuffer[--stuffcount]);
@@ -287,14 +289,14 @@ void mysql_save_list(List *qlist, Octstr *momt, int save_mt)
             /* convert into urlencoded tekst first */
             octstr_url_encode(msg->sms.msgdata);
             octstr_url_encode(msg->sms.udhdata);
-            octstr_format_append(values, "%S (NULL, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S)",
+            octstr_format_append(values, "%S (NULL, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S, %S)",
                 sep, st_str(momt), st_str(msg->sms.sender),
                 st_str(msg->sms.receiver), st_str(msg->sms.udhdata), st_str(msg->sms.msgdata), st_num(msg->sms.time),
                 st_str(msg->sms.smsc_id), st_str(msg->sms.service), st_str(msg->sms.account), st_num(msg->sms.sms_type),
                 st_num(msg->sms.mclass), st_num(msg->sms.mwi), st_num(msg->sms.coding), st_num(msg->sms.compress),
                 st_num(msg->sms.validity), st_num(msg->sms.deferred), st_num(msg->sms.dlr_mask), st_str(msg->sms.dlr_url),
                 st_num(msg->sms.pid), st_num(msg->sms.alt_dcs), st_num(msg->sms.rpi), st_str(msg->sms.charset),
-                st_str(msg->sms.boxc_id), st_str(msg->sms.binfo), st_str(msg->sms.meta_data), st_str(msg->sms.foreign_id));
+                st_str(msg->sms.boxc_id), st_str(msg->sms.binfo), st_str(msg->sms.meta_data), st_num(msg->sms.priority), st_str(msg->sms.foreign_id));
         }
         octstr_format_append(ids, "%S %S", sep, msg->sms.foreign_id);
         msg_destroy(msg);
@@ -395,6 +397,9 @@ found:
     db_conf->mysql->database = mysql_db;
     if (have_port) {
         db_conf->mysql->port = mysql_port;
+    }
+    else {
+        db_conf->mysql->port = 3306;
     }
 
     pool = dbpool_create(DBPOOL_MYSQL, db_conf, pool_size);

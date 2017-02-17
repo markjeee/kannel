@@ -1,2 +1,341 @@
+2017-01-04  Stipe Tolj  <stolj at kannel.org>
+    * gw/msg.h: add msg admin 'cmd_feature' to allow passing feature on/off 
+      commands within the inter-box communication. NLC.
+      
+2017-01-10 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/octstr.c: deleted immutable assert from octstr_cat.
+
+2016-12-13  Stipe Tolj  <stolj at kannel.org>
+    * gw/smsc/smsc_http.c: fixing asymetric load distribution for this SMSC 
+      type if there is a large set of non-relevant SMSCs groups and a set of
+      relevant groups, the first group would be systematically prefered, which
+      leads to an un-even distribution. The load is now set as with the other
+      SMSC types based on the queue size.
+      
+2016-12-06  Stipe Tolj  <stolj at kannel.org>
+    * doc/userguide/userguide.xml: indicate the terminus SSMPP for secure SMPP.
+    * gw/smsc/smsc_smpp.c: indicate 'SSMPP' for secure SMPP connections.
+    
+2016-11-14 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsbox.c, gw/smsc/smsc_cimd2.c, gw/smsc/smsc_smpp.c: applied patch to support
+      DLR_EXPIRED. Thanks to Iwan Iwanowicz <iwan41 at gmail.com> for the patch.
+
+2016-10-26 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smpp_pdu.c: applied patch that fixes memory leak if TLV is sent twice.
+      Thanks to Donald for this patch.
+
+2016-08-22 Alexander Malysh <amalysh at kannel.org>
+    * gw/load.c: fixed load calculation
+
+2016-08-04 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/xmlrpc.c: fixed crash if wrong formated xml given
+
+2016-08-04 Alexander Malysh <amalysh at kannel.org>
+    * gw/dlr.[ch]: added DLR_EXPIRED and DLR_UNKNOWN dlr mask
+
+2016-08-04 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/gwthread-pthread.c: fixed memory leak and panic if new thread could
+      not be created
+
+2016-07-14 Alexander Malysh <amalysh at kannel.org>
+    * gw/load.[ch]: Changed precision timing to microsec.
+      Thanks to kneodev at gmail.com for initial patch.
+
+2016-07-13  Stipe Tolj  <stolj at kannel.org>
+    * gwlib/dbpool_mysql.c: fix error code handling for mysql_stmt_execute(). 
+      The function returns CR_ error codes, we need to call _stmt_errno() to get
+      the server side ER_ error codes and retry on temporary ones.
+       
+2016-05-26  Stipe Tolj  <stolj at kannel.org>
+    * gwlib/dbpool.h: add missing define for Cassandra.
+    
+2016-05-09  Stipe Tolj  <stolj at kannel.org>
+    * gw/smsc/smsc_smpp.c: relax SMPP DLR scanning for a better pattern match.
+    [Msg-Id: <5720AAD1.2000500@kannel.org>]
+    
+2016-04-14  Stipe Tolj  <stolj at kannel.org>
+    * doc/userguide/userguide.xml: add documentation for escape code '%e'.
+    * gw/urltrans.c: add escape code '%e' for printable hexadecimal byte codes.
+    
+2016-02-15  Stipe Tolj  <stolj at kannel.org>
+    * gw/dlr.c: add missing original DLR bit-mask forwarding in case of 
+      DLR SMSC[SUCCESS|FAIL] events.
+      
+2015-12-22 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/conn.[ch]: renamed some ssl init functions to be in conn_XXX namespace.
+      test/test_http.c: implemented cmd line option to provide CA file.
+
+2015-12-21 Alexander Malysh <amalysh at kannel.org>
+    * gw/bb_smscconn.c: fixed MO concatenation handling for rerouting cases.
+
+2015-12-17  Stipe Tolj  <stolj at kannel.org>
+    * doc/examples/dlr-mysql.conf: add comment block describing an advanced
+      configuraiton for MySQL with scheduled events for DLR table clean-up.
+      
+2015-12-17  Stipe Tolj  <stolj at kannel.org>
+    * doc/examples/dlr-cassandra.conf: example for Cassandra.
+    * doc/userguide/userguide.xml: documentation for Cassandra support.
+    * gw/dlr_cass.c: adding DLR handling via Cassandra.
+    * gw/dlr_p.h: adding dlr_init_cass() prototype.
+    * gw/dlr.c: add 'spool = cassandra'.
+    * gwlib/cfg.def: adding 'group = cassandra-connection' context.
+    * gwlib/dbpool_cass.c: adding Cassandra DBPool support via DataStax C/C++
+      Cassandra driver library.
+    * gwlib/dbpool.[ch]: include Cassandra handling.
+    * test/test_dbpool.c: add Cassandra testing capabilities.
+    * configure[.in]: adding --with-cassandra and --with-cassandra-dir
+    * gw-config.h.in: define HAVE_CASS
+    This patchset adds support for the Apache Cassandra 2.1, 2.2 and 3.0
+    database engine. Initially DLRs can be stored in the database.
+     
+2015-12-14  Stipe Tolj  <stolj at kannel.org>
+    * doc/examples/store-redis.conf: add documentation for the 'hash' config
+      directive in the 'group = store-db' context.
+    * gw/bb_store_redis.c: use redis with binds list and implement an 'hash'
+      mode that allows for readable object in the redis store, rather then the
+      string blobs as sinle key/value pair.
+    * gw/dlr_redis.c: use the binds list values.
+    * gwlib/cfg.def: add 'hash' config directive to 'group = store-db' context.
+    * gwlib/dbpool_redis.c: implement the usage of redisCommandArgv() with the
+      binds values via the list.
+    This patchset re-writes some parts of the redis support modules, mainly to
+    support the more generic redisCommandArgv() API call that makes things
+    more robust internally.
+
+2015-11-16 Alexander Malysh <amalysh at kannel.org>
+    * gw/bb_smscconn.c: fixed crash in smsc2_find if id or admin_id is NULL.
+
+2015-10-23 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsbox.c: fixed xml post parsing. Check ud type and if not binary
+      don't try to hex decode.
+
+2015-10-01  Stipe Tolj  <stolj at kannel.org>
+    * gw/sms.[ch]: incubate function sms_charset_processing() into module.
+    * gw/smsbox.c: removed charset_processing().
+    * gw/smsc/smsc_http.c: fix missing 'charset' processing for type kannel
+      when receiving MOs.
+
+2015-09-25  Stipe Tolj  <stolj at kannel.org>
+    * utils/mtbatch.c: add option -x to disallow injection of smsbox-id to MT
+      messages, in order to let normal smsbox connection handle DLRs.
+      
+2015-08-04 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/conn.c: added support for chained certificates.
+
+2015-07-20  Stipe Tolj  <stolj at kannel.org>
+    * gw/dlr.c: add the original msg DLR bitmask to the meta-data of the DLR, 
+      allowing smsbox applications to retrieve this information on-the-fly
+      without the need to do local storage/retrieval.
+    * gw/meta_data.h: define the macros for the DLR bitmask of the orig msg.
+    
+2015-07-13 Alexander Malysh <amalysh at kannel.org>
+    * gw/bb_store.[ch], gw/bb_store_file.c, gw/bb_store_redis.c, gw/bb_store_spool.c:
+      Applied patch that fixes store file race condition by status request. Additionally
+      this patch removes status from each of store and add it to bb_store to abstract and
+      simplify status handling in store.
+
+2015-07-01  Stipe Tolj  <stolj at kannel.org>
+    * doc/userguide/userguide.xml: add documentation for escape code %N for DLR
+      notification text.
+    * gw/bb_alog.c: implement %N escape code for 'access-log-format' pattern.
+    
+2015-06-24 Alexander Malysh <amalysh at kannel.org>
+    * configure.in, configure: fixed library search path order issue on OSX with
+      MacPorts installed where iconv library was not found for linking.
+
+2015-06-24 Alexander Malysh <amalysh at kannel.org>
+    * utils/mtbatch.1: fixed bad formatting. This fixes #728.
+      Thanks to Kalle Niemitalo. 
+
+2015-05-18  Stipe Tolj  <stolj at kannel.org>
+    * gw/smsc/smsc_smpp.c: harmonize the [data|deliver]_sm handling where we
+      don't find a DLR in our storage. Make sure we log a FAILED event in the
+      access-log for both PDU types.
+      
+2015-05-17  Stipe Tolj  <stolj at kannel.org>
+    * gw/bb_boxc.c: ensure we get a wakeup call while being in gwthread_sleep()
+      in sms_to_smsboxes(), which reduces the shutdown waiting time. Ensure
+      we don't re-loop if we're in shutdown phase.
+    * gw/bearerbox.c: issue gwthread_wakeup_all() after bb_shutdown() in order
+      to wakeup all pending sleepers.
+    [Msg-Id: <55364459.7030503@kannel.org>]
+      
+2015-03-19  Stipe Tolj  <stolj at kannel.org>
+    * gw/bb_store_redis.c: fix memory leak when the result set is empty, we still
+      get a single row entry from the redis side, which needs to be destroyed.
+      
+2015-03-18  Stipe Tolj  <stolj at kannel.org>
+    * config.guess: update to latest version to support various more platforms.
+      [http://savannah.gnu.org/projects/config]
+      
+2015-03-12 Alexander Malysh <amalysh at kannel.org>
+    * Makefile.in: fixed make invocation for subfolders
+
+2015-03-12 Alexander Malysh <amalysh at kannel.org>
+    * Makefile.in: addeed possibility to easy add subdirectories to build process
+
+2015-03-12 Alexander Malysh <amalysh at kannel.org>
+    * Makefile.in, aclocal.m4, bootstrap.sh, configure, configure.in, soap/Makefile.in:
+      first step in automake direction.
+
+2015-02-23  Stipe Tolj  <stolj at kannel.org>
+    * gw/smsc/smsc_http.c: the queued callback function should return the number
+      of messages in queue, and not the open requests that we are pending.
+
+2015-02-20  Stipe Tolj  <stolj at kannel.org>
+    * doc/examples/store-redis.conf: configuration example for redis msg store.
+    * doc/userguide/userguide.xml: document 'store-type = redis' option.
+    * gw/bb_store_redis.c: backend implementation of the message store in a
+      redis key store.
+    * gw/bb_store.[ch]: adding Cfg* passing in store_init() prototype.
+    * gw/bearerbox.c: changed to do store_init() prototype change.
+    * gwlib/cfg.def: adding 'group = store-db' as group for message backends
+      as databases or key stores.
+    * test/test_store_dump.c: changed to do store_init() prototype change.
+    This patchset implements the redis key store backend as a message store for
+    bearerbox. This allows to have persistancy on a remote system without using
+    the local file system. Thanks to Alejandro Guerrieri for the patch.
+    [Msg-Id: <CAG8-fBm0OvF777g9wGf58kq3SCj84aEz2zabomL924VoE3dO_w@mail.gmail.com>]
+    
+2015-02-20  Stipe Tolj  <stolj at kannel.org>
+    * gwlib/utils.c: removing info() calls after gwlib_shutdown() calls for the
+      parent process exiting. This results in a 0 exit code on MacOS.
+      
+2015-02-19 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsbox.c: fixed issue with XML MT request, <to> was not decided anymore. 
+
+2015-02-04  Stipe Tolj  <stolj at kannel.org>
+    * gwlib/log.c: don't dump the WARNING in log_thread_to() if there was no
+      attempt to open an SMSC specific log, i.e. no 'log-file' was set.
+      
+2015-01-29 Alexander Malysh <amalysh at kannel.org>
+	* doc/userguide/userguide.xml: added description for new log-format
+      config option.
+
+2015-01-29  Stipe Tolj  <stolj at kannel.org>
+    * gw/ota_compiler.c, gw/smsbox.c, gw/wap_push_[pap|si|sl]_compiler.c,
+      gw/wml_compiler.c, gwlib/xmlrpc.c: FreeBSD CURRENT messes up with 
+      __wchar_t typedef used heavily by libxml2, so we need to make sure the
+      internal types are included to fix the building on FreeBSD CURRENT.
+      
+2015-01-29  Stipe Tolj  <stolj at kannel.org>
+    * configure[.in]: fix openssl library detection via GCC's print-file-name
+      argument. We need to obey what $CC is set, not call the binary name 
+      directly. This broke the configure on FreeBSD CURRENT.
+      
+2015-01-28  Stipe Tolj  <stolj at kannel.org>
+    * gwlib/log.[ch]: fix segfault when calling log_thread_to() with -1 argument, due
+      to a failed log_open() call, i.e. permission denied. Since the unsigned int type
+      wrapps arround the if statement in the function yields and we address a random 
+      memory segment via the logfiles[] array, resulting in possible segfaults.
+      Now we also log a WARNING statement in case the thread specific log file could
+      not be opened to inform the user in the general/stdout log abou the fact.
+      
+2015-01-28  Stipe Tolj  <stolj at kannel.org>
+    * gw/smscconn.c: fixing bug #708 in function c:smscconn_usable(). We need
+      to bail out for connectioks with status SMSCCONN_ACTIVE_RECV, since those
+      can't be used for routing. Some source code reformating, NLC.
+      
+2015-01-19 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smpp_pdu.[ch], gw/smsc/smsc_smpp.c, gwlib/cfg.def:
+      added new PDU dump function that allow to dump in one line instead of multiline,
+      for better parsing. It can be switched with new log-format configuration option.
+
+2015-01-02  Stipe Tolj  <stolj at kannel.org>
+    * gw/smsc/http/generic.c: fix segfault when starting without specific
+      configuration directives for this type.
+      
+2014-12-19  Stipe Tolj  <stolj at kannel.org>
+    * gw/sms.c: add a TODO note in function extract_msgdata_part_by_coding()
+      that yields a GSM centric limitation in regards of character encoding
+      support. NLC.
+    * gw/smsc/smsc_smpp.c: use DCS handling functions to reduce code redundancy
+      on the MO side, and also support individual data_coding setting via
+      meta-data value.
+       
+2014-12-18  Stipe Tolj  <stolj at kannel.org>
+    * doc/userguide.xml: cleaning section "Fake messages" to include all types.
+    * gw/smsc/smsc_fake.c: add support for UDH + 7bit text, using types udh-data
+      and udh-text now.
+    * test/fakesmsc.c: adding reference for udh-data and udh-text types.
+    
+2014-12-18  Stipe Tolj  <stolj at kannel.org>
+    * test/fakesmsc.c: add missing usage output for type 'dlr-mask'.
+    
+2014-11-17  Stipe Tolj  <stolj at kannel.org>
+    * doc/userguide/userguide.xml: document the new graceful restarting.
+    * gw/bb_http.c: add new HTTP admin URI /graceful-restart.
+    * gw/bb_smscconn.c: implements graceful restarting of bearerbox.
+    * gw/bearebox.[ch]: signal SIGHUP handling for graceful restarting, and 
+      SIGUSR2 for pure log re-opening.
+    * gw/smscconn_p.h: add MD5 checksum variable for graceful restarting.
+    * gw/smscconn.[ch]: do MD5 calculation on parts of the config for change
+      detection.
+    * gwlib/cfg.[ch]: additions for MD5 calculation of the config parts.
+    This patchset 'gateway-graceful-restart.v5.diff' implements the soft/graceful
+    restarting of bearerbox. Where the process can be signaled via SIGHUP and
+    re-loads the SMSC configurations. Any config parts that are not modified
+    keep on running, and either SMSCs are re-connected or shutdown. In addition
+    re-configuration of routing config directives will cause NO re-connecting
+    of the corresponding SMSC groups.
+    [Msg-Id: <50822776.7040809@kannel.org>]
+    
+2014-11-12  Stipe Tolj  <stolj at kannel.org>
+    * gw/smsc/smsc_smpp.c: extend Alex's patchset to also support destination
+      TON/NPI setting via meta-data values.
+      
+2014-11-12  Stipe Tolj  <stolj at kannel.org>
+    * doc/userguide.xml: added 'instances' to 'group = smsc' context.
+    * gw/[bb_]smscconn.[ch]: allow multiple instances to be created via the
+      corresponding config directive.
+    * gwlib/cfg.def: added 'instances' to 'group = smsc' context.
+    [Msg-Id: <5452797C.2020207@kannel.org>]
+    
+2014-11-12  Stipe Tolj  <stolj at kannel.org>
+    * doc/userguide.xml: document new config directives and declare deprecates.
+    * gw/bb_boxc.c: handle SMSCCONN_FAILED_REJECTED response for routing.
+    * gw/bb_smscconn.c: crean the white/black listing handling to support 
+      sender/receiver side testing.
+    * gwlib/cfg.def: add new white/black listing config directives.
+    [Msg-Id: <54525E66.1020308@kannel.org>]
+    
+2014-11-11 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_smpp.c: allow overwrite of source_addr ton/npi on message basis via meta_data
+
+2014-11-06 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smpp_pdu.c: added check fo defined fields and print error only if it's unknown TLV
+
+2014-11-06  Stipe Tolj  <stolj at kannel.org>
+    * gwlib/dbpool_mysql.c: handle temporary error codes, mainly for InnoDB's
+      lock handling for mysql_stmt_execute() calls, which are rolled back and
+      then need to be retried by the application side, according to error code
+      references at http://dev.mysql.com/doc/refman/5.0/en/innodb-error-codes.html.
+      
+2014-10-22 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smsc_smpp.c, gw/dlr.h: dropped SMPP specific intermediate dlr mask
+      and replaced it with abstracted buffered.
+
+2014-10-13  Stipe Tolj  <stolj at kannel.org>
+    * gw/smsc/smsc_fake.c, test/fakesmsc.c: add UCS-2 (Unicode) support for MO
+      messages withing FAKE SMSC type.
+      
+2014-10-13 Alexander Malysh <amalysh at kannel.org>
+    * gw/meta_data.h: added SMPP group
+
+2014-10-13 Alexander Malysh <amalysh at kannel.org>
+    * gw/smsc/smpp_pdu.[ch], gw/smsc/smsc_smpp.c: fixed error code
+      SMPP_ESME_RALYNBD -> SMPP_ESME_RALYBND.
+
+2014-10-13 Alexander Malysh <amalysh at kannel.org>
+    * gwlib/conn.c: added more vorvose SSL error.
+      Thanks to Artem Pylypchuk <articice at ua.fm> for this patch.
+
+2014-09-25  Stipe Tolj  <stolj at kannel.org>
+    * test/test_regex.c: fix substring dumping, upper limit caused PANIC. NLC.
+    
+2014-09-08 Alexander Malysh <amalysh at kannel.org>
+    * gw/dlr_sqlite3.c: fixed DLR status update, see #705.
+      Thanks to Filippo Natali <filippo.natali at gmail.com> for this patch.
+
 2014-08-01  Stipe Tolj  <stolj at kannel.org>
     * Making stable release 1.4.4.

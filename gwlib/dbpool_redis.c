@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -57,8 +57,12 @@
 /*
  * dbpool_redis.c - implement REDIS operations for generic database connection pool
  *
+ * In the redis_[update|select]() functions no NULL values are allowed in the
+ * binds list, otherwise we may get value corruption when getting back values
+ * from redis.
+ *
  * Toby Phipps <toby.phipps at nexmedia.com.sg>, 2011 Initial version.
- * Stipe Tolj <stolj at kannel.org>, 2013-12-12
+ * Stipe Tolj <stolj at kannel.org>, 2013, 2015
  */
 
 #ifdef HAVE_REDIS
@@ -221,31 +225,49 @@ static int redis_check_conn(void *conn)
 }
 
 
-static int redis_select(void *conn, Octstr *sql, List *binds, List **res)
+static int redis_select(void *conn, const Octstr *sql, List *binds, List **res)
 {
     redisReply *reply;
     long i, binds_len;
     List *row;
     Octstr *temp = NULL;
+    const char **argv;
 
     /* bind parameters if any */
     binds_len = gwlist_len(binds);
-    if (binds_len > 0) {
-        for (i = 0; i < binds_len; i++) {
-            Octstr *str = gwlist_get(binds, i);
-            if (octstr_len(str) > 0)
-                octstr_replace_first(sql, octstr_imm("?"), str);
-            else
-                octstr_replace_first(sql, octstr_imm("?"), octstr_imm("_NULL_"));
-        }
-    }
 
+    if (binds_len > 0) {
 #if defined(REDIS_DEBUG)
-    debug("dbpool.redis", 0, "redis cmd: %s", octstr_get_cstr(sql));
+        Octstr *os = octstr_create("");;
 #endif
 
-    /* execute statement */
-    reply = redisCommand(conn, octstr_get_cstr(sql));
+        argv = gw_malloc(sizeof(*argv) * binds_len);
+        for (i = 0; i < binds_len; i++) {
+            argv[i] = (char*)octstr_get_cstr(gwlist_get(binds, i));
+#if defined(REDIS_DEBUG)
+            octstr_format_append(os, "\"%s\" ", argv[i]);
+#endif
+        }
+
+#if defined(REDIS_DEBUG)
+        debug("dbpool.redis",0,"redis cmd: %s", octstr_get_cstr(os));
+        octstr_destroy(os);
+#endif
+
+        /* execute statement */
+        reply = redisCommandArgv(conn, binds_len, argv, NULL);
+
+        gw_free(argv);
+
+    } else {
+
+#if defined(REDIS_DEBUG)
+        debug("dbpool.redis",0,"redis cmd: %s", octstr_get_cstr(sql));
+#endif
+
+        /* execute statement */
+        reply = redisCommand(conn, octstr_get_cstr(sql));
+    }
 
     /* evaluate reply */
     switch (reply->type) {
@@ -328,30 +350,48 @@ static int redis_select(void *conn, Octstr *sql, List *binds, List **res)
 }
 
 
-static int redis_update(void *conn, Octstr *sql, List *binds)
+static int redis_update(void *conn, const Octstr *sql, List *binds)
 {
     long i, binds_len;
     int ret;
     redisReply *reply;
+    const char **argv;
 
-    /* bind paramters if any */
+    /* bind parameters if any */
     binds_len = gwlist_len(binds);
-    if (binds_len > 0) {
-        for (i = 0; i < binds_len; i++) {
-            Octstr *str = gwlist_get(binds, i);
-            if (octstr_len(str) > 0)
-                octstr_replace_first(sql, octstr_imm("?"), str);
-            else
-                octstr_replace_first(sql, octstr_imm("?"), octstr_imm("_NULL_"));
-        }
-    }
 
+    if (binds_len > 0) {
 #if defined(REDIS_DEBUG)
-    debug("dbpool.redis",0,"redis cmd: %s", octstr_get_cstr(sql));
+        Octstr *os = octstr_create("");;
 #endif
 
-    /* execute statement */
-    reply = redisCommand(conn, octstr_get_cstr(sql)); 
+        argv = gw_malloc(sizeof(*argv) * binds_len);
+        for (i = 0; i < binds_len; i++) {
+            argv[i] = (char*)octstr_get_cstr(gwlist_get(binds, i));
+#if defined(REDIS_DEBUG)
+            octstr_format_append(os, "\"%s\" ", argv[i]);
+#endif
+        }
+
+#if defined(REDIS_DEBUG)
+        debug("dbpool.redis",0,"redis cmd: %s", octstr_get_cstr(os));
+        octstr_destroy(os);
+#endif
+
+        /* execute statement */
+        reply = redisCommandArgv(conn, binds_len, argv, NULL);
+
+        gw_free(argv);
+
+    } else {
+
+#if defined(REDIS_DEBUG)
+        debug("dbpool.redis",0,"redis cmd: %s", octstr_get_cstr(sql));
+#endif
+
+        /* execute statement */
+        reply = redisCommand(conn, octstr_get_cstr(sql));
+    }
 
     /* evaluate reply */
     switch (reply->type) {

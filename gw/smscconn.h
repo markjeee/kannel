@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -199,5 +199,17 @@ int smscconn_status(SMSCConn *smscconn);
  */
 int smscconn_info(SMSCConn *smscconn, StatusInfo *infotable);
 
+/* Determine if the specific SMS center group will be started
+ * with multiple instances.
+ * Return the number of multiple instances that should be started.
+ * If no multiple indicator is set in the config group, then 1
+ * is returned.
+ */
+unsigned int smscconn_instances(CfgGroup *grp);
+
+/* Reconfigure the running SMSC for any routing relevant
+ * information from the configuration group.
+ */
+void smscconn_reconfig(SMSCConn *conn, CfgGroup *grp);
 
 #endif

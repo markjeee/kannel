@@ -96,6 +96,8 @@ XML_DCL=@XML_DCL@
 # Version number is common.
 suffix = $(SUFFIX)
 
+SUBDIRS =
+
 #
 # You probably don't need to touch anything below this, if you're just
 # compiling and installing the software.
@@ -233,7 +235,7 @@ figs = $(figsrcs:.fig=.png)  $(figsrcs:.fig=.ps)
 .c.i:
 	$(CC) $(CFLAGS) -o $@ -E $<
 
-all: progs $(testprogs) $(checkprogs) $(DOCSTARGET) gw-config
+all: progs $(testprogs) $(checkprogs) $(DOCSTARGET) gw-config $(SUBDIRS)
 progs: $(progs)
 tests: $(testprogs)
 docs: figs ps $(docs)
@@ -242,15 +244,15 @@ figs: $(figs)
 ps: $(ps)
 pp: $(pres)
 
-check: all
+check: all $(SUBDIRS)
 	utils/run-checks $(checks)
 
-bench: all $(benchformats)
+bench: all $(benchformats) $(SUBDIRS)
 benchmarks/report.xml: dummy
 	benchmarks/run-benchmarks benchmarks/*.sh
 dummy:
 
-install: all
+install: all $(SUBDIRS)
 	$(INSTALL) -d $(DESTDIR)$(bindir)
 	for prog in $(binprogs); do \
 		$(INSTALL) $$prog \
@@ -283,7 +285,7 @@ install: all
 	$(INSTALL) -d $(DESTDIR)$(libdir)/kannel
 	$(INSTALL_DATA) lib*.a $(DESTDIR)$(libdir)/kannel
 
-install-test: all
+install-test: all $(SUBDIRS)
 	$(INSTALL) -d $(DESTDIR)$(libdir)/kannel
 	$(INSTALL) -d $(DESTDIR)$(libdir)/kannel/test
 	(cd test && find . -type f ! -name "*.c" ! -name "*.o" | grep -v ".cvsignore" | grep -v "/CVS/" | while read a ; do $(INSTALL_DATA) $$a $(DESTDIR)$(libdir)/kannel/test ; done)
@@ -291,20 +293,20 @@ install-test: all
                 chmod 755 $(DESTDIR)$(libdir)/kannel/$$prog ; \
         done
 
-install-checks: all
+install-checks: all $(SUBDIRS)
 	$(INSTALL) -d $(DESTDIR)$(libdir)/kannel/checks
 	(cd checks && find . -type f ! -name "*.c" ! -name "*.o" | grep -v ".cvsignore" | grep -v "/CVS/" | while read a ; do $(INSTALL_DATA) $$a $(DESTDIR)$(libdir)/kannel/checks ; done)
 	for prog in $(checks) ; do \
                 chmod 755 $(DESTDIR)$(libdir)/kannel/$$prog ; \
         done
 
-install-contrib: all
+install-contrib: all $(SUBDIRS)
 	$(INSTALL) -d $(DESTDIR)$(docdir)/contrib
 	(cd contrib && find . -type d ! -name "CVS" | while read a ; do $(INSTALL) -d $(DESTDIR)$(docdir)/contrib/$$a ; done )
 	(cd contrib && find . -type f ! -name ".cvsignore" | grep -v "/CVS/" | while read a ; do $(INSTALL_DATA) $$a $(DESTDIR)$(docdir)/contrib/$$a ; done )
 	find $(DESTDIR)$(docdir)/contrib/ -name "*.pl" -o -name "*.sh" -o -name "*.cgi" -o -name "sendsms" -o -name "kannel.monitor" | while read a ; do chmod 755 "$$a" ; done
 
-install-docs:
+install-docs: $(SUBDIRS)
 	$(INSTALL) -d $(DESTDIR)$(docdir)/examples
 	$(INSTALL_DATA) doc/examples/*.conf $(DESTDIR)$(docdir)/examples
 	for docfile in userguide alligata wtls ; do \
@@ -316,13 +318,13 @@ install-docs:
 		$(INSTALL_DATA) doc/$$docfile/*.png $(DESTDIR)$(docdir)/$$docfile ; \
 	done
 	
-clean:
+clean: $(SUBDIRS)
 	find . -name "*.o" -o -name "*.i" -o -name "*.a" | xargs rm -f
 	rm -f core gw-config $(progs) $(testprogs) $(checkprogs)
 	rm -f $(figs) $(ps) $(docs)
 	rm -f $(benchoutputs)
 
-distclean: clean
+distclean: clean $(SUBDIRS)
 	rm -f Makefile gw-config.h config.cache config.log config.status config.nice .depend gwlib/gw_uuid_types.h
 
 nag:
@@ -337,19 +339,19 @@ depend .depend: wmlscript/wsgram.h gw-config.h $(soap_depend)
 include .depend
 
 libgw.a: $(gwobjs)
-	@LIBTOOL@ libgw.a $(gwobjs)
+	@OLD_LIBTOOL@ libgw.a $(gwobjs)
 	$(RANLIB) libgw.a
 
 libgwlib.a: $(libobjs)
-	@LIBTOOL@  libgwlib.a $(libobjs)
+	@OLD_LIBTOOL@  libgwlib.a $(libobjs)
 	$(RANLIB) libgwlib.a
 
 libwmlscript.a: $(wmlscriptobjs)
-	@LIBTOOL@ libwmlscript.a $(wmlscriptobjs)
+	@OLD_LIBTOOL@ libwmlscript.a $(wmlscriptobjs)
 	$(RANLIB) libwmlscript.a
 
 libwap.a: $(wapobjs)
-	@LIBTOOL@ libwap.a $(wapobjs)
+	@OLD_LIBTOOL@ libwap.a $(wapobjs)
 	$(RANLIB) libwap.a
 
 wmlscript/wsgram.h: wmlscript/wsgram.c
@@ -381,3 +383,8 @@ gw-config: utils/foobar-config.sh Makefile
 		"-L$(libdir)/kannel -lgw -lwap -lgwlib $(LIBS)" \
 		"@VERSION@" > gw-config
 	chmod 0755 gw-config
+
+$(SUBDIRS):
+	$(MAKE) -C $@ $(MAKECMDGOALS)
+
+.PHONY: $(SUBDIRS)

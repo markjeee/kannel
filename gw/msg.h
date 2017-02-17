@@ -1,7 +1,7 @@
 /* ==================================================================== 
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -116,7 +116,8 @@ enum {
     cmd_suspend = 1,
     cmd_resume = 2,
     cmd_identify = 3,
-    cmd_restart = 4
+    cmd_restart = 4,
+    cmd_feature = 5,
 };
 
 /* ack message status */

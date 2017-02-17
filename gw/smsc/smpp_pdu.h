@@ -1,7 +1,7 @@
 /* ====================================================================
  * The Kannel Software License, Version 1.0 
  * 
- * Copyright (c) 2001-2014 Kannel Group  
+ * Copyright (c) 2001-2016 Kannel Group  
  * Copyright (c) 1998-2001 WapIT Ltd.   
  * All rights reserved. 
  * 
@@ -162,7 +162,7 @@ enum SMPP_ERROR_MESSAGES {
     SMPP_ESME_RINVCMDLEN = 0x00000002,
     SMPP_ESME_RINVCMDID = 0x00000003,
     SMPP_ESME_RINVBNDSTS = 0x00000004,
-    SMPP_ESME_RALYNBD = 0x00000005,
+    SMPP_ESME_RALYBND = 0x00000005,
     SMPP_ESME_RINVPRTFLG = 0x00000006,
     SMPP_ESME_RINVREGDLVFLG = 0x00000007,
     SMPP_ESME_RSYSERR = 0x00000008,
@@ -237,6 +237,7 @@ int smpp_pdu_is_valid(SMPP_PDU *pdu); /* XXX */
 Octstr *smpp_pdu_pack(Octstr *smsc_id, SMPP_PDU *pdu);
 SMPP_PDU *smpp_pdu_unpack(Octstr *smsc_id, Octstr *data_without_len);
 void smpp_pdu_dump(Octstr *smsc_id, SMPP_PDU *pdu);
+void smpp_pdu_dump_line(Octstr *smsc_id, SMPP_PDU *pdu);
 
 long smpp_pdu_read_len(Connection *conn);
 Octstr *smpp_pdu_read_data(Connection *conn, long len);

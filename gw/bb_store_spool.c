@@ -1,7 +1,7 @@
 /* ====================================================================
  * The Kannel Software License, Version 1.0
  *
- * Copyright (c) 2001-2014 Kannel Group
+ * Copyright (c) 2001-2016 Kannel Group
  * Copyright (c) 1998-2001 WapIT Ltd.
  * All rights reserved.
  *
@@ -134,16 +134,14 @@ static int for_each_file(const Octstr *dir_s, int ignore_err, void(*cb)(const Oc
 
 
 struct status {
-    const char *format;
-    Octstr *status;
+    void(*callback_fn)(Msg* msg, void *data);
+    void *data;
 };
 
 
 static void status_cb(const Octstr *filename, void *d)
 {
     struct status *data = d;
-    struct tm tm;
-    char id[UUID_STR_LEN + 1];
     Octstr *msg_s;
     Msg *msg;
 
@@ -153,86 +151,24 @@ static void status_cb(const Octstr *filename, void *d)
     if (msg == NULL)
         return;
 
-    /* transform the time value */
-#if LOG_TIMESTAMP_LOCALTIME
-    tm = gw_localtime(msg->sms.time);
-#else
-    tm = gw_gmtime(msg->sms.time);
-#endif
-    if (msg->sms.udhdata)
-        octstr_binary_to_hex(msg->sms.udhdata, 1);
-    if (msg->sms.msgdata &&
-        (msg->sms.coding == DC_8BIT || msg->sms.coding == DC_UCS2 ||
-        (msg->sms.coding == DC_UNDEF && msg->sms.udhdata)))
-        octstr_binary_to_hex(msg->sms.msgdata, 1);
-
-    uuid_unparse(msg->sms.id, id);
-
-    octstr_format_append(data->status, data->format,
-        id,
-        (msg->sms.sms_type == mo ? "MO" :
-        msg->sms.sms_type == mt_push ? "MT-PUSH" :
-        msg->sms.sms_type == mt_reply ? "MT-REPLY" :
-        msg->sms.sms_type == report_mo ? "DLR-MO" :
-        msg->sms.sms_type == report_mt ? "DLR-MT" : ""),
-        tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
-        tm.tm_hour, tm.tm_min, tm.tm_sec,
-        (msg->sms.sender ? octstr_get_cstr(msg->sms.sender) : ""),
-        (msg->sms.receiver ? octstr_get_cstr(msg->sms.receiver) : ""),
-        (msg->sms.smsc_id ? octstr_get_cstr(msg->sms.smsc_id) : ""),
-        (msg->sms.boxc_id ? octstr_get_cstr(msg->sms.boxc_id) : ""),
-        (msg->sms.udhdata ? octstr_get_cstr(msg->sms.udhdata) : ""),
-        (msg->sms.msgdata ? octstr_get_cstr(msg->sms.msgdata) : ""));
+    data->callback_fn(msg, data->data);
 
     msg_destroy(msg);
 }
 
 
-static Octstr *store_spool_status(int status_type)
+static void store_spool_for_each_message(void(*callback_fn)(Msg* msg, void *data), void *data)
 {
-    Octstr *ret = octstr_create("");
-    const char *format;
-    struct status data;
+    struct status d;
 
-    /* check if we are active */
     if (spool == NULL)
-        return ret;
+        return;
 
-    /* set the type based header */
-    if (status_type == BBSTATUS_HTML) {
-        octstr_append_cstr(ret, "<table border=1>\n"
-            "<tr><td>SMS ID</td><td>Type</td><td>Time</td><td>Sender</td><td>Receiver</td>"
-            "<td>SMSC ID</td><td>BOX ID</td><td>UDH</td><td>Message</td>"
-            "</tr>\n");
+    d.callback_fn = callback_fn;
+    d.data = data;
 
-        format = "<tr><td>%s</td><td>%s</td>"
-                "<td>%04d-%02d-%02d %02d:%02d:%02d</td>"
-                "<td>%s</td><td>%s</td><td>%s</td>"
-                "<td>%s</td><td>%s</td><td>%s</td></tr>\n";
-    } else if (status_type == BBSTATUS_XML) {
-        format = "<message>\n\t<id>%s</id>\n\t<type>%s</type>\n\t"
-                "<time>%04d-%02d-%02d %02d:%02d:%02d</time>\n\t"
-                "<sender>%s</sender>\n\t"
-                "<receiver>%s</receiver>\n\t<smsc-id>%s</smsc-id>\n\t"
-                "<box-id>%s</box-id>\n\t"
-                "<udh-data>%s</udh-data>\n\t<msg-data>%s</msg-data>\n\t"
-                "</message>\n";
-    } else {
-        octstr_append_cstr(ret, "[SMS ID] [Type] [Time] [Sender] [Receiver] [SMSC ID] [BOX ID] [UDH] [Message]\n");
-        format = "[%s] [%s] [%04d-%02d-%02d %02d:%02d:%02d] [%s] [%s] [%s] [%s] [%s] [%s]\n";
-    }
-
-    data.format = format;
-    data.status = ret;
     /* ignore error because files may disappear */
-    for_each_file(spool, 1, status_cb, &data);
-
-    /* set the type based footer */
-    if (status_type == BBSTATUS_HTML) {
-        octstr_append_cstr(ret,"</table>");
-    }
-
-    return ret;
+    for_each_file(spool, 1, status_cb, &d);
 }
 
 
@@ -409,7 +345,7 @@ int store_spool_init(const Octstr *store_dir)
     store_load = store_spool_load;
     store_dump = store_spool_dump;
     store_shutdown = store_spool_shutdown;
-    store_status = store_spool_status;
+    store_for_each_message = store_spool_for_each_message;
 
     if (store_dir == NULL)
         return 0;
