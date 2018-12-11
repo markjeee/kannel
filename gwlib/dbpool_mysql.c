@@ -245,7 +245,7 @@ static int mysql_select(void *conn, const Octstr *sql, List *binds, List **res)
         case MYSQL_TYPE_TIMESTAMP:
             bind[i].buffer_type = field->type;
             bind[i].buffer = (char*)gw_malloc(sizeof(MYSQL_TIME));
-            bind[i].is_null = gw_malloc(sizeof(my_bool));
+            bind[i].is_null = gw_malloc(sizeof(bool));
             bind[i].length = gw_malloc(sizeof(unsigned long));
             break;
         default:
@@ -253,7 +253,7 @@ static int mysql_select(void *conn, const Octstr *sql, List *binds, List **res)
             bind[i].buffer = gw_malloc(field->length);
             bind[i].buffer_length = field->length;
             bind[i].length = gw_malloc(sizeof(unsigned long));
-            bind[i].is_null = gw_malloc(sizeof(my_bool));
+            bind[i].is_null = gw_malloc(sizeof(bool));
             break;
         }
     }
